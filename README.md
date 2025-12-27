@@ -6,10 +6,30 @@ Playproof 백엔드 레포지토리입니다.
 👉 코드 컨벤션 상세  [확인하기](https://www.notion.so/2d6ddc51f5c68096800ce2e4207911f9?source=copy_link)
 
 ## 기술 스택
-- Node.js Runtime (v22.21.1)
+- Node.js Runtime (v22 LTS 이상)
 - Typescript
 - Prisma
 - Mysql
+
+## 실행 방법
+### 1. 클론
+```bash
+git clone https://github.com/Playproof-Umc/Playproof-Backend.git
+```
+### 2. 패키지 설치
+```bash
+npm install
+```
+### 3. 환경변수 설정 (.env)
+루트 디렉토리에 .env 파일을 생성
+```env
+DATABASE_URL="mysql://root:비밀번호@localhost:3306/playproof"
+```
+### 4. 서버 실행
+```bash
+npm run dev
+```
+실행 후 http://localhost:3000 접속
 
 ## 브랜치 전략: main / dev / feature
 1. 이슈 생성
