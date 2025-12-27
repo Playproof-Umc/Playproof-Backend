@@ -2,7 +2,7 @@
 Playproof 백엔드 레포지토리입니다.
 본 문서는 프로젝트 협업 가이드라인과 컨벤션 등을 포함합니다.
 
-👉 깃 협업 가이드라인 상세   [확인하기](https://www.notion.so/Git-2d6ddc51f5c680e39e1df9094fef07ae?source=copy_link)
+👉 깃 협업 가이드라인 상세   [확인하기](https://www.notion.so/Git-2d6ddc51f5c680e39e1df9094fef07ae?source=copy_link)<br/>
 👉 코드 컨벤션 상세  [확인하기](https://www.notion.so/2d6ddc51f5c68096800ce2e4207911f9?source=copy_link)
 
 ## 기술 스택
