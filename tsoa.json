@@ -1,0 +1,18 @@
+{
+  "entryFile": "src/server.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/**/*.controller.ts"],
+  "spec": {
+    "outputDirectory": "src/routes",
+    "specVersion": 3
+  },
+  "routes": {
+    "routesDir": "src/routes",
+    "iocModule": "./src/common/config/ioc.ts"
+  },
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  }
+}
