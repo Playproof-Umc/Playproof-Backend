@@ -1,0 +1,61 @@
+services:
+  # MySQL Database for Development
+  mysql:
+    image: mysql:8.0
+    container_name: playproof-mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: playproof
+      MYSQL_USER: playproof_user
+      MYSQL_PASSWORD: playproof_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - playproof-dev-network
+
+  # Application for Development (with hot reload)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: playproof-app-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: mysql://playproof_user:playproof_password@mysql:3306/playproof
+    volumes:
+      # 소스 코드 실시간 반영
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsoa.json:/app/tsoa.json
+      - ./nodemon.json:/app/nodemon.json
+      # node_modules는 제외 (컨테이너 내부 것 사용)
+      - /app/node_modules
+      - /app/build
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: sh -c "npx prisma generate && npx prisma db push && npm run dev"
+    networks:
+      - playproof-dev-network
+
+volumes:
+  mysql_dev_data:
+
+networks:
+  playproof-dev-network:
+    driver: bridge
+

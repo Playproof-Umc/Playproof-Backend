@@ -1,0 +1,50 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: playproof-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: playproof
+      MYSQL_USER: playproof_user
+      MYSQL_PASSWORD: playproof_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - playproof-network
+
+  # Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: playproof-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mysql://playproof_user:playproof_password@mysql:3306/playproof
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: sh -c "npx prisma db push && npm start"
+    networks:
+      - playproof-network
+
+volumes:
+  mysql_data:
+
+networks:
+  playproof-network:
+    driver: bridge
+

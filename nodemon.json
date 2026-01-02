@@ -1,0 +1,6 @@
+{
+  "watch": ["src"],
+  "ext": "ts,js,json",
+  "ignore": ["src/build/*", "dist/*", "node_modules"],
+  "exec": "npx tsoa spec && ts-node src/server.ts"
+}
