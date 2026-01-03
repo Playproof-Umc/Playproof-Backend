@@ -2,6 +2,7 @@ import { Controller, Post, Body, Route, SuccessResponse, Middlewares, Tags, Resp
 import { injectable, inject } from "tsyringe";
 import { AuthService } from "./auth.service";
 import { SignUpReqDto, LoginReqDto } from "./dtos/auth.req.dto";
+import { SignUpResDto, LoginResDto } from "./dtos/auth.res.dto"
 import { Result, BadRequestError, ConflictError, InternalServerError } from "../../common/types/result.type";
 import { validationMiddleware } from "../../common/middlewares/validation";
 
@@ -19,7 +20,7 @@ export class AuthController extends Controller {
   @Response<InternalServerError>(500, "Internal Server Error")
   @Middlewares(validationMiddleware(SignUpReqDto))
   @Post("/signup")
-  public async signUp(@Body() body: SignUpReqDto) {
+  public async signUp(@Body() body: SignUpReqDto): Promise<Result<SignUpResDto>> {
     const result = await this.authService.signUp(body);
     this.setStatus(result.statusCode);
     return result;
@@ -30,7 +31,7 @@ export class AuthController extends Controller {
   @Response<InternalServerError>(500, "Internal Server Error")
   @Middlewares(validationMiddleware(LoginReqDto))
   @Post("/login")
-  public async login(@Body() body: LoginReqDto) {
+  public async login(@Body() body: LoginReqDto): Promise<Result<LoginResDto>> {
     const result = await this.authService.login(body);
     this.setStatus(result.statusCode);
     return result;

@@ -5,6 +5,7 @@ import { UserRepository } from "../user/user.repository";
 import { SignUpReqDto, LoginReqDto } from "./dtos/auth.req.dto";
 import { SignUpResDto, LoginResDto } from "./dtos/auth.res.dto"
 import { Result, created, ok, unauthorized, conflict } from "../../common/types/result.type";
+import { UserErrorCode } from "../../common/constants/error-code"
 
 @injectable()
 export class AuthService {
@@ -13,9 +14,23 @@ export class AuthService {
   constructor(@inject(UserRepository) private userRepository: UserRepository) {}
 
   async signUp(dto: SignUpReqDto): Promise<Result<SignUpResDto>> {
-    const exists = await this.userRepository.findByPhoneNumber(dto.phoneNumber);
-    if (exists) {
-      return conflict({ message: "이미 가입된 번호입니다.", errorCode: "DUPLICATE_PHONE" });
+    const isPhoneExists = await this.userRepository.findByPhoneNumber(dto.phoneNumber);
+    if (isPhoneExists) {
+      return conflict({ message: "이미 가입된 번호입니다.", 
+        errorCode: UserErrorCode.DUPLICATE_PHONE_NUMBER, 
+        errors: [
+          { field: "phoneNumber", value: dto.phoneNumber, reason: "이미 사용 중인 전화번호입니다." }
+        ] });
+    }
+    const isNameExists = await this.userRepository.findByName(dto.name)
+    if (isNameExists) {
+      return conflict( {
+        message: "이미 가입된 이름입니다.",
+        errorCode: UserErrorCode.DUPLICATE_NAME,
+        errors: [
+          { field: "name", value: dto.name, reason: "이미 사용 중인 이름입니다." }
+        ]
+      })
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);

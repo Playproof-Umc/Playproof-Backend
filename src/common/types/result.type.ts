@@ -1,5 +1,15 @@
 // src/common/types/result.type.ts
 
+/** * ------------------------------------------------------------------
+ * ApiErrorDetail Interface
+ * ------------------------------------------------------------------
+ */
+
+export interface ApiErrorDetail {
+  field: string;
+  value: any;
+  reason: string;
+}
 /**
  * ------------------------------------------------------------------
  * Base Result Types
@@ -7,16 +17,19 @@
  */
 
 export type Failed = {
-  type: "failed";
-  message: string;
-  errorCode: string;
   statusCode: number;
+  data: null;
+  error: {
+    code: string;
+    message: string;
+    errors?: ApiErrorDetail[]; 
+  };
 };
 
 export type Success<T> = {
-  type: "success";
-  data: T;
   statusCode: number;
+  data: T;
+  error?: null;
 };
 
 export type Result<T> = Success<T> | Failed;
@@ -27,23 +40,27 @@ export type Result<T> = Success<T> | Failed;
  * ------------------------------------------------------------------
  */
 
-export const isSuccess = <T>(r: Result<T>): r is Success<T> => r.type === "success";
+export const isSuccess = <T>(r: Result<T>): r is Success<T> => !r.error;
 
 export const success = <T>(data: T, statusCode: number = 200): Success<T> => ({
-  type: "success",
-  data,
   statusCode,
+  data,
+  error: null,
 });
 
 export const failed = (
   message: string,
   errorCode: string,
-  statusCode: number = 400
+  statusCode: number = 400,
+  errors: ApiErrorDetail[] = []
 ): Failed => ({
-  type: "failed",
-  message,
-  errorCode,
   statusCode,
+  data: null,
+  error: {
+    code: errorCode,
+    message,
+    errors,
+  }
 });
 
 /**
@@ -58,13 +75,18 @@ export type FailedMessage<StatusCode extends number> = {
     statusCode: StatusCode;
 };
 
-export const failedMessageBuilder = (boilerplate: FailedMessage<number>): (partialMessage?: Partial<Omit<FailedMessage<number>, "statusCode">>) => Failed => {
+export type AdditionalErrorParams = {
+  errors?: ApiErrorDetail[];
+}
+
+export const failedMessageBuilder = (boilerplate: FailedMessage<number>): (partialMessage?: Partial<Omit<FailedMessage<number>, "statusCode">> & AdditionalErrorParams) => Failed => {
   const { message: defaultMessage, errorCode: defaultErrorCode, statusCode } = boilerplate;
   
   return (partialMessage = {}) => failed(
     partialMessage.message ?? defaultMessage,
     partialMessage.errorCode ?? defaultErrorCode,
-    statusCode
+    statusCode,
+    partialMessage.errors
   );
 };
 
@@ -107,26 +129,34 @@ export const internalServerError = failedMessageBuilder({ message: "서버 내�
  * ------------------------------------------------------------------
  */
 
-/**
- * 400 에러
- * @example {
- * "type": "failed",
- * "message": "입력값이 올바르지 않습니다.",
- * "errorCode": "VAL_001",
- * "statusCode": 400
- * }
- */
+// 400 에러 (Bad Request)
 export interface BadRequestError extends Failed {
   statusCode: 400;
+  /**
+   * @example {
+   * "code": "COMMON_INVALID_PARAMETER",
+   * "message": "요청 파라미터가 잘못되었습니다.",
+   * "errors": [
+   * { "field": "email", "value": "invalid-email", "reason": "이메일 형식이 올바르지 않습니다." }
+   * ]
+   * }
+   */
+  error: {
+    code: string;
+    message: string;
+    errors?: ApiErrorDetail[];
+  };
 }
 
 /**
- * 401 에러
+ * 401 에러 (Unauthorized)
  * @example {
- * "type": "failed",
- * "message": "인증이 필요합니다.",
- * "errorCode": "ERR_401",
- * "statusCode": 401
+ * "statusCode": 401,
+ * "data": null,
+ * "error": {
+ * "code": "AUTH_UNAUTHORIZED",
+ * "message": "인증이 필요합니다."
+ * }
  * }
  */
 export interface UnauthorizedError extends Failed {
@@ -134,12 +164,14 @@ export interface UnauthorizedError extends Failed {
 }
 
 /**
- * 403 에러
+ * 403 에러 (Forbidden)
  * @example {
- * "type": "failed",
- * "message": "접근 권한이 없습니다.",
- * "errorCode": "ERR_403",
- * "statusCode": 403
+ * "statusCode": 403,
+ * "data": null,
+ * "error": {
+ * "code": "AUTH_FORBIDDEN",
+ * "message": "접근 권한이 없습니다."
+ * }
  * }
  */
 export interface ForbiddenError extends Failed {
@@ -147,12 +179,14 @@ export interface ForbiddenError extends Failed {
 }
 
 /**
- * 404 에러
+ * 404 에러 (Not Found)
  * @example {
- * "type": "failed",
- * "message": "요청하신 리소스를 찾을 수 없습니다.",
- * "errorCode": "ERR_404",
- * "statusCode": 404
+ * "statusCode": 404,
+ * "data": null,
+ * "error": {
+ * "code": "RESOURCE_NOT_FOUND",
+ * "message": "요청하신 리소스를 찾을 수 없습니다."
+ * }
  * }
  */
 export interface NotFoundError extends Failed {
@@ -160,12 +194,14 @@ export interface NotFoundError extends Failed {
 }
 
 /**
- * 409 에러
+ * 409 에러 (Conflict)
  * @example {
- * "type": "failed",
- * "message": "이미 존재하는 이메일입니다.",
- * "errorCode": "USR_001",
- * "statusCode": 409
+ * "statusCode": 409,
+ * "data": null,
+ * "error": {
+ * "code": "RESOURCE_CONFLICT",
+ * "message": "이미 존재하는 데이터입니다."
+ * }
  * }
  */
 export interface ConflictError extends Failed {
@@ -173,12 +209,14 @@ export interface ConflictError extends Failed {
 }
 
 /**
- * 500 에러
+ * 500 에러 (Internal Server Error)
  * @example {
- * "type": "failed",
- * "message": "서버 내부 오류가 발생했습니다.",
- * "errorCode": "ERR_500",
- * "statusCode": 500
+ * "statusCode": 500,
+ * "data": null,
+ * "error": {
+ * "code": "SERVER_ERROR",
+ * "message": "서버 내부 오류가 발생했습니다."
+ * }
  * }
  */
 export interface InternalServerError extends Failed {

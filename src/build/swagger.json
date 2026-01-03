@@ -33,53 +33,85 @@
 			},
 			"Success_UserGetResDto_": {
 				"properties": {
-					"statusCode": {
+					"error": {
 						"type": "number",
-						"format": "double"
+						"enum": [
+							null
+						],
+						"nullable": true
 					},
 					"data": {
 						"$ref": "#/components/schemas/UserGetResDto"
 					},
-					"type": {
-						"type": "string",
-						"enum": [
-							"success"
-						],
-						"nullable": false
-					}
-				},
-				"required": [
-					"statusCode",
-					"data",
-					"type"
-				],
-				"type": "object"
-			},
-			"Failed": {
-				"properties": {
 					"statusCode": {
 						"type": "number",
 						"format": "double"
-					},
-					"errorCode": {
-						"type": "string"
-					},
-					"message": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string",
-						"enum": [
-							"failed"
-						],
-						"nullable": false
 					}
 				},
 				"required": [
-					"statusCode",
-					"errorCode",
-					"message",
-					"type"
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"ApiErrorDetail": {
+				"description": "* ------------------------------------------------------------------\nApiErrorDetail Interface\n------------------------------------------------------------------",
+				"properties": {
+					"field": {
+						"type": "string"
+					},
+					"value": {},
+					"reason": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"field",
+					"value",
+					"reason"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Failed": {
+				"properties": {
+					"error": {
+						"properties": {
+							"errors": {
+								"items": {
+									"$ref": "#/components/schemas/ApiErrorDetail"
+								},
+								"type": "array"
+							},
+							"message": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"code"
+						],
+						"type": "object"
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"error",
+					"data",
+					"statusCode"
 				],
 				"type": "object",
 				"description": "------------------------------------------------------------------\nBase Result Types\n------------------------------------------------------------------"
@@ -95,114 +127,171 @@
 				]
 			},
 			"BadRequestError": {
-				"description": "400 에러",
+				"description": "* ------------------------------------------------------------------\nInterfaces for Swagger Documentation\n------------------------------------------------------------------",
 				"properties": {
+					"error": {
+						"properties": {
+							"errors": {
+								"items": {
+									"$ref": "#/components/schemas/ApiErrorDetail"
+								},
+								"type": "array"
+							},
+							"message": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"code"
+						],
+						"type": "object",
+						"example": {
+							"code": "COMMON_INVALID_PARAMETER",
+							"message": "요청 파라미터가 잘못되었습니다.",
+							"errors": [
+								{
+									"field": "email",
+									"value": "invalid-email",
+									"reason": "이메일 형식이 올바르지 않습니다."
+								}
+							]
+						}
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
 					"statusCode": {
 						"type": "number",
 						"enum": [
 							400
 						],
 						"nullable": false
-					},
-					"errorCode": {
-						"type": "string"
-					},
-					"message": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string",
-						"enum": [
-							"failed"
-						],
-						"nullable": false
 					}
 				},
 				"required": [
-					"statusCode",
-					"errorCode",
-					"message",
-					"type"
+					"error",
+					"data",
+					"statusCode"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ConflictError": {
-				"description": "409 에러",
+				"description": "409 에러 (Conflict)",
 				"properties": {
+					"error": {
+						"properties": {
+							"errors": {
+								"items": {
+									"$ref": "#/components/schemas/ApiErrorDetail"
+								},
+								"type": "array"
+							},
+							"message": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"code"
+						],
+						"type": "object"
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
 					"statusCode": {
 						"type": "number",
 						"enum": [
 							409
 						],
 						"nullable": false
-					},
-					"errorCode": {
-						"type": "string"
-					},
-					"message": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string",
-						"enum": [
-							"failed"
-						],
-						"nullable": false
 					}
 				},
 				"required": [
-					"statusCode",
-					"errorCode",
-					"message",
-					"type"
+					"error",
+					"data",
+					"statusCode"
 				],
 				"type": "object",
 				"additionalProperties": false,
 				"example": {
-					"type": "failed",
-					"message": "이미 존재하는 이메일입니다.",
-					"errorCode": "USR_001",
-					"statusCode": 409
+					"statusCode": 409,
+					"data": null,
+					"error": {
+						"code": "RESOURCE_CONFLICT",
+						"message": "이미 존재하는 데이터입니다."
+					}
 				}
 			},
 			"InternalServerError": {
-				"description": "500 에러",
+				"description": "500 에러 (Internal Server Error)",
 				"properties": {
+					"error": {
+						"properties": {
+							"errors": {
+								"items": {
+									"$ref": "#/components/schemas/ApiErrorDetail"
+								},
+								"type": "array"
+							},
+							"message": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"code"
+						],
+						"type": "object"
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
 					"statusCode": {
 						"type": "number",
 						"enum": [
 							500
 						],
 						"nullable": false
-					},
-					"errorCode": {
-						"type": "string"
-					},
-					"message": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string",
-						"enum": [
-							"failed"
-						],
-						"nullable": false
 					}
 				},
 				"required": [
-					"statusCode",
-					"errorCode",
-					"message",
-					"type"
+					"error",
+					"data",
+					"statusCode"
 				],
 				"type": "object",
 				"additionalProperties": false,
 				"example": {
-					"type": "failed",
-					"message": "서버 내부 오류가 발생했습니다.",
-					"errorCode": "ERR_500",
-					"statusCode": 500
+					"statusCode": 500,
+					"data": null,
+					"error": {
+						"code": "SERVER_ERROR",
+						"message": "서버 내부 오류가 발생했습니다."
+					}
 				}
 			},
 			"SignUpResDto": {
@@ -231,25 +320,24 @@
 			},
 			"Success_SignUpResDto_": {
 				"properties": {
-					"statusCode": {
+					"error": {
 						"type": "number",
-						"format": "double"
+						"enum": [
+							null
+						],
+						"nullable": true
 					},
 					"data": {
 						"$ref": "#/components/schemas/SignUpResDto"
 					},
-					"type": {
-						"type": "string",
-						"enum": [
-							"success"
-						],
-						"nullable": false
+					"statusCode": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
-					"statusCode",
 					"data",
-					"type"
+					"statusCode"
 				],
 				"type": "object"
 			},
@@ -301,25 +389,24 @@
 			},
 			"Success_LoginResDto_": {
 				"properties": {
-					"statusCode": {
+					"error": {
 						"type": "number",
-						"format": "double"
+						"enum": [
+							null
+						],
+						"nullable": true
 					},
 					"data": {
 						"$ref": "#/components/schemas/LoginResDto"
 					},
-					"type": {
-						"type": "string",
-						"enum": [
-							"success"
-						],
-						"nullable": false
+					"statusCode": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
-					"statusCode",
 					"data",
-					"type"
+					"statusCode"
 				],
 				"type": "object"
 			},
