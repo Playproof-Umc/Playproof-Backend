@@ -6,7 +6,7 @@ export class SignUpReqDto {
    * @example "홍길동"
    */
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "이름은 필수입니다."})
   name!: string;
 
 	/**
@@ -20,7 +20,7 @@ export class SignUpReqDto {
    * @example "010-1234-5678"
    */
   @IsString()
-  @IsPhoneNumber("KR")
+  @IsPhoneNumber("KR", { message: "형식에 맞지 않는 전화번호입니다. "})
   phoneNumber!: string;
 }
 

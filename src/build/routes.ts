@@ -31,12 +31,22 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Success_UserGetResDto_": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"statusCode":{"dataType":"double","required":true},"data":{"ref":"UserGetResDto","required":true},"type":{"dataType":"enum","enums":["success"],"required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"UserGetResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiErrorDetail": {
+        "dataType": "refObject",
+        "properties": {
+            "field": {"dataType":"string","required":true},
+            "value": {"dataType":"any","required":true},
+            "reason": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Failed": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"statusCode":{"dataType":"double","required":true},"errorCode":{"dataType":"string","required":true},"message":{"dataType":"string","required":true},"type":{"dataType":"enum","enums":["failed"],"required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},"data":{"dataType":"enum","enums":[null],"required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Result_UserGetResDto_": {
@@ -47,10 +57,9 @@ const models: TsoaRoute.Models = {
     "BadRequestError": {
         "dataType": "refObject",
         "properties": {
+            "error": {"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},
+            "data": {"dataType":"enum","enums":[null],"required":true},
             "statusCode": {"dataType":"enum","enums":[400],"required":true},
-            "errorCode": {"dataType":"string","required":true},
-            "message": {"dataType":"string","required":true},
-            "type": {"dataType":"enum","enums":["failed"],"required":true},
         },
         "additionalProperties": false,
     },
@@ -58,10 +67,9 @@ const models: TsoaRoute.Models = {
     "ConflictError": {
         "dataType": "refObject",
         "properties": {
+            "error": {"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},
+            "data": {"dataType":"enum","enums":[null],"required":true},
             "statusCode": {"dataType":"enum","enums":[409],"required":true},
-            "errorCode": {"dataType":"string","required":true},
-            "message": {"dataType":"string","required":true},
-            "type": {"dataType":"enum","enums":["failed"],"required":true},
         },
         "additionalProperties": false,
     },
@@ -69,10 +77,9 @@ const models: TsoaRoute.Models = {
     "InternalServerError": {
         "dataType": "refObject",
         "properties": {
+            "error": {"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},
+            "data": {"dataType":"enum","enums":[null],"required":true},
             "statusCode": {"dataType":"enum","enums":[500],"required":true},
-            "errorCode": {"dataType":"string","required":true},
-            "message": {"dataType":"string","required":true},
-            "type": {"dataType":"enum","enums":["failed"],"required":true},
         },
         "additionalProperties": false,
     },
@@ -89,7 +96,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Success_SignUpResDto_": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"statusCode":{"dataType":"double","required":true},"data":{"ref":"SignUpResDto","required":true},"type":{"dataType":"enum","enums":["success"],"required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"SignUpResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Result_SignUpResDto_": {
@@ -117,7 +124,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Success_LoginResDto_": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"statusCode":{"dataType":"double","required":true},"data":{"ref":"LoginResDto","required":true},"type":{"dataType":"enum","enums":["success"],"required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"LoginResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Result_LoginResDto_": {
