@@ -8,12 +8,12 @@ export class UserSignUpResDto {
   /**
    * @example "010-1234-5678"
    */
-  phoneNumber!: string;
+  phone!: string | null;
 
   /**
    * @example "홍길동"
    */
-  name!: string;
+  nickname!: string | null;
 }
 
 export class UserUpdateResDto {
@@ -25,12 +25,12 @@ export class UserUpdateResDto {
   /**
    * @example "010-1234-5678"
    */
-  phoneNumber!: string;
+  phone!: string | null;
 
   /**
    * @example "이순신"
    */
-  name!: string;
+  nickname!: string | null;
 }
 
 export class UserGetResDto {
@@ -42,10 +42,10 @@ export class UserGetResDto {
   /**
    * @example "010-1234-5678"
    */
-  phoneNumber!: string;
+  phone!: string | null;
 
   /**
    * @example "홍길동"
    */
-  name!: string;
+  nickname!: string | null;
 }

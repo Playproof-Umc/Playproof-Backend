@@ -2,8 +2,6 @@
 import * as express from "express";
 import * as jose from "jose";
 
-const JWT_SECRET_STRING = process.env.JWT_SECRET || "default_fallback_secret_key";
-const SECRET = new TextEncoder().encode(JWT_SECRET_STRING);
 
 export async function expressAuthentication(
   request: express.Request,
@@ -11,6 +9,16 @@ export async function expressAuthentication(
   scopes?: string[]
 ): Promise<any> {
   if (securityName === "jwt") {
+    const JWT_SECRET_STRING = process.env.JWT_SECRET;
+
+    if (!JWT_SECRET_STRING) {
+      const error: any = new Error("JWT secret is not configured");
+      error.status = 500; 
+      return Promise.reject(error);
+    }
+
+    const SECRET = new TextEncoder().encode(JWT_SECRET_STRING);
+
     const authHeader = request.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {

@@ -7,7 +7,7 @@ export class SignUpReqDto {
    */
   @IsString()
   @IsNotEmpty({ message: "이름은 필수입니다."})
-  name!: string;
+  nickname!: string;
 
 	/**
    * @example "strongpassword"
@@ -21,7 +21,7 @@ export class SignUpReqDto {
    */
   @IsString()
   @IsPhoneNumber("KR", { message: "형식에 맞지 않는 전화번호입니다. "})
-  phoneNumber!: string;
+  phone!: string;
 }
 
 export class LoginReqDto {
@@ -30,7 +30,7 @@ export class LoginReqDto {
 	 */
   @IsString()
   @IsNotEmpty()
-  phoneNumber!: string;
+  phone!: string;
 
 	/**
 	 * @example "strongpassword"

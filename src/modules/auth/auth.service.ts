@@ -9,26 +9,26 @@ import { UserErrorCode } from "../../common/constants/error-code"
 
 @injectable()
 export class AuthService {
-  private readonly SECRET = new TextEncoder().encode("your_very_secure_secret_key_12345");
+  private readonly SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "default_fallback_secret_key");
 
   constructor(@inject(UserRepository) private userRepository: UserRepository) {}
 
   async signUp(dto: SignUpReqDto): Promise<Result<SignUpResDto>> {
-    const isPhoneExists = await this.userRepository.findByPhoneNumber(dto.phoneNumber);
+    const isPhoneExists = await this.userRepository.findByPhoneNumber(dto.phone);
     if (isPhoneExists) {
       return conflict({ message: "이미 가입된 번호입니다.", 
         errorCode: UserErrorCode.DUPLICATE_PHONE_NUMBER, 
         errors: [
-          { field: "phoneNumber", value: dto.phoneNumber, reason: "이미 사용 중인 전화번호입니다." }
+          { field: "phone", value: dto.phone, reason: "이미 사용 중인 전화번호입니다." }
         ] });
     }
-    const isNameExists = await this.userRepository.findByName(dto.name)
+    const isNameExists = await this.userRepository.findByName(dto.nickname)
     if (isNameExists) {
       return conflict( {
         message: "이미 가입된 이름입니다.",
         errorCode: UserErrorCode.DUPLICATE_NAME,
         errors: [
-          { field: "name", value: dto.name, reason: "이미 사용 중인 이름입니다." }
+          { field: "nickname", value: dto.nickname, reason: "이미 사용 중인 닉네임입니다." }
         ]
       })
     }
@@ -41,16 +41,16 @@ export class AuthService {
     });
 
     return created({ 
-      id: newUser.id, 
-      name: newUser.name, 
-			phoneNumber: newUser.phoneNumber
+      id: Number(newUser.id), 
+      nickname: newUser.nickname, 
+			phone: newUser.phone
 		});
   }
 
   async login(dto: LoginReqDto): Promise<Result<LoginResDto>> {
-    const user = await this.userRepository.findByPhoneNumber(dto.phoneNumber);
+    const user = await this.userRepository.findByPhoneNumber(dto.phone);
 
-    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+    if (!user || !(await bcrypt.compare(dto.password, user.password!))) {
       return unauthorized({ 
         message: "전화번호 또는 비밀번호가 일치하지 않습니다.", 
         errorCode: "AUTH_FAILED" 
