@@ -3,8 +3,8 @@ import { injectable, inject } from "tsyringe";
 import { PartyInteractionService } from "../service/party-interaction.service";
 import { Result } from "../../../common/types/result.type";
 
-@Route("parties/interaction")
-@Tags("Party Interaction")
+@Route("parties")
+@Tags("Party")
 @injectable()
 export class PartyInteractionController extends Controller {
   constructor(

@@ -3,8 +3,8 @@ import { injectable, inject } from "tsyringe";
 import { PartyCommentService } from "../service/party-comment.service";
 import { Result } from "../../../common/types/result.type";
 
-@Route("parties/comment")
-@Tags("Party Comment")
+@Route("parties")
+@Tags("Party")
 @injectable()
 export class PartyCommentController extends Controller {
   constructor(
@@ -15,7 +15,7 @@ export class PartyCommentController extends Controller {
 
   @SuccessResponse("201", "Created")
   @Security("jwt")
-  @Post("{id}")
+  @Post("{id}/comments")
   public async addComment(
     @Path() id: number,
     @Body() body: { content: string }

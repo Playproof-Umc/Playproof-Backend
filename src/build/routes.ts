@@ -295,7 +295,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"double"},
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
-        app.post('/parties/interaction/:id/like',
+        app.post('/parties/:id/like',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(PartyInteractionController)),
             ...(fetchMiddlewares<RequestHandler>(PartyInteractionController.prototype.likeParty)),
@@ -332,7 +332,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"double"},
                 body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"content":{"dataType":"string","required":true}}},
         };
-        app.post('/parties/comment/:id',
+        app.post('/parties/:id/comments',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(PartyCommentController)),
             ...(fetchMiddlewares<RequestHandler>(PartyCommentController.prototype.addComment)),
