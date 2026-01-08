@@ -405,7 +405,7 @@ model PartyPost {
   positionId        BigInt?                                           @map("position_id")
   tierId            BigInt?                                           @map("tier_id")
   azitId            BigInt                                            @map("azit_id")
-  memo              String?
+  memo              String?            @db.Text
   recruitmentPeople Int                @default(1)                    @map("recruitment_people")
   isMicUse          Boolean            @default(false)                @map("is_mic_use")
   recruitmentStatus RecruitmentStatus  @default(ACTIVE)               @map("recruitment_status")
@@ -443,7 +443,7 @@ model PostComment {
   userId    BigInt                                      @map("user_id")
   postId    BigInt                                      @map("post_id")
   parentId  BigInt?                                     @map("parent_id")
-  content   String
+  content   String        @db.Text
   createdAt DateTime      @default(now())               @map("created_at")
   updatedAt DateTime      @updatedAt @default(now())    @map("updated_at")
 
@@ -583,7 +583,7 @@ model Chat {
   id          BigInt      @id @default(autoincrement())
   chatRoomId  BigInt                                    @map("chat_room_id")
   memberId    BigInt                                    @map("member_id")
-  content     String
+  content     String      @db.Text
   createdAt   DateTime    @default(now())               @map("created_at")
   updatedAt   DateTime    @updatedAt @default(now())    @map("updated_at")
 
@@ -653,7 +653,7 @@ model CommunityComment {
   highlightId BigInt?                                          @map("highlight_id")
   postId      BigInt?                                          @map("post_id")
   parentId    BigInt?                                          @map("parent_id")
-  content     String
+  content     String             @db.Text
   isPublic    Boolean                                          @map("is_public")
   createdAt   DateTime           @default(now())               @map("created_at")
   updatedAt   DateTime           @updatedAt @default(now())    @map("updated_at")
@@ -699,28 +699,28 @@ model CommunityMedia {
 // 13. 피드백 관련 테이블
 
 model Feedback {
-  id        BigInt   @id @default(autoincrement())
+  id                  BigInt   @id @default(autoincrement())
   userId              BigInt   @map("user_id")
   targetId            BigInt                                @map("target_id")
-  content             String?                             
+  content             String?  @db.Text
   isBan               Boolean  @default(false) @map("is_ban")
   createdAt           DateTime @default(now())              @map("created_at")
   updatedAt           DateTime @updatedAt @default(now())   @map("updated_at")
             
-  user      User     @relation("FeedbackUser", fields: [userId], references: [id])
+  user                User     @relation("FeedbackUser", fields: [userId], references: [id])
   target              User     @relation("FeedbackTarget", fields: [targetId], references: [id])
            
-  positiveCategories FeedbackPositiveCategory[]
+  positiveCategories  FeedbackPositiveCategory[]
   negativeCategories  FeedbackNegativeCategory[]
  
   @@map("feedbacks")
 }
 
 model FeedbackPositiveCategory {
-  feedbackId BigInt @map("feedback_id")
+  feedbackId  BigInt            @map("feedback_id")
   positiveId  BigInt            @map("positive_id")
             
-  feedback Feedback         @relation(fields: [feedbackId], references: [id])
+  feedback Feedback             @relation(fields: [feedbackId], references: [id])
   positive    PositiveCategory  @relation(fields: [positiveId], references: [id])
     
   @@id([feedbackId, positiveId])
@@ -728,10 +728,10 @@ model FeedbackPositiveCategory {
 }
 
 model FeedbackNegativeCategory {
-  feedbackId BigInt @map("feedback_id")
+  feedbackId  BigInt            @map("feedback_id")
   negativeId  BigInt            @map("negative_id")
               
-  feedback Feedback         @relation(fields: [feedbackId], references: [id])
+  feedback Feedback             @relation(fields: [feedbackId], references: [id])
   negative    NegativeCategory  @relation(fields: [negativeId], references: [id])
     
   @@id([feedbackId, negativeId])
