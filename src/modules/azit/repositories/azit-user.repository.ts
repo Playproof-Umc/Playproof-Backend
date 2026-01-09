@@ -1,12 +1,12 @@
 // src/modules/azit/repositories/azit-user.repository.ts
 import { singleton } from "tsyringe";
 
-import { AzitUserRole } from "@prisma/client";
+import { AzitUser, AzitUserRole } from "@prisma/client";
 import { prisma } from "../../../common/config/database";
 
 @singleton()
 export class AzitUserRepository {
-  async createAzitUser(userId: bigint, azitId: bigint, role: AzitUserRole = AzitUserRole.MEMBER) {
+  async createAzitUser(userId: bigint, azitId: bigint, role: AzitUserRole = AzitUserRole.MEMBER) : Promise<AzitUser>{
     return prisma.azitUser.create({
       data: {
         userId,
