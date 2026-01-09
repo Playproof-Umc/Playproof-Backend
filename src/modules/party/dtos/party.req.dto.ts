@@ -44,16 +44,25 @@ export class PartyCreateReqDto {
   isMicUse!: boolean;
 
   /**
+   * @example 1
+   */
+  @IsOptional()
+  @IsNumber()
+  azitId?: number;
+
+  /**
    * @example "아지트 이름"
    */
+  @IsOptional()
   @IsString()
-  azitName!: string;
+  azitName?: string;
 
   /**
    * @example "아지트 아이콘 URL"
    */
+  @IsOptional()
   @IsString()
-  azitIconUrl!: string;
+  azitIconUrl?: string;
 }
 
 export class PartyUpdateReqDto {
@@ -105,6 +114,13 @@ export class PartyUpdateReqDto {
   @IsOptional()
   @IsBoolean()
   isMicUse?: boolean;
+
+  /**
+   * @example 1
+   */
+  @IsOptional()
+  @IsNumber()
+  azitId?: number;
 
   /**
    * @example "수정된 아지트 이름"

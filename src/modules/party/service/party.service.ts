@@ -13,7 +13,7 @@ export class PartyService {
   ) {}
 
   async createParty(dto: PartyCreateReqDto, userId: number): Promise<Result<PartyCreateResDto>> {  
-    const { azitName, azitIconUrl, ...rest } = dto;
+    const { azitName, azitIconUrl, azitId, ...rest } = dto;
 
     // 1. 마스터 데이터 검증 (Game, Tier, Positions)
     const game = await this.partyRepository.findGameById(dto.gameId);
@@ -44,15 +44,47 @@ export class PartyService {
       }
     }
 
-    // 2. 아지트 및 파티 생성 (트랜잭션)
-    const result = await prisma.$transaction(async (tx) => {
-      // 2-1. 아지트 생성
-      const tempAzit = await this.partyRepository.createTempAzit(azitName, azitIconUrl, tx);
-      
-      // 2-2. 파티 생성
-      const party = await this.partyRepository.createParty(rest, userId, Number(tempAzit.id), tx);
+    // 2. 아지트 검증
+    let targetAzitId: number;
+    let finalAzitName: string;
+    let finalAzitIconUrl: string;
 
-      return { party, azitId: tempAzit.id };
+    if (azitId) {
+      const azit = await this.partyRepository.findAzitById(azitId);
+      if (!azit) {
+        return notFound({
+          message: "아지트를 찾을 수 없습니다.",
+          errorCode: PartyErrorCode.NOT_FOUND_AZIT,
+        });
+      }
+      targetAzitId = Number(azit.id);
+      finalAzitName = azit.azitName;
+      finalAzitIconUrl = azit.imageUrl;
+    } else {
+      if (!azitName || !azitIconUrl) {
+        return notFound({
+          message: "아지트 이름과 아이콘 URL이 필요합니다.",
+          errorCode: PartyErrorCode.NOT_FOUND_AZIT, // 적절한 에러 코드가 없어 일단 이걸로 사용
+        });
+      }
+      finalAzitName = azitName;
+      finalAzitIconUrl = azitIconUrl;
+    }
+
+    // 3. 아지트 및 파티 생성 (트랜잭션)
+    const result = await prisma.$transaction(async (tx) => {
+      let currentAzitId = azitId;
+
+      if (!currentAzitId) {
+        // 아지트 신규 생성
+        const tempAzit = await this.partyRepository.createTempAzit(finalAzitName, finalAzitIconUrl, tx);
+        currentAzitId = Number(tempAzit.id);
+      }
+      
+      // 파티 생성
+      const party = await this.partyRepository.createParty(rest, userId, Number(currentAzitId), tx);
+
+      return { party, azitId: currentAzitId };
     });
 
     const { party } = result;
@@ -68,8 +100,8 @@ export class PartyService {
       positionIds: dto.positionIds,
       isMicUse: party.isMicUse,
       azitId: Number(party.azitId),
-      azitName: dto.azitName,
-      azitIconUrl: dto.azitIconUrl,
+      azitName: finalAzitName,
+      azitIconUrl: finalAzitIconUrl,
     } as PartyCreateResDto);
   }
 
@@ -121,10 +153,22 @@ export class PartyService {
       }
     }
 
+    if (dto.azitId) {
+      const azit = await this.partyRepository.findAzitById(dto.azitId);
+      if (!azit) {
+        return notFound({
+          message: "아지트를 찾을 수 없습니다.",
+          errorCode: PartyErrorCode.NOT_FOUND_AZIT,
+        });
+      }
+    }
+
     // 3. 트랜잭션 업데이트
-    const updatedParty = await prisma.$transaction(async (tx) => {
+    const updatedPartyResult = await prisma.$transaction(async (tx) => {
       // 아지트 정보 업데이트 (필요한 경우)
-      if (dto.azitName || dto.azitIconUrl) {
+      // azitId가 새로 들어왔다면 해당 아지트로 연결만 변경
+      // azitId는 없고 azitName/azitIconUrl만 있다면 기존 아지트 정보 수정
+      if (!dto.azitId && (dto.azitName || dto.azitIconUrl)) {
         await this.partyRepository.updateAzit(
           Number(party.azitId),
           dto.azitName,
@@ -138,20 +182,28 @@ export class PartyService {
     });
 
     // 4. 결과 반환 (CreateResDto 재사용 또는 필요시 전용 DTO 생성)
-    // 여기서는 기존 PartyCreateResDto의 구조를 맞춰서 반환
+    // 최신 정보 조회를 위해 다시 조회 (관계 데이터 포함)
+    const finalParty = await this.partyRepository.findById(id);
+    if (!finalParty) {
+      return notFound({
+        message: "파티를 찾을 수 없습니다.",
+        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+      });
+    }
+
     return ok({
-      partyId: Number(updatedParty.id),
-      userId: Number(updatedParty.userId),
-      gameId: Number(updatedParty.gameId),
-      title: updatedParty.title,
-      memo: updatedParty.memo,
-      recruitmentPeople: updatedParty.recruitmentPeople,
-      tierId: updatedParty.tierId ? Number(updatedParty.tierId) : null,
-      positionIds: dto.positionIds || party.postPositions.map((pp: any) => Number(pp.positionId)),
-      isMicUse: updatedParty.isMicUse,
-      azitId: Number(updatedParty.azitId),
-      azitName: dto.azitName || (party as any).azit.azitName,
-      azitIconUrl: dto.azitIconUrl || (party as any).azit.imageUrl,
+      partyId: Number(finalParty.id),
+      userId: Number(finalParty.userId),
+      gameId: Number(finalParty.gameId),
+      title: finalParty.title,
+      memo: finalParty.memo,
+      recruitmentPeople: finalParty.recruitmentPeople,
+      tierId: finalParty.tierId ? Number(finalParty.tierId) : null,
+      positionIds: dto.positionIds || finalParty.postPositions.map((pp: any) => Number(pp.positionId)),
+      isMicUse: finalParty.isMicUse,
+      azitId: Number(finalParty.azitId),
+      azitName: finalParty.azit.azitName,
+      azitIconUrl: finalParty.azit.imageUrl,
     } as PartyCreateResDto);
   }
 
@@ -177,8 +229,11 @@ export class PartyService {
       // 파티 삭제 (관련 데이터 포함)
       await this.partyRepository.deleteParty(id, tx);
       
-      // 아지트 삭제
-      await this.partyRepository.deleteAzit(Number(party.azitId), tx);
+      // 아지트 삭제 여부 결정: 이 아지트를 사용하는 다른 파티가 없을 때만 삭제
+      const partyCount = await this.partyRepository.countPartiesByAzitId(Number(party.azitId), tx);
+      if (partyCount === 0) {
+        await this.partyRepository.deleteAzit(Number(party.azitId), tx);
+      }
     });
 
     return ok(null);

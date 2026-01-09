@@ -49,6 +49,10 @@ export class PartyRepository {
     });
   }
 
+  async findAzitById(id: number) {
+    return prisma.azit.findUnique({ where: { id } });
+  }
+
   async findGameById(id: number) {
     return prisma.game.findUnique({ where: { id } });
   }
@@ -120,7 +124,7 @@ export class PartyRepository {
 
   async updateParty(id: number, data: any, tx?: any) {
     const client = tx || prisma;
-    const { positionIds, gameId, tierId, azitName, azitIconUrl, ...rest } = data;
+    const { positionIds, gameId, tierId, azitName, azitIconUrl, azitId, ...rest } = data;
 
     return client.partyPost.update({
       where: { id },
@@ -128,6 +132,7 @@ export class PartyRepository {
         ...rest,
         game: gameId ? { connect: { id: gameId } } : undefined,
         tier: tierId !== undefined ? (tierId ? { connect: { id: tierId } } : { disconnect: true }) : undefined,
+        azit: azitId ? { connect: { id: azitId } } : undefined,
         postPositions: positionIds
           ? {
               deleteMany: {},
@@ -166,5 +171,10 @@ export class PartyRepository {
   async deleteAzit(id: number, tx?: any) {
     const client = tx || prisma;
     return client.azit.delete({ where: { id } });
+  }
+
+  async countPartiesByAzitId(azitId: number, tx?: any) {
+    const client = tx || prisma;
+    return client.partyPost.count({ where: { azitId } });
   }
 }

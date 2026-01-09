@@ -461,6 +461,11 @@
 						"type": "boolean",
 						"example": true
 					},
+					"azitId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
 					"azitName": {
 						"type": "string",
 						"example": "아지트 이름"
@@ -477,9 +482,7 @@
 					"recruitmentPeople",
 					"tierId",
 					"positionIds",
-					"isMicUse",
-					"azitName",
-					"azitIconUrl"
+					"isMicUse"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -718,6 +721,11 @@
 					"isMicUse": {
 						"type": "boolean",
 						"example": true
+					},
+					"azitId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
 					},
 					"azitName": {
 						"type": "string",
