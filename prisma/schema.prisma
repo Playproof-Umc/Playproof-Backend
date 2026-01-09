@@ -397,31 +397,20 @@ enum RecruitmentStatus {
 }
 
 model PartyPost {
-  id                BigInt            @id @default(autoincrement()) @map("post_id")
-  userId            BigInt            @map("user_id")
-  gameId            BigInt            @map("game_id")
+  id                BigInt   @id @default(autoincrement()) @map("post_id")
+  userId            BigInt   @map("user_id")
+  gameId            BigInt   @map("game_id")
   title             String
-  positionId        BigInt?           @map("position_id")
-  tierId            BigInt?           @map("tier_id")
-  azitId            BigInt            @map("azit_id")
-  memo              String?           @db.Text
-  recruitmentPeople Int               @default(1) @map("recruitment_people")
-  isMicUse          Boolean           @default(false) @map("is_mic_use")
-  recruitmentStatus RecruitmentStatus @default(ACTIVE) @map("recruitment_status")
-  viewCount         BigInt            @default(0) @map("view_count")
-  createdAt         DateTime          @default(now()) @map("created_at")
-  updatedAt         DateTime          @updatedAt @default(now()) @map("updated_at")
-
-  user              User              @relation(fields: [userId], references: [id])
-  game              Game              @relation(fields: [gameId], references: [id])
-  position          Position?         @relation(fields: [positionId], references: [id])
-  tier              Tier?             @relation(fields: [tierId], references: [id])
-  azit              Azit              @relation(fields: [azitId], references: [id])
-
-  postCategories    PostCategory[]
-  applications      Application[]
-  comments          PostComment[]
-  likes             UserPostLike[]
+  positionId        BigInt   @map("position_id")
+  tierId            BigInt   @map("tier_id")
+  azitId            BigInt   @map("azit_id")
+  memo              String?
+  recruitmentPeople Int      @map("recruitment_people")
+  isMicUse          Boolean  @map("is_mic_use")
+  recruitmentStatus String   @map("recruitment_status")
+  viewCount         BigInt   @default(0) @map("view_count")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   @@map("party_posts")
 }
