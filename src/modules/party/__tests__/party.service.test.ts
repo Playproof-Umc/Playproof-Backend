@@ -30,6 +30,8 @@ describe('PartyService', () => {
       deleteParty: jest.fn(),
       countPartiesByAzitId: jest.fn(),
       deleteAzit: jest.fn(),
+      findParties: jest.fn(),
+      countAll: jest.fn(),
     } as any;
 
     partyService = new PartyService(partyRepository);
@@ -328,6 +330,62 @@ describe('PartyService', () => {
       }
       expect(partyRepository.deleteParty).toHaveBeenCalledWith(partyId, null);
       expect(partyRepository.deleteAzit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getParties', () => {
+    it('should successfully return party list with pagination info', async () => {
+      const mockParties = [
+        {
+          id: BigInt(1),
+          user: {
+            id: BigInt(1),
+            nickname: 'User1',
+            trustScore: 100,
+            userAvatars: [],
+          },
+          title: 'Party 1',
+          memo: 'Memo 1',
+          tier: null,
+          azit: { azitName: 'Azit 1' },
+          recruitmentPeople: 5,
+          applications: [],
+          isMicUse: true,
+          recruitmentStatus: 'OPEN',
+          viewCount: BigInt(10),
+          postCategories: [],
+          postPositions: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      ];
+
+      partyRepository.findParties.mockResolvedValue(mockParties as any);
+      partyRepository.countAll.mockResolvedValue(2); // Total 2 parties, size 1, so hasNext should be true
+
+      const result = await partyService.getParties({ page: 1, size: 1, sort: 'latest' });
+
+      expect(isSuccess(result)).toBe(true);
+      expect(result.statusCode).toBe(200);
+      if (isSuccess(result)) {
+        expect(result.data.parties).toHaveLength(1);
+        expect(result.data.parties[0].title).toBe('Party 1');
+        expect(result.data.hasNext).toBe(true);
+        expect(result.data.nextCursor).toBe(2);
+      }
+    });
+
+    it('should set hasNext to false when on the last page', async () => {
+      partyRepository.findParties.mockResolvedValue([] as any);
+      partyRepository.countAll.mockResolvedValue(10);
+
+      const result = await partyService.getParties({ page: 1, size: 10, sort: 'latest' });
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.hasNext).toBe(false);
+        expect(result.data.nextCursor).toBeNull();
+      }
     });
   });
 });
