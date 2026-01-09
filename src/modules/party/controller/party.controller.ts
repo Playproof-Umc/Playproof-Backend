@@ -1,7 +1,10 @@
-import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Path, Security } from "tsoa";
+import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Path, Security, Middlewares, Request } from "tsoa";
 import { injectable, inject } from "tsyringe";
 import { PartyService } from "../service/party.service";
 import { Result } from "../../../common/types/result.type";
+import { PartyCreateResDto } from "../dtos/party.res.dto";
+import { PartyCreateReqDto } from "../dtos/party.req.dto";
+import { validationMiddleware } from "../../../common/middlewares/validation";
 
 @Route("parties")
 @Tags("Party")
@@ -15,11 +18,14 @@ export class PartyController extends Controller {
 
   @SuccessResponse("201", "Created")
   @Security("jwt")
+  @Middlewares(validationMiddleware(PartyCreateReqDto))
   @Post("/")
   public async createParty(
-    @Body() requestBody: any
-  ): Promise<Result<void>> {
-    const result = await this.partyService.createParty(requestBody);
+    @Body() requestBody: PartyCreateReqDto,
+    @Request() req: any,
+  ): Promise<Result<PartyCreateResDto>> {
+    const userId = req.user.id;
+    const result = await this.partyService.createParty( requestBody, userId );
     this.setStatus(result.statusCode);
     return result;
   }

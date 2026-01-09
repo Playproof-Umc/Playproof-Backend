@@ -3,8 +3,8 @@ import { singleton } from "tsyringe";
 
 @singleton()
 export class PartyRepository {
-  async createParty(data: any) {
-    return prisma.partyPost.create({ data });
+  async createParty(data: any, userId: number) {
+    return prisma.partyPost.create({ data: { ...data, userId } });
   }
 
   async findById(id: number) {
