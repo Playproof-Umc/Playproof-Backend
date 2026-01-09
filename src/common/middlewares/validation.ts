@@ -5,7 +5,7 @@ import { ValidateError } from "tsoa";
 
 export function validationMiddleware(type: any) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const data = { ...req.params, ...req.query, ...req.body };
+    const data = { ...req.query, ...req.body };
 
     const dto = plainToInstance(type, data, {
       enableImplicitConversion: true,
