@@ -49,6 +49,36 @@ describe('PartyInteractionService', () => {
       expect(isSuccess(result)).toBe(false);
       expect(result.statusCode).toBe(409);
     });
+
+    // 3. 파티 참가 신청 성공 테스트
+    it('모든 조건 충족 시 참가 신청에 성공하고 201을 반환해야 한다', async () => {
+      // 1. 파티가 존재하고 방장은 다른 사람(99번)임
+      partyRepo.findPartyPostById.mockResolvedValue({ 
+        id: BigInt(postId), 
+        userId: BigInt(99) 
+      } as any);
+
+      // 2. 이전에 신청한 내역이 없음
+      interactionRepo.findApplication.mockResolvedValue(null);
+
+      // 3. 레포지토리에서 신청서 생성 성공 (ID 100번 발급)
+      interactionRepo.createApplication.mockResolvedValue({ 
+        id: BigInt(100) 
+      } as any);
+
+      const result = await service.applyParty(userId, postId);
+
+      // 4. 결과 검증
+      expect(isSuccess(result)).toBe(true);
+      expect(result.statusCode).toBe(201);
+      if (isSuccess(result)) {
+        expect(result.data.applicationId).toBe(100);
+        expect(result.data.message).toBe("신청이 완료되었습니다.");
+      }
+      
+      // 5. 실제로 생성 함수가 호출되었는지 확인
+      expect(interactionRepo.createApplication).toHaveBeenCalledWith(userId, postId);
+    });
   });
 
   // 2. 참가 신청 취소 테스트
