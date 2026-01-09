@@ -177,4 +177,48 @@ export class PartyRepository {
     const client = tx || prisma;
     return client.partyPost.count({ where: { azitId } });
   }
+
+  async findParties(page: number, size: number, sort: "latest" | "mostliked") {
+    const skip = (page - 1) * size;
+    const orderBy: any = {};
+
+    if (sort === "latest") {
+      orderBy.createdAt = "desc";
+    } else if (sort === "mostliked") {
+      orderBy.likes = {
+        _count: "desc",
+      };
+    }
+
+    return prisma.partyPost.findMany({
+      skip,
+      take: size,
+      orderBy,
+      include: {
+        user: {
+          include: {
+            userAvatars: {
+              where: { isEquipped: true },
+              include: { avatar: true },
+            },
+          },
+        },
+        tier: true,
+        azit: true,
+        postCategories: {
+          include: { category: true },
+        },
+        postPositions: {
+          include: { position: true },
+        },
+        applications: {
+          where: { isAccepted: true },
+        },
+      },
+    });
+  }
+
+  async countAll() {
+    return prisma.partyPost.count();
+  }
 }

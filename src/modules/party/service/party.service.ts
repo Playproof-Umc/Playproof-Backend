@@ -1,8 +1,8 @@
 import { injectable, inject } from "tsyringe";
 import { PartyRepository } from "../repository/party.repository";
 import { Result, created, notFound, ok, forbidden } from "../../../common/types/result.type";
-import { PartyCreateReqDto, PartyUpdateReqDto } from "../dtos/party.req.dto";
-import { PartyCreateResDto, PartyGetResDto, PartyDeleteResDto } from "../dtos/party.res.dto";
+import { PartyCreateReqDto, PartyUpdateReqDto, PartyListReqDto } from "../dtos/party.req.dto";
+import { PartyCreateResDto, PartyGetResDto, PartyDeleteResDto, PartyListResDto } from "../dtos/party.res.dto";
 import { PartyErrorCode } from "../../../common/constants/error-code";
 import { prisma } from "../../../common/config/database";
 
@@ -254,6 +254,27 @@ export class PartyService {
       });
     }
 
+    return ok(this.mapToGetResDto(party));
+  }
+
+  async getParties(dto: PartyListReqDto): Promise<Result<PartyListResDto>> {
+    const { page, size, sort } = dto;
+    const parties = await this.partyRepository.findParties(page, size, sort);
+    const totalCount = await this.partyRepository.countAll();
+
+    const mappedParties = parties.map(p => this.mapToGetResDto(p));
+    
+    const hasNext = page * size < totalCount;
+    const nextCursor = hasNext ? page + 1 : null;
+
+    return ok({
+      parties: mappedParties,
+      nextCursor,
+      hasNext,
+    });
+  }
+
+  private mapToGetResDto(party: any): PartyGetResDto {
     const hostAvatar = party.user.userAvatars[0]?.avatar?.avatarUrl || null;
 
     const tags = party.postCategories.map((pc: any) => ({
@@ -266,7 +287,7 @@ export class PartyService {
       positionName: pp.position.name,
     }));
 
-    const response: PartyGetResDto = {
+    return {
       partyId: Number(party.id),
       host: {
         id: Number(party.user.id),
@@ -288,7 +309,5 @@ export class PartyService {
       createdAt: party.createdAt,
       updatedAt: party.updatedAt,
     };
-
-    return ok(response);
   }
 }

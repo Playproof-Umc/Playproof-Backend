@@ -1,9 +1,9 @@
-import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Path, Security, Middlewares, Request, Patch, Delete } from "tsoa";
+import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Path, Security, Middlewares, Request, Patch, Delete, Query } from "tsoa";
 import { injectable, inject } from "tsyringe";
 import { PartyService } from "../service/party.service";
 import { Result } from "../../../common/types/result.type";
-import { PartyCreateResDto, PartyGetResDto, PartyDeleteResDto } from "../dtos/party.res.dto";
-import { PartyCreateReqDto, PartyUpdateReqDto } from "../dtos/party.req.dto";
+import { PartyCreateResDto, PartyGetResDto, PartyDeleteResDto, PartyListResDto } from "../dtos/party.res.dto";
+import { PartyCreateReqDto, PartyUpdateReqDto, PartyListReqDto } from "../dtos/party.req.dto";
 import { validationMiddleware } from "../../../common/middlewares/validation";
 
 @Route("parties")
@@ -14,6 +14,18 @@ export class PartyController extends Controller {
     @inject(PartyService) private partyService: PartyService
   ) {
     super();
+  }
+
+  @SuccessResponse("200", "OK")
+  @Get("/")
+  public async getParties(
+    @Query() page: number = 1,
+    @Query() size: number = 10,
+    @Query() sort: "latest" | "mostliked" = "latest"
+  ): Promise<Result<PartyListResDto>> {
+    const result = await this.partyService.getParties({ page, size, sort });
+    this.setStatus(result.statusCode);
+    return result;
   }
 
   @SuccessResponse("201", "Created")

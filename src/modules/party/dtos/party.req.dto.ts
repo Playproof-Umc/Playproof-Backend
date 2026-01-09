@@ -136,3 +136,26 @@ export class PartyUpdateReqDto {
   @IsString()
   azitIconUrl?: string;
 }
+
+export class PartyListReqDto {
+  /**
+   * @example 1
+   */
+  @IsOptional()
+  @IsNumber()
+  page: number = 1;
+
+  /**
+   * @example "latest"
+   */
+  @IsOptional()
+  @IsString()
+  sort: "latest" | "mostliked" = "latest";
+
+  /**
+   * @example 10
+   */
+  @IsOptional()
+  @IsNumber()
+  size: number = 10;
+}

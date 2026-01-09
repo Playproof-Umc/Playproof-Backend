@@ -296,6 +296,229 @@
 					}
 				}
 			},
+			"PartyHostDto": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"example": "닉네임"
+					},
+					"trustScore": {
+						"type": "number",
+						"format": "double",
+						"example": 50
+					},
+					"avatarUrl": {
+						"type": "string",
+						"nullable": true,
+						"example": "https://example.com/avatar.png"
+					}
+				},
+				"required": [
+					"id",
+					"nickname",
+					"trustScore",
+					"avatarUrl"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyTagDto": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"name": {
+						"type": "string",
+						"example": "태그명"
+					}
+				},
+				"required": [
+					"id",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyPositionDto": {
+				"properties": {
+					"positionId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"positionName": {
+						"type": "string",
+						"example": "포지션명"
+					}
+				},
+				"required": [
+					"positionId",
+					"positionName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyGetResDto": {
+				"properties": {
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"host": {
+						"$ref": "#/components/schemas/PartyHostDto"
+					},
+					"title": {
+						"type": "string",
+						"example": "파티 제목"
+					},
+					"memo": {
+						"type": "string",
+						"nullable": true,
+						"example": "파티 한 줄 소개"
+					},
+					"tierName": {
+						"type": "string",
+						"nullable": true,
+						"example": "골드"
+					},
+					"azitName": {
+						"type": "string",
+						"example": "아지트 이름"
+					},
+					"participants": {
+						"type": "number",
+						"format": "double",
+						"example": 5
+					},
+					"currentParticipants": {
+						"type": "number",
+						"format": "double",
+						"example": 2
+					},
+					"isMic": {
+						"type": "boolean",
+						"example": true
+					},
+					"status": {
+						"type": "string",
+						"example": "active"
+					},
+					"viewCount": {
+						"type": "number",
+						"format": "double",
+						"example": 100
+					},
+					"tags": {
+						"items": {
+							"$ref": "#/components/schemas/PartyTagDto"
+						},
+						"type": "array"
+					},
+					"positions": {
+						"items": {
+							"$ref": "#/components/schemas/PartyPositionDto"
+						},
+						"type": "array"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"partyId",
+					"host",
+					"title",
+					"memo",
+					"tierName",
+					"azitName",
+					"participants",
+					"currentParticipants",
+					"isMic",
+					"status",
+					"viewCount",
+					"tags",
+					"positions",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyListResDto": {
+				"properties": {
+					"parties": {
+						"items": {
+							"$ref": "#/components/schemas/PartyGetResDto"
+						},
+						"type": "array",
+						"example": []
+					},
+					"nextCursor": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 2
+					},
+					"hasNext": {
+						"type": "boolean",
+						"example": true
+					}
+				},
+				"required": [
+					"parties",
+					"nextCursor",
+					"hasNext"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_PartyListResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/PartyListResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_PartyListResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_PartyListResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"PartyCreateResDto": {
 				"properties": {
 					"partyId": {
@@ -487,168 +710,6 @@
 					"tierId",
 					"positionIds",
 					"isMicUse"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"PartyHostDto": {
-				"properties": {
-					"id": {
-						"type": "number",
-						"format": "double",
-						"example": 1
-					},
-					"nickname": {
-						"type": "string",
-						"nullable": true,
-						"example": "닉네임"
-					},
-					"trustScore": {
-						"type": "number",
-						"format": "double",
-						"example": 50
-					},
-					"avatarUrl": {
-						"type": "string",
-						"nullable": true,
-						"example": "https://example.com/avatar.png"
-					}
-				},
-				"required": [
-					"id",
-					"nickname",
-					"trustScore",
-					"avatarUrl"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"PartyTagDto": {
-				"properties": {
-					"id": {
-						"type": "number",
-						"format": "double",
-						"example": 1
-					},
-					"name": {
-						"type": "string",
-						"example": "태그명"
-					}
-				},
-				"required": [
-					"id",
-					"name"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"PartyPositionDto": {
-				"properties": {
-					"positionId": {
-						"type": "number",
-						"format": "double",
-						"example": 1
-					},
-					"positionName": {
-						"type": "string",
-						"example": "포지션명"
-					}
-				},
-				"required": [
-					"positionId",
-					"positionName"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"PartyGetResDto": {
-				"properties": {
-					"partyId": {
-						"type": "number",
-						"format": "double",
-						"example": 1
-					},
-					"host": {
-						"$ref": "#/components/schemas/PartyHostDto"
-					},
-					"title": {
-						"type": "string",
-						"example": "파티 제목"
-					},
-					"memo": {
-						"type": "string",
-						"nullable": true,
-						"example": "파티 한 줄 소개"
-					},
-					"tierName": {
-						"type": "string",
-						"nullable": true,
-						"example": "골드"
-					},
-					"azitName": {
-						"type": "string",
-						"example": "아지트 이름"
-					},
-					"participants": {
-						"type": "number",
-						"format": "double",
-						"example": 5
-					},
-					"currentParticipants": {
-						"type": "number",
-						"format": "double",
-						"example": 2
-					},
-					"isMic": {
-						"type": "boolean",
-						"example": true
-					},
-					"status": {
-						"type": "string",
-						"example": "active"
-					},
-					"viewCount": {
-						"type": "number",
-						"format": "double",
-						"example": 100
-					},
-					"tags": {
-						"items": {
-							"$ref": "#/components/schemas/PartyTagDto"
-						},
-						"type": "array"
-					},
-					"positions": {
-						"items": {
-							"$ref": "#/components/schemas/PartyPositionDto"
-						},
-						"type": "array"
-					},
-					"createdAt": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"updatedAt": {
-						"type": "string",
-						"format": "date-time"
-					}
-				},
-				"required": [
-					"partyId",
-					"host",
-					"title",
-					"memo",
-					"tierName",
-					"azitName",
-					"participants",
-					"currentParticipants",
-					"isMic",
-					"status",
-					"viewCount",
-					"tags",
-					"positions",
-					"createdAt",
-					"updatedAt"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1053,6 +1114,60 @@
 			}
 		},
 		"/parties": {
+			"get": {
+				"operationId": "GetParties",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_PartyListResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 1,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"default": "latest",
+							"type": "string",
+							"enum": [
+								"latest",
+								"mostliked"
+							]
+						}
+					}
+				]
+			},
 			"post": {
 				"operationId": "CreateParty",
 				"responses": {

@@ -211,3 +211,23 @@ export class PartyDeleteResDto {
   @IsString()
   deletedAt!: Date;
 }
+
+export class PartyListResDto {
+  /**
+   * @example []
+   */
+  @IsObject({ each: true })
+  parties!: PartyGetResDto[];
+
+  /**
+   * @example 2
+   */
+  @IsNumber()
+  nextCursor!: number | null;
+
+  /**
+   * @example true
+   */
+  @IsBoolean()
+  hasNext!: boolean;
+}
