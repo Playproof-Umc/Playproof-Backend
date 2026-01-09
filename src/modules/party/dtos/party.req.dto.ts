@@ -32,7 +32,7 @@ export class PartyCreateReqDto {
   tierId!: number;
 
   /**
-   * @example [1, 2]
+   * @example [1]
    */
   @IsNumber({}, { each: true })
   positionIds!: number[];

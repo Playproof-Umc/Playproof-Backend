@@ -102,6 +102,7 @@ export class PartyService {
       azitId: Number(party.azitId),
       azitName: finalAzitName,
       azitIconUrl: finalAzitIconUrl,
+      createdAt: party.createdAt,
     } as PartyCreateResDto);
   }
 
@@ -204,6 +205,7 @@ export class PartyService {
       azitId: Number(finalParty.azitId),
       azitName: finalParty.azit.azitName,
       azitIconUrl: finalParty.azit.imageUrl,
+      createdAt: finalParty.createdAt,
     } as PartyCreateResDto);
   }
 

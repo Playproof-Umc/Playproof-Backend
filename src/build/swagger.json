@@ -369,6 +369,10 @@
 						"type": "string",
 						"nullable": true,
 						"example": "https://example.com/azit.png"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
 					}
 				},
 				"required": [
@@ -383,7 +387,8 @@
 					"isMicUse",
 					"azitId",
 					"azitName",
-					"azitIconUrl"
+					"azitIconUrl",
+					"createdAt"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -453,8 +458,7 @@
 						},
 						"type": "array",
 						"example": [
-							1,
-							2
+							1
 						]
 					},
 					"isMicUse": {
@@ -956,9 +960,9 @@
 		},
 		"securitySchemes": {
 			"jwt": {
-				"type": "apiKey",
-				"name": "Authorization",
-				"in": "header"
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
 			}
 		}
 	},

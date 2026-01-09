@@ -187,4 +187,7 @@ export class PartyCreateResDto {
    */
   @IsString()
   azitIconUrl!: string | null;
+
+  @IsString()
+  createdAt!: Date;
 }
