@@ -1,7 +1,7 @@
 // src/modules/azit/controllers/azit-create.controller.ts
 import { Controller, Post, Route, Tags, SuccessResponse, Response, Request, Security, Middlewares, UploadedFile, FormField } from "tsoa";
 import { injectable, inject } from "tsyringe";
-import { AzitService } from "../services/azit.service";
+import { AzitService } from "../services/azit-create.service";
 import { AzitCreateReqDto } from "../dtos/azit.req.dto";
 import { AzitCreateResDto } from "../dtos/azit.res.dto";
 import { Result, ConflictError, InternalServerError } from "../../../common/types/result.type";
