@@ -18,9 +18,9 @@ datasource db {
 // 1. users 테이블
 
 enum Provider {
-  GOOGLE  @map("google")
-  KAKAO   @map("kakao")
-  LOCAL   @map("local")
+  GOOGLE @map("google")
+  KAKAO  @map("kakao")
+  LOCAL  @map("local")
 }
 
 enum Grade {
@@ -29,53 +29,52 @@ enum Grade {
 }
 
 enum PlayStyle {
-  SKILL   @map("skill")
-  MANNER  @map("manner")
+  SKILL  @map("skill")
+  MANNER @map("manner")
 }
 
-
 model User {
-  id                  BigInt              @id @default(autoincrement())
-  phone               String?
-  isPhoneVerified     Boolean             @default(false)               @map("is_phone_verified")
-  phoneVerifiedAt     DateTime?                                         @map("phone_verified_at")
-  password            String?
-  email               String?
-  provider            Provider            @default(LOCAL)
-  providerId          String?                                           @map("provider_id")
-  nickname            String?
-  grade               Grade               @default(BASIC)
-  trustScore          Int                 @default(50)                  @map("trust_score")
-  playStyle           PlayStyle           @default(MANNER)              @map("play_style")
-  coin                Int                 @default(0)
-  createdAt           DateTime            @default(now())               @map("created_at")
-  updatedAt           DateTime            @updatedAt @default(now())    @map("updated_at")
+  id              BigInt    @id @default(autoincrement())
+  phone           String?
+  isPhoneVerified Boolean   @default(false) @map("is_phone_verified")
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
+  password        String?
+  email           String?
+  provider        Provider  @default(LOCAL)
+  providerId      String?   @map("provider_id")
+  nickname        String?
+  grade           Grade     @default(BASIC)
+  trustScore      Int       @default(50) @map("trust_score")
+  playStyle       PlayStyle @default(MANNER) @map("play_style")
+  coin            Int       @default(0)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
 
-  userTerms            UserTerm[]
-  userAvatars          UserAvatar[]
-  userGameInfos        UserGameInfo[]
-  userCategoryInfos    UserCategoryInfo[]
-  friendsFrom          Friend[]           @relation("FriendFromUser")
-  friendsTo            Friend[]           @relation("FriendToUser")
-  bansUser             Ban[]              @relation("BanUser")
-  reportsUser          Report[]           @relation("ReportUser")      
-  shoppingCarts        ShoppingCart[]
-  buyItems             BuyItem[]
-  partyPosts           PartyPost[]
-  postComments         PostComment[]
-  postLikes            UserPostLike[]
-  applications         Application[]
-  azitUsers            AzitUser[]
-  highlights           Highlight[]
-  communityPosts       CommunityPost[]
-  communityComments    CommunityComment[]
-  communityLikes       CommunityLike[]
-  feedbacksUser        Feedback[]         @relation("FeedbackUser")
-  feedbacksTarget      Feedback[]         @relation("FeedbackTarget")
+  userTerms         UserTerm[]
+  userAvatars       UserAvatar[]
+  userGameInfos     UserGameInfo[]
+  userCategoryInfos UserCategoryInfo[]
+  friendsFrom       Friend[]           @relation("FriendFromUser")
+  friendsTo         Friend[]           @relation("FriendToUser")
+  bansUser          Ban[]              @relation("BanUser")
+  reportsUser       Report[]           @relation("ReportUser")
+  shoppingCarts     ShoppingCart[]
+  buyItems          BuyItem[]
+  partyPosts        PartyPost[]
+  postComments      PostComment[]
+  postLikes         UserPostLike[]
+  applications      Application[]
+  azitUsers         AzitUser[]
+  highlights        Highlight[]
+  communityPosts    CommunityPost[]
+  communityComments CommunityComment[]
+  communityLikes    CommunityLike[]
+  feedbacksUser     Feedback[]         @relation("FeedbackUser")
+  feedbacksTarget   Feedback[]         @relation("FeedbackTarget")
 
   // 사용 X
-  bansTarget           Ban[]              @relation("BanTarget")
-  reportsTarget        Report[]           @relation("ReportTarget")
+  bansTarget    Ban[]    @relation("BanTarget")
+  reportsTarget Report[] @relation("ReportTarget")
 
   @@map("users")
 }
@@ -87,15 +86,14 @@ enum ShopItemCategory {
   AVATAR @map("avatar")
 }
 
-
 model Term {
-  id          BigInt  @id @default(autoincrement())
-  name        String
-  content     String  @db.Text
-  isRequired  Boolean @map("is_required")
+  id         BigInt  @id @default(autoincrement())
+  name       String
+  content    String  @db.Text
+  isRequired Boolean @map("is_required")
 
   // 사용 X
-  userTerms   UserTerm[]
+  userTerms UserTerm[]
 
   @@map("terms")
 }
@@ -112,11 +110,11 @@ model Avatar {
 }
 
 model ShopItem {
-  id        BigInt            @id @default(autoincrement())
-  category  ShopItemCategory  @default(ITEM)
-  name      String
-  price     Int
-  imageUrl  String            @map("image_url")
+  id       BigInt           @id @default(autoincrement())
+  category ShopItemCategory @default(ITEM)
+  name     String
+  price    Int
+  imageUrl String           @map("image_url")
 
   // 사용 X
   shoppingCarts ShoppingCart[]
@@ -190,88 +188,80 @@ model NegativeCategory {
   @@map("negative_categories")
 }
 
-
-
 // 3. 약관 동의 관련 테이블
 
 model UserTerm {
-  userId    BigInt                              @map("user_id")
-  termId    BigInt                              @map("term_id")
-  createdAt DateTime @default(now())            @map("created_at")
-  updatedAt DateTime @updatedAt @default(now()) @map("updated_at")
+  userId    BigInt   @map("user_id")
+  termId    BigInt   @map("term_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  user      User     @relation(fields: [userId], references: [id])
-  term      Term     @relation(fields: [termId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  term Term @relation(fields: [termId], references: [id])
 
   @@id([userId, termId])
   @@map("user_term")
 }
 
-
-
 // 4. 아바타 관련 테이블
 
 model UserAvatar {
-  userId     BigInt                   @map("user_id")
-  avatarId   BigInt                   @map("avatar_id")
+  userId     BigInt   @map("user_id")
+  avatarId   BigInt   @map("avatar_id")
   isEquipped Boolean  @default(false) @map("is_equipped")
   acquiredAt DateTime @default(now()) @map("acquired_at")
 
-  user       User     @relation(fields: [userId], references: [id])
-  avatar     Avatar   @relation(fields: [avatarId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  avatar Avatar @relation(fields: [avatarId], references: [id])
 
   @@id([userId, avatarId])
   @@map("user_avatar")
 }
 
-
-
 // 5. 게임 정보 관련 테이블
 
 model GameInfo {
-  id            BigInt     @id @default(autoincrement())
-  gameId        BigInt                                    @map("game_id")
-  gameName      String                                    @map("game_name")
-  tierId        BigInt?                                   @map("tier_id")
-  positionId    BigInt?                                   @map("position_id")
-  gameNickname  String                                    @map("game_nickname")
-  createdAt     DateTime   @default(now())                @map("created_at")
-  updatedAt     DateTime   @updatedAt @default(now())     @map("updated_at")
+  id           BigInt   @id @default(autoincrement())
+  gameId       BigInt   @map("game_id")
+  gameName     String   @map("game_name")
+  tierId       BigInt?  @map("tier_id")
+  positionId   BigInt?  @map("position_id")
+  gameNickname String   @map("game_nickname")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
 
-  game          Game       @relation(fields: [gameId], references: [id])
-  tier          Tier?      @relation(fields: [tierId], references: [id])
-  position      Position?  @relation(fields: [positionId], references: [id])
-  
+  game     Game      @relation(fields: [gameId], references: [id])
+  tier     Tier?     @relation(fields: [tierId], references: [id])
+  position Position? @relation(fields: [positionId], references: [id])
+
   userGameInfos UserGameInfo[]
 
   @@map("game_info")
 }
 
 model UserGameInfo {
-  id          BigInt    @id @default(autoincrement())
-  userId      BigInt                                  @map("user_id")
-  infoId      BigInt                                  @map("info_id")
-  isVerified  Boolean   @default(false)               @map("is_verified")
-  verifiedAt  DateTime?                               @map("verified_at")
+  id         BigInt    @id @default(autoincrement())
+  userId     BigInt    @map("user_id")
+  infoId     BigInt    @map("info_id")
+  isVerified Boolean   @default(false) @map("is_verified")
+  verifiedAt DateTime? @map("verified_at")
 
-  user        User      @relation(fields: [userId], references: [id])
-  gameInfo    GameInfo  @relation(fields: [infoId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+  gameInfo GameInfo @relation(fields: [infoId], references: [id])
 
   @@map("user_game_info")
 }
 
 model UserCategoryInfo {
-  userId     BigInt   @map("user_id")
-  categoryId BigInt   @map("category_id")
+  userId     BigInt @map("user_id")
+  categoryId BigInt @map("category_id")
 
-  user       User     @relation(fields: [userId], references: [id])
-  category   Category @relation(fields: [categoryId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
 
   @@id([userId, categoryId])
   @@map("user_category_info")
 }
-
-
 
 // 6. 친구 관련 테이블
 
@@ -281,36 +271,32 @@ enum FriendStatus {
 }
 
 model Friend {
-  id            BigInt       @id @default(autoincrement())
-  fromUserId    BigInt                                    @map("from_user_id")
-  toUserId      BigInt                                    @map("to_user_id")
-  friendStatus  FriendStatus @default(PENDING)            @map("friend_status")
-  friendAt      DateTime     @default(now())              @map("friend_at")
-  createdAt     DateTime     @default(now())              @map("created_at")
+  id           BigInt       @id @default(autoincrement())
+  fromUserId   BigInt       @map("from_user_id")
+  toUserId     BigInt       @map("to_user_id")
+  friendStatus FriendStatus @default(PENDING) @map("friend_status")
+  friendAt     DateTime     @default(now()) @map("friend_at")
+  createdAt    DateTime     @default(now()) @map("created_at")
 
-  fromUser      User         @relation("FriendFromUser", fields: [fromUserId], references: [id])
-  toUser        User         @relation("FriendToUser", fields: [toUserId], references: [id])
+  fromUser User @relation("FriendFromUser", fields: [fromUserId], references: [id])
+  toUser   User @relation("FriendToUser", fields: [toUserId], references: [id])
 
   @@map("friends")
 }
 
-
-
 // 7. 차단 관련 테이블
 
 model Ban {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt                                @map("user_id")
-  targetId  BigInt                                @map("target_id")
-  banAt     DateTime @default(now())              @map("ban_at")
+  id       BigInt   @id @default(autoincrement())
+  userId   BigInt   @map("user_id")
+  targetId BigInt   @map("target_id")
+  banAt    DateTime @default(now()) @map("ban_at")
 
-  user      User     @relation("BanUser", fields: [userId], references: [id])
-  target    User     @relation("BanTarget", fields: [targetId], references: [id])
+  user   User @relation("BanUser", fields: [userId], references: [id])
+  target User @relation("BanTarget", fields: [targetId], references: [id])
 
   @@map("bans")
 }
-
-
 
 // 8. 신고 관련 테이블
 
@@ -321,73 +307,68 @@ enum ReportType {
 }
 
 enum ReportStatus {
-  PENDING       @map("PENDING")
-  UNDER_REVIEW  @map("UNDER_REVIEW")
-  RESOLVED      @map("RESOLVED")
-  REJECTED      @map("REJECTED")
+  PENDING      @map("PENDING")
+  UNDER_REVIEW @map("UNDER_REVIEW")
+  RESOLVED     @map("RESOLVED")
+  REJECTED     @map("REJECTED")
 }
 
-
 model Report {
-  id           BigInt        @id @default(autoincrement())
-  userId       BigInt                                     @map("user_id")
-  targetId     BigInt                                     @map("target_id")
+  id           BigInt       @id @default(autoincrement())
+  userId       BigInt       @map("user_id")
+  targetId     BigInt       @map("target_id")
   name         String
   email        String?
-  reportType   ReportType    @map("report_type")
+  reportType   ReportType   @map("report_type")
   title        String
-  content      String        @db.Text
-  reportStatus ReportStatus  @default(PENDING)            @map("report_status")
-  createdAt    DateTime      @default(now())              @map("created_at")
+  content      String       @db.Text
+  reportStatus ReportStatus @default(PENDING) @map("report_status")
+  createdAt    DateTime     @default(now()) @map("created_at")
 
-  user         User          @relation("ReportUser", fields: [userId], references: [id])
-  target       User          @relation("ReportTarget", fields: [targetId], references: [id])
-  medias       ReportMedia[]
+  user   User          @relation("ReportUser", fields: [userId], references: [id])
+  target User          @relation("ReportTarget", fields: [targetId], references: [id])
+  medias ReportMedia[]
 
   @@map("reports")
 }
 
 model ReportMedia {
-  id        BigInt   @id @default(autoincrement())
-  reportId  BigInt                                @map("report_id")
-  mediaUrl  String                                @map("media_url")
-  uploadAt  DateTime @default(now())              @map("upload_at")
+  id       BigInt   @id @default(autoincrement())
+  reportId BigInt   @map("report_id")
+  mediaUrl String   @map("media_url")
+  uploadAt DateTime @default(now()) @map("upload_at")
 
-  report    Report   @relation(fields: [reportId], references: [id])
+  report Report @relation(fields: [reportId], references: [id])
 
   @@map("report_medias")
 }
 
-
-
 // 9. 상점 관련 테이블
 
 model ShoppingCart {
-  userId BigInt                   @map("user_id")
-  itemId BigInt                   @map("item_id")
+  userId BigInt   @map("user_id")
+  itemId BigInt   @map("item_id")
   putAt  DateTime @default(now()) @map("put_at")
 
-  user   User     @relation(fields: [userId], references: [id])
-  item   ShopItem @relation(fields: [itemId], references: [id])
+  user User     @relation(fields: [userId], references: [id])
+  item ShopItem @relation(fields: [itemId], references: [id])
 
   @@id([userId, itemId])
   @@map("shopping_cart")
 }
 
 model BuyItem {
-  userId      BigInt                    @map("user_id")
-  itemId      BigInt                    @map("item_id")
-  boughtPrice Int                       @map("bought_price")
-  buyAt       DateTime @default(now())  @map("buy_at")
+  userId      BigInt   @map("user_id")
+  itemId      BigInt   @map("item_id")
+  boughtPrice Int      @map("bought_price")
+  buyAt       DateTime @default(now()) @map("buy_at")
 
-  user        User     @relation(fields: [userId], references: [id])
-  item        ShopItem @relation(fields: [itemId], references: [id])
+  user User     @relation(fields: [userId], references: [id])
+  item ShopItem @relation(fields: [itemId], references: [id])
 
   @@id([userId, itemId])
   @@map("buy_items")
 }
-
-
 
 // 10. 매칭(파티) 모집 글 관련 테이블
 
@@ -400,45 +381,56 @@ model PartyPost {
   id                BigInt   @id @default(autoincrement()) @map("post_id")
   userId            BigInt   @map("user_id")
   gameId            BigInt   @map("game_id")
-  title             String
   positionId        BigInt   @map("position_id")
   tierId            BigInt   @map("tier_id")
   azitId            BigInt   @map("azit_id")
+  title             String
   memo              String?
   recruitmentPeople Int      @map("recruitment_people")
   isMicUse          Boolean  @map("is_mic_use")
   recruitmentStatus String   @map("recruitment_status")
   viewCount         BigInt   @default(0) @map("view_count")
   createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], map: "party_posts_user_id_fkey")
+  game Game @relation(fields: [gameId], references: [id], map: "party_posts_game_id_fkey")
+  tier Tier @relation(fields: [tierId], references: [id], map: "party_posts_tier_id_fkey")
+  azit Azit @relation(fields: [azitId], references: [id], map: "party_posts_azit_id_fkey")
+
+  postCategories PostCategory[]
+  postComments   PostComment[]
+  postLikes      UserPostLike[]
+  applications   Application[]
+  position       Position       @relation(fields: [positionId], references: [id])
 
   @@map("party_posts")
 }
 
 model PostCategory {
-  postId     BigInt    @map("post_id")
-  categoryId BigInt    @map("category_id")
+  postId     BigInt @map("post_id")
+  categoryId BigInt @map("category_id")
 
-  post       PartyPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  category   Category  @relation(fields: [categoryId], references: [id])
+  post     PartyPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category Category  @relation(fields: [categoryId], references: [id])
 
   @@id([postId, categoryId])
   @@map("post_category")
 }
 
 model PostComment {
-  id        BigInt       @id @default(autoincrement()) @map("comment_id")
-  userId    BigInt       @map("user_id")
-  postId    BigInt       @map("post_id")
-  parentId  BigInt?      @map("parent_id")
-  content   String       @db.Text
-  createdAt DateTime     @default(now()) @map("created_at")
-  updatedAt DateTime     @updatedAt @default(now()) @map("updated_at")
+  id        BigInt   @id @default(autoincrement()) @map("comment_id")
+  userId    BigInt   @map("user_id")
+  postId    BigInt   @map("post_id")
+  parentId  BigInt?  @map("parent_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  user      User         @relation(fields: [userId], references: [id])
-  post      PartyPost    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parent    PostComment? @relation("CommentReplies", fields: [parentId], references: [id])
-  replies   PostComment[] @relation("CommentReplies")
+  user    User          @relation(fields: [userId], references: [id])
+  post    PartyPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent  PostComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies PostComment[] @relation("CommentReplies")
 
   @@map("post_comments")
 }
@@ -448,8 +440,8 @@ model UserPostLike {
   postId  BigInt   @map("post_id")
   likedAt DateTime @default(now()) @map("liked_at")
 
-  user    User      @relation(fields: [userId], references: [id])
-  post    PartyPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id])
+  post PartyPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@id([userId, postId])
   @@map("user_post_like")
@@ -462,8 +454,8 @@ model Application {
   applicationAt DateTime @default(now()) @map("application_at")
   isAccepted    Boolean  @default(false) @map("is_accepted")
 
-  user          User      @relation(fields: [userId], references: [id])
-  post          PartyPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id])
+  post PartyPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("applications")
 }
@@ -485,17 +477,16 @@ enum ChatRoomType {
   VOICE @map("voice")
 }
 
-
 model Azit {
   id        BigInt   @id @default(autoincrement())
-  azitName  String                              @map("azit_name")
-  createdAt DateTime @default(now())            @map("created_at")
-  updatedAt DateTime @updatedAt @default(now()) @map("updated_at")
+  azitName  String   @map("azit_name")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   members   AzitUser[]
   schedules AzitSchedule[]
   chatRooms ChatRoom[]
-  
+
   // 사용 X
   partyPosts PartyPost[]
   highlights Highlight[]
@@ -504,222 +495,219 @@ model Azit {
 }
 
 model AzitUser {
-  id                      BigInt        @id @default(autoincrement())
-  userId                  BigInt                                      @map("user_id")
-  azitId                  BigInt                                      @map("azit_id")
-  joinedAt                DateTime      @default(now())               @map("joined_at")
-  role                    AzitUserRole  @default(MEMBER)
+  id       BigInt       @id @default(autoincrement())
+  userId   BigInt       @map("user_id")
+  azitId   BigInt       @map("azit_id")
+  joinedAt DateTime     @default(now()) @map("joined_at")
+  role     AzitUserRole @default(MEMBER)
 
-  user                    User @relation(fields: [userId], references: [id])
-  azit                    Azit @relation(fields: [azitId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  azit Azit @relation(fields: [azitId], references: [id])
 
-  scheduleParticipations  AzitScheduleParticipation[]
-  
+  scheduleParticipations AzitScheduleParticipation[]
+
   // 사용 X
-  chats                   Chat[]
+  chats Chat[]
 
   @@map("azit_user")
 }
 
 model AzitSchedule {
-  id                BigInt   @id @default(autoincrement())
-  azitId            BigInt                                @map("azit_id")
-  title             String
-  gameStartAt       DateTime                              @map("game_start_at")
-  gameEndAt         DateTime                              @map("game_end_at")
-  recruitmentEndAt  DateTime                              @map("recruitment_end_at")
-  createdAt         DateTime @default(now())              @map("created_at")
-  updatedAt         DateTime @updatedAt @default(now())   @map("updated_at")
+  id               BigInt   @id @default(autoincrement())
+  azitId           BigInt   @map("azit_id")
+  title            String
+  gameStartAt      DateTime @map("game_start_at")
+  gameEndAt        DateTime @map("game_end_at")
+  recruitmentEndAt DateTime @map("recruitment_end_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
 
-  azit              Azit     @relation(fields: [azitId], references: [id])
-  participations    AzitScheduleParticipation[]
+  azit           Azit                        @relation(fields: [azitId], references: [id])
+  participations AzitScheduleParticipation[]
 
   @@map("azit_schedule")
 }
 
 model AzitScheduleParticipation {
-  memberId        BigInt                            @map("member_id")
-  scheduleId      BigInt                            @map("schedule_id")
+  memberId        BigInt           @map("member_id")
+  scheduleId      BigInt           @map("schedule_id")
   role            AzitScheduleRole @default(PARTICIPANT)
-  participationAt DateTime         @default(now())  @map("participation_at")
+  participationAt DateTime         @default(now()) @map("participation_at")
 
-  member          AzitUser         @relation(fields: [memberId], references: [id])
-  schedule        AzitSchedule     @relation(fields: [scheduleId], references: [id])
+  member   AzitUser     @relation(fields: [memberId], references: [id])
+  schedule AzitSchedule @relation(fields: [scheduleId], references: [id])
 
   @@id([memberId, scheduleId])
   @@map("azit_schedule_participation")
 }
 
 model ChatRoom {
-  id        BigInt        @id @default(autoincrement())
-  azitId    BigInt                                      @map("azit_id")
-  roomName  String                                      @map("room_name")
-  roomType  ChatRoomType  @default(TEXT)                @map("room_type")
-  isPrivate Boolean       @default(false)               @map("is_private")
-  createdAt DateTime      @default(now())               @map("created_at")
-  updatedAt DateTime      @updatedAt @default(now())    @map("updated_at")
+  id        BigInt       @id @default(autoincrement())
+  azitId    BigInt       @map("azit_id")
+  roomName  String       @map("room_name")
+  roomType  ChatRoomType @default(TEXT) @map("room_type")
+  isPrivate Boolean      @default(false) @map("is_private")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at")
 
-  azit      Azit          @relation(fields: [azitId], references: [id])
-  chats     Chat[]
+  azit  Azit   @relation(fields: [azitId], references: [id])
+  chats Chat[]
 
   @@map("chat_rooms")
 }
 
 model Chat {
-  id          BigInt      @id @default(autoincrement())
-  chatRoomId  BigInt                                    @map("chat_room_id")
-  memberId    BigInt                                    @map("member_id")
-  content     String      @db.Text
-  createdAt   DateTime    @default(now())               @map("created_at")
-  updatedAt   DateTime    @updatedAt @default(now())    @map("updated_at")
+  id         BigInt   @id @default(autoincrement())
+  chatRoomId BigInt   @map("chat_room_id")
+  memberId   BigInt   @map("member_id")
+  content    String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
 
-  chatRoom    ChatRoom    @relation(fields: [chatRoomId], references: [id])
-  member      AzitUser    @relation(fields: [memberId], references: [id])
-  medias      ChatMedia[]
+  chatRoom ChatRoom    @relation(fields: [chatRoomId], references: [id])
+  member   AzitUser    @relation(fields: [memberId], references: [id])
+  medias   ChatMedia[]
 
   @@map("chats")
 }
 
 model ChatMedia {
-  id        BigInt   @id @default(autoincrement())
-  chatId    BigInt                                @map("chat_id")
-  mediaUrl  String                                @map("media_url")
-  uploadAt  DateTime @default(now())              @map("upload_at")
+  id       BigInt   @id @default(autoincrement())
+  chatId   BigInt   @map("chat_id")
+  mediaUrl String   @map("media_url")
+  uploadAt DateTime @default(now()) @map("upload_at")
 
-  chat      Chat     @relation(fields: [chatId], references: [id])
+  chat Chat @relation(fields: [chatId], references: [id])
 
   @@map("chat_medias")
 }
-
-
 
 // 12. 커뮤니티(하이라이트, 일반) 관련 테이블
 
 model Highlight {
   id        BigInt   @id @default(autoincrement())
-  userId    BigInt                                @map("user_id")
-  azitId    BigInt?                               @map("azit_id")
+  userId    BigInt   @map("user_id")
+  azitId    BigInt?  @map("azit_id")
   content   String?
-  isPublic  Boolean                               @map("is_public")
-  createdAt DateTime @default(now())              @map("created_at")
-  updatedAt DateTime @updatedAt @default(now())   @map("updated_at")
+  isPublic  Boolean  @map("is_public")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  user      User     @relation(fields: [userId], references: [id])
-  azit      Azit?    @relation(fields: [azitId], references: [id])
+  user User  @relation(fields: [userId], references: [id])
+  azit Azit? @relation(fields: [azitId], references: [id])
 
-  comments  CommunityComment[]
-  likes     CommunityLike[]
-  medias    CommunityMedia[]
+  comments CommunityComment[]
+  likes    CommunityLike[]
+  medias   CommunityMedia[]
 
   @@map("highlights")
 }
 
 model CommunityPost {
   id        BigInt   @id @default(autoincrement())
-  userId    BigInt                                @map("user_id")
-  gameId    BigInt                                @map("game_id")
+  userId    BigInt   @map("user_id")
+  gameId    BigInt   @map("game_id")
   title     String
   content   String   @db.Text
-  createdAt DateTime @default(now())              @map("created_at")
-  updatedAt DateTime @updatedAt @default(now())   @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  user      User     @relation(fields: [userId], references: [id])
-  game      Game     @relation(fields: [gameId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  game Game @relation(fields: [gameId], references: [id])
 
-  comments  CommunityComment[]
-  likes     CommunityLike[]
-  medias    CommunityMedia[]
+  comments CommunityComment[]
+  likes    CommunityLike[]
+  medias   CommunityMedia[]
 
   @@map("community_posts")
 }
 
 model CommunityComment {
-  id          BigInt             @id @default(autoincrement())
-  userId      BigInt                                           @map("user_id")
-  highlightId BigInt?                                          @map("highlight_id")
-  postId      BigInt?                                          @map("post_id")
-  parentId    BigInt?                                          @map("parent_id")
-  content     String             @db.Text
-  isPublic    Boolean                                          @map("is_public")
-  createdAt   DateTime           @default(now())               @map("created_at")
-  updatedAt   DateTime           @updatedAt @default(now())    @map("updated_at")
+  id          BigInt   @id @default(autoincrement())
+  userId      BigInt   @map("user_id")
+  highlightId BigInt?  @map("highlight_id")
+  postId      BigInt?  @map("post_id")
+  parentId    BigInt?  @map("parent_id")
+  content     String   @db.Text
+  isPublic    Boolean  @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
-  user        User               @relation(fields: [userId], references: [id])
-  highlight   Highlight?         @relation(fields: [highlightId], references: [id])
-  post        CommunityPost?     @relation(fields: [postId], references: [id])
-  parent      CommunityComment?  @relation("CommunityCommentReplies", fields: [parentId], references: [id])
-  replies     CommunityComment[] @relation("CommunityCommentReplies")
+  user      User               @relation(fields: [userId], references: [id])
+  highlight Highlight?         @relation(fields: [highlightId], references: [id])
+  post      CommunityPost?     @relation(fields: [postId], references: [id])
+  parent    CommunityComment?  @relation("CommunityCommentReplies", fields: [parentId], references: [id])
+  replies   CommunityComment[] @relation("CommunityCommentReplies")
 
   @@map("community_comments")
 }
 
 model CommunityLike {
-  id          BigInt          @id @default(autoincrement())
-  userId      BigInt                                        @map("user_id")
-  highlightId BigInt?                                       @map("highlight_id")
-  postId      BigInt?                                       @map("post_id")
-  likedAt     DateTime        @default(now())               @map("liked_at")
+  id          BigInt   @id @default(autoincrement())
+  userId      BigInt   @map("user_id")
+  highlightId BigInt?  @map("highlight_id")
+  postId      BigInt?  @map("post_id")
+  likedAt     DateTime @default(now()) @map("liked_at")
 
-  user        User            @relation(fields: [userId], references: [id])
-  highlight   Highlight?      @relation(fields: [highlightId], references: [id])
-  post        CommunityPost?  @relation(fields: [postId], references: [id])
+  user      User           @relation(fields: [userId], references: [id])
+  highlight Highlight?     @relation(fields: [highlightId], references: [id])
+  post      CommunityPost? @relation(fields: [postId], references: [id])
 
   @@map("community_likes")
 }
 
 model CommunityMedia {
-  id          BigInt          @id @default(autoincrement())
-  highlightId BigInt?                                       @map("highlight_id")
-  postId      BigInt?                                       @map("post_id")
-  mediaUrl    String                                        @map("media_url")
+  id          BigInt   @id @default(autoincrement())
+  highlightId BigInt?  @map("highlight_id")
+  postId      BigInt?  @map("post_id")
+  mediaUrl    String   @map("media_url")
   order       Int
-  uploadAt    DateTime        @default(now()) @map("upload_at")
+  uploadAt    DateTime @default(now()) @map("upload_at")
 
-  post        CommunityPost?  @relation(fields: [postId], references: [id])
-  highlight   Highlight?      @relation(fields: [highlightId], references: [id])
+  post      CommunityPost? @relation(fields: [postId], references: [id])
+  highlight Highlight?     @relation(fields: [highlightId], references: [id])
 
   @@map("community_medias")
 }
 
-
 // 13. 피드백 관련 테이블
 
 model Feedback {
-  id                  BigInt   @id @default(autoincrement())
-  userId              BigInt   @map("user_id")
-  targetId            BigInt                                @map("target_id")
-  content             String?  @db.Text
-  isBan               Boolean  @default(false) @map("is_ban")
-  createdAt           DateTime @default(now())              @map("created_at")
-  updatedAt           DateTime @updatedAt @default(now())   @map("updated_at")
-            
-  user                User     @relation("FeedbackUser", fields: [userId], references: [id])
-  target              User     @relation("FeedbackTarget", fields: [targetId], references: [id])
-           
-  positiveCategories  FeedbackPositiveCategory[]
-  negativeCategories  FeedbackNegativeCategory[]
- 
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  targetId  BigInt   @map("target_id")
+  content   String?  @db.Text
+  isBan     Boolean  @default(false) @map("is_ban")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user   User @relation("FeedbackUser", fields: [userId], references: [id])
+  target User @relation("FeedbackTarget", fields: [targetId], references: [id])
+
+  positiveCategories FeedbackPositiveCategory[]
+  negativeCategories FeedbackNegativeCategory[]
+
   @@map("feedbacks")
 }
 
 model FeedbackPositiveCategory {
-  feedbackId  BigInt            @map("feedback_id")
-  positiveId  BigInt            @map("positive_id")
-            
-  feedback Feedback             @relation(fields: [feedbackId], references: [id])
-  positive    PositiveCategory  @relation(fields: [positiveId], references: [id])
-    
+  feedbackId BigInt @map("feedback_id")
+  positiveId BigInt @map("positive_id")
+
+  feedback Feedback         @relation(fields: [feedbackId], references: [id])
+  positive PositiveCategory @relation(fields: [positiveId], references: [id])
+
   @@id([feedbackId, positiveId])
   @@map("feedback_positive_category")
 }
 
 model FeedbackNegativeCategory {
-  feedbackId  BigInt            @map("feedback_id")
-  negativeId  BigInt            @map("negative_id")
-              
-  feedback Feedback             @relation(fields: [feedbackId], references: [id])
-  negative    NegativeCategory  @relation(fields: [negativeId], references: [id])
-    
+  feedbackId BigInt @map("feedback_id")
+  negativeId BigInt @map("negative_id")
+
+  feedback Feedback         @relation(fields: [feedbackId], references: [id])
+  negative NegativeCategory @relation(fields: [negativeId], references: [id])
+
   @@id([feedbackId, negativeId])
   @@map("feedback_negative_category")
 }
