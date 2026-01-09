@@ -57,7 +57,7 @@
 				"type": "object"
 			},
 			"ApiErrorDetail": {
-				"description": "* ------------------------------------------------------------------\nApiErrorDetail Interface\n------------------------------------------------------------------",
+				"description": "* ------------------------------------------------------------------\r\nApiErrorDetail Interface\r\n------------------------------------------------------------------",
 				"properties": {
 					"field": {
 						"type": "string"
@@ -116,7 +116,7 @@
 					"statusCode"
 				],
 				"type": "object",
-				"description": "------------------------------------------------------------------\nBase Result Types\n------------------------------------------------------------------"
+				"description": "------------------------------------------------------------------\r\nBase Result Types\r\n------------------------------------------------------------------"
 			},
 			"Result_UserGetResDto_": {
 				"anyOf": [
@@ -129,7 +129,7 @@
 				]
 			},
 			"BadRequestError": {
-				"description": "* ------------------------------------------------------------------\nInterfaces for Swagger Documentation\n------------------------------------------------------------------",
+				"description": "* ------------------------------------------------------------------\r\nInterfaces for Swagger Documentation\r\n------------------------------------------------------------------",
 				"properties": {
 					"error": {
 						"properties": {
@@ -352,6 +352,64 @@
 				"anyOf": [
 					{
 						"$ref": "#/components/schemas/Success_any_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"AzitCreateResDto": {
+				"properties": {
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"azit_name": {
+						"type": "string",
+						"example": "즐거운 롤토체스 팟"
+					},
+					"azit_icon_url": {
+						"type": "string",
+						"nullable": true,
+						"example": "https://s3.ap-northeast-2.amazonaws.com/bucket/example.png"
+					}
+				},
+				"required": [
+					"azit_id",
+					"azit_name",
+					"azit_icon_url"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_AzitCreateResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/AzitCreateResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_AzitCreateResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_AzitCreateResDto_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
@@ -728,6 +786,74 @@
 									"content"
 								],
 								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/azits": {
+			"post": {
+				"operationId": "CreateAzit",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_AzitCreateResDto_"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "Conflict",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ConflictError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Azit"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"azit_name": {
+										"type": "string"
+									},
+									"azit_icon": {
+										"type": "string",
+										"format": "binary"
+									}
+								},
+								"required": [
+									"azit_name"
+								]
 							}
 						}
 					}
