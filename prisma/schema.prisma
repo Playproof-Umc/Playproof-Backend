@@ -396,28 +396,27 @@ enum RecruitmentStatus {
   COMPLETED @map("completed")
 }
 
-
 model PartyPost {
-  id                BigInt             @id @default(autoincrement())
-  userId            BigInt                                            @map("user_id")
-  gameId            BigInt                                            @map("game_id")
+  id                BigInt            @id @default(autoincrement()) @map("post_id")
+  userId            BigInt            @map("user_id")
+  gameId            BigInt            @map("game_id")
   title             String
-  positionId        BigInt?                                           @map("position_id")
-  tierId            BigInt?                                           @map("tier_id")
-  azitId            BigInt                                            @map("azit_id")
-  memo              String?            @db.Text
-  recruitmentPeople Int                @default(1)                    @map("recruitment_people")
-  isMicUse          Boolean            @default(false)                @map("is_mic_use")
-  recruitmentStatus RecruitmentStatus  @default(ACTIVE)               @map("recruitment_status")
-  viewCount         BigInt             @default(0)                    @map("view_count")
-  createdAt         DateTime           @default(now())                @map("created_at")
-  updatedAt         DateTime           @updatedAt @default(now())     @map("updated_at")
+  positionId        BigInt?           @map("position_id")
+  tierId            BigInt?           @map("tier_id")
+  azitId            BigInt            @map("azit_id")
+  memo              String?           @db.Text
+  recruitmentPeople Int               @default(1) @map("recruitment_people")
+  isMicUse          Boolean           @default(false) @map("is_mic_use")
+  recruitmentStatus RecruitmentStatus @default(ACTIVE) @map("recruitment_status")
+  viewCount         BigInt            @default(0) @map("view_count")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @default(now()) @map("updated_at")
 
-  user              User               @relation(fields: [userId], references: [id])
-  game              Game               @relation(fields: [gameId], references: [id])
-  position          Position?          @relation(fields: [positionId], references: [id])
-  tier              Tier?              @relation(fields: [tierId], references: [id])
-  azit              Azit               @relation(fields: [azitId], references: [id])
+  user              User              @relation(fields: [userId], references: [id])
+  game              Game              @relation(fields: [gameId], references: [id])
+  position          Position?         @relation(fields: [positionId], references: [id])
+  tier              Tier?             @relation(fields: [tierId], references: [id])
+  azit              Azit              @relation(fields: [azitId], references: [id])
 
   postCategories    PostCategory[]
   applications      Application[]
@@ -428,59 +427,57 @@ model PartyPost {
 }
 
 model PostCategory {
-  postId     BigInt     @map("post_id")
-  categoryId BigInt     @map("category_id")
+  postId     BigInt    @map("post_id")
+  categoryId BigInt    @map("category_id")
 
-  post       PartyPost  @relation(fields: [postId], references: [id])
-  category   Category   @relation(fields: [categoryId], references: [id])
+  post       PartyPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category   Category  @relation(fields: [categoryId], references: [id])
 
   @@id([postId, categoryId])
   @@map("post_category")
 }
 
 model PostComment {
-  id        BigInt        @id @default(autoincrement())
-  userId    BigInt                                      @map("user_id")
-  postId    BigInt                                      @map("post_id")
-  parentId  BigInt?                                     @map("parent_id")
-  content   String        @db.Text
-  createdAt DateTime      @default(now())               @map("created_at")
-  updatedAt DateTime      @updatedAt @default(now())    @map("updated_at")
+  id        BigInt       @id @default(autoincrement()) @map("comment_id")
+  userId    BigInt       @map("user_id")
+  postId    BigInt       @map("post_id")
+  parentId  BigInt?      @map("parent_id")
+  content   String       @db.Text
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @default(now()) @map("updated_at")
 
-  user      User          @relation(fields: [userId], references: [id])
-  post      PartyPost     @relation(fields: [postId], references: [id])
-  parent    PostComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  user      User         @relation(fields: [userId], references: [id])
+  post      PartyPost    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent    PostComment? @relation("CommentReplies", fields: [parentId], references: [id])
   replies   PostComment[] @relation("CommentReplies")
 
   @@map("post_comments")
 }
 
 model UserPostLike {
-  userId    BigInt    @map("user_id")
-  postId    BigInt    @map("post_id")
-  likedAt   DateTime  @default(now()) @map("liked_at")
+  userId  BigInt   @map("user_id")
+  postId  BigInt   @map("post_id")
+  likedAt DateTime @default(now()) @map("liked_at")
 
-  user      User      @relation(fields: [userId], references: [id])
-  post      PartyPost @relation(fields: [postId], references: [id])
+  user    User      @relation(fields: [userId], references: [id])
+  post    PartyPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@id([userId, postId])
   @@map("user_post_like")
 }
 
 model Application {
-  id            BigInt    @id @default(autoincrement())
-  userId        BigInt                                  @map("user_id")
-  postId        BigInt                                  @map("post_id")
-  applicationAt DateTime  @default(now())               @map("application_at")
-  isAccepted    Boolean   @default(false)               @map("is_accepted")
+  id            BigInt   @id @default(autoincrement()) @map("application_id")
+  userId        BigInt   @map("user_id")
+  postId        BigInt   @map("post_id")
+  applicationAt DateTime @default(now()) @map("application_at")
+  isAccepted    Boolean  @default(false) @map("is_accepted")
 
   user          User      @relation(fields: [userId], references: [id])
-  post          PartyPost @relation(fields: [postId], references: [id])
+  post          PartyPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("applications")
 }
-
-
 
 // 11. 아지트 관련 테이블
 
