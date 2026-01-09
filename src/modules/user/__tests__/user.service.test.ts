@@ -2,6 +2,7 @@ import { UserService } from '../user.service';
 import { UserRepository } from '../user.repository';
 import { UserSignUpReqDto } from '../dtos/user.req.dto';
 import { UserErrorCode } from '../../../common/constants/error-code';
+import { isSuccess } from '../../../common/types/result.type';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -26,20 +27,20 @@ describe('UserService', () => {
     it('should successfully create a new user', async () => {
       userRepository.findByPhoneNumber.mockResolvedValue(null);
       userRepository.createUser.mockResolvedValue({
-        id: 1,
+        id: BigInt(1),
         name: validSignUpDto.name,
         password: validSignUpDto.password,
         phoneNumber: validSignUpDto.phoneNumber,
         avatarImg: 1,
         createdAt: new Date(),
         updatedAt: new Date()
-      });
+      } as any);
 
       const result = await userService.signUp(validSignUpDto);
 
-      expect(result.type).toBe('success');
+      expect(isSuccess(result)).toBe(true);
       expect(result.statusCode).toBe(201);
-      if (result.type === 'success') {
+      if (isSuccess(result)) {
         expect(result.data.phoneNumber).toBe(validSignUpDto.phoneNumber);
         expect(result.data.name).toBe(validSignUpDto.name);
       }
@@ -47,7 +48,7 @@ describe('UserService', () => {
 
     it('should return conflict error when phoneNumber already exists', async () => {
       const existingUser = {
-        id: 1,
+        id: BigInt(1),
         phoneNumber: validSignUpDto.phoneNumber,
         name: 'Existing User',
         password: 'password',
@@ -55,15 +56,15 @@ describe('UserService', () => {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-      userRepository.findByPhoneNumber.mockResolvedValue(existingUser);
+      userRepository.findByPhoneNumber.mockResolvedValue(existingUser as any);
 
       const result = await userService.signUp(validSignUpDto);
 
-      expect(result.type).toBe('failed');
+      expect(isSuccess(result)).toBe(false);
       expect(result.statusCode).toBe(409);
-      if (result.type === 'failed') {
-        expect(result.message).toBe('이미 존재하는 전화번호입니다.');
-        expect(result.errorCode).toBe(UserErrorCode.DUPLICATE_PHONE_NUMBER);
+      if (!isSuccess(result)) {
+        expect(result.error.message).toBe('이미 존재하는 전화번호입니다.');
+        expect(result.error.code).toBe(UserErrorCode.DUPLICATE_PHONE_NUMBER);
       }
     });
   });
