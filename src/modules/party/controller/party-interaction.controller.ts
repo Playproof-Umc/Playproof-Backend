@@ -1,54 +1,64 @@
-import { Controller, Post, Patch, Delete, Path, Security, Request, Route, Tags, Body } from "tsoa";
-import { injectable, inject } from "tsyringe";
+import { injectable } from "tsyringe";
+import { Controller, Post, Patch, Delete, Path, Body, Request, Route, Tags, Security } from "tsoa";
 import { PartyInteractionService } from "../service/party-interaction.service";
+import { Result } from "../../../common/types/result.type";
+import { ApplyPartyResDto, HandleApplicationResDto, ToggleLikeResDto, InteractionMessageResDto } from "../dtos/party-interaction.res.dto";
 import { HandleApplicationReqDto } from "../dtos/party-interaction.req.dto";
-import { ApplyPartyResDto, InteractionMessageResDto, ToggleLikeResDto } from "../dtos/party-interaction.res.dto";
 
-@Route("parties")
-@Tags("Party Interaction")
 @injectable()
+@Route('parties')
+@Tags('Party Interaction')
 export class PartyInteractionController extends Controller {
-  constructor(
-    @inject(PartyInteractionService) private interactionService: PartyInteractionService
-  ) { super(); }
+  constructor(private readonly partyInteractionService: PartyInteractionService) {
+    super();
+  }
 
   // 1. 파티 참가 신청 API
+  @Post('{postId}/applications')
   @Security("jwt")
-  @Post("{postId}/applications")
-  public async apply(@Path() postId: number, @Request() req: any): Promise<ApplyPartyResDto> {
-    const result = await this.interactionService.applyParty(req.user.id, postId);
+  public async applyParty(
+    @Request() request: any,
+    @Path() postId: number
+  ): Promise<Result<ApplyPartyResDto>> {
+    const result = await this.partyInteractionService.applyParty(request.user.id, postId);
     this.setStatus(result.statusCode);
-    return result.data!; 
+    return result;
   }
 
-  // 2. 참가 신청 취소 API
+  // 2. 파티 신청 수락/거절 API
+  @Patch('applications/{applicationId}')
   @Security("jwt")
-  @Delete("applications/{applicationId}")
-  public async cancel(@Path() applicationId: number, @Request() req: any): Promise<InteractionMessageResDto> {
-    const result = await this.interactionService.cancelApplication(req.user.id, applicationId);
+  public async handleApplication(
+    @Request() request: any,
+    @Path() applicationId: number,
+    @Body() body: HandleApplicationReqDto
+  ): Promise<Result<HandleApplicationResDto>> {
+    const result = await this.partyInteractionService.handleApplication(request.user.id, applicationId, body.isAccepted);
     this.setStatus(result.statusCode);
-    return result.data!;
+    return result;
   }
 
-  // 3. 참가 신청 승낙 및 거절 API
+  // 3. 파티 좋아요 토글 API
+  @Post('{postId}/likes')
   @Security("jwt")
-  @Patch("applications/{applicationId}")
-  public async handle(
-    @Path() applicationId: number, 
-    @Body() body: HandleApplicationReqDto, 
-    @Request() req: any
-  ): Promise<InteractionMessageResDto> {
-    const result = await this.interactionService.handleApplication(req.user.id, applicationId, body.isAccepted);
+  public async toggleLike(
+    @Request() request: any,
+    @Path() postId: number
+  ): Promise<Result<ToggleLikeResDto>> {
+    const result = await this.partyInteractionService.toggleLike(request.user.id, postId);
     this.setStatus(result.statusCode);
-    return result.data!;
+    return result;
   }
 
-  // 4. 좋아요 등록 및 취소 토글 API
+  // 4. 파티 참가 신청 취소 API
+  @Delete('applications/{applicationId}')
   @Security("jwt")
-  @Post("{postId}/likes")
-  public async toggleLike(@Path() postId: number, @Request() req: any): Promise<ToggleLikeResDto> {
-    const result = await this.interactionService.toggleLike(req.user.id, postId);
+  public async cancelApplication(
+    @Request() request: any,
+    @Path() applicationId: number
+  ): Promise<Result<InteractionMessageResDto>> {
+    const result = await this.partyInteractionService.cancelApplication(request.user.id, applicationId);
     this.setStatus(result.statusCode);
-    return result.data!;
+    return result;
   }
 }
