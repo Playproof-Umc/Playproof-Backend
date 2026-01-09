@@ -34,43 +34,43 @@ enum PlayStyle {
 }
 
 model User {
-  id              BigInt    @id @default(autoincrement())
-  phone           String?
-  isPhoneVerified Boolean   @default(false) @map("is_phone_verified")
-  phoneVerifiedAt DateTime? @map("phone_verified_at")
-  password        String?
-  email           String?
-  provider        Provider  @default(LOCAL)
-  providerId      String?   @map("provider_id")
-  nickname        String?
-  grade           Grade     @default(BASIC)
-  trustScore      Int       @default(50) @map("trust_score")
-  playStyle       PlayStyle @default(MANNER) @map("play_style")
-  coin            Int       @default(0)
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+  id                  BigInt              @id @default(autoincrement())
+  phone               String?             @unique
+  isPhoneVerified     Boolean             @default(false)               @map("is_phone_verified")
+  phoneVerifiedAt     DateTime?                                         @map("phone_verified_at")
+  password            String?             
+  email               String?
+  provider            Provider            @default(LOCAL)
+  providerId          String?                                           @map("provider_id")
+  nickname            String?             @unique
+  grade               Grade               @default(BASIC)
+  trustScore          Int                 @default(50)                  @map("trust_score")
+  playStyle           PlayStyle           @default(MANNER)              @map("play_style")
+  coin                Int                 @default(0)
+  createdAt           DateTime            @default(now())               @map("created_at")
+  updatedAt           DateTime            @updatedAt @default(now())    @map("updated_at")
 
-  userTerms         UserTerm[]
-  userAvatars       UserAvatar[]
-  userGameInfos     UserGameInfo[]
-  userCategoryInfos UserCategoryInfo[]
-  friendsFrom       Friend[]           @relation("FriendFromUser")
-  friendsTo         Friend[]           @relation("FriendToUser")
-  bansUser          Ban[]              @relation("BanUser")
-  reportsUser       Report[]           @relation("ReportUser")
-  shoppingCarts     ShoppingCart[]
-  buyItems          BuyItem[]
-  partyPosts        PartyPost[]
-  postComments      PostComment[]
-  postLikes         UserPostLike[]
-  applications      Application[]
-  azitUsers         AzitUser[]
-  highlights        Highlight[]
-  communityPosts    CommunityPost[]
-  communityComments CommunityComment[]
-  communityLikes    CommunityLike[]
-  feedbacksUser     Feedback[]         @relation("FeedbackUser")
-  feedbacksTarget   Feedback[]         @relation("FeedbackTarget")
+  userTerms            UserTerm[]
+  userAvatars          UserAvatar[]
+  userGameInfos        UserGameInfo[]
+  userCategoryInfos    UserCategoryInfo[]
+  friendsFrom          Friend[]           @relation("FriendFromUser")
+  friendsTo            Friend[]           @relation("FriendToUser")
+  bansUser             Ban[]              @relation("BanUser")
+  reportsUser          Report[]           @relation("ReportUser")      
+  shoppingCarts        ShoppingCart[]
+  buyItems             BuyItem[]
+  partyPosts           PartyPost[]
+  postComments         PostComment[]
+  postLikes            UserPostLike[]
+  applications         Application[]
+  azitUsers            AzitUser[]
+  highlights           Highlight[]
+  communityPosts       CommunityPost[]
+  communityComments    CommunityComment[]
+  communityLikes       CommunityLike[]
+  feedbacksUser        Feedback[]         @relation("FeedbackUser")
+  feedbacksTarget      Feedback[]         @relation("FeedbackTarget")
 
   // 사용 X
   bansTarget    Ban[]    @relation("BanTarget")
@@ -479,9 +479,10 @@ enum ChatRoomType {
 
 model Azit {
   id        BigInt   @id @default(autoincrement())
-  azitName  String   @map("azit_name")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  azitName  String                              @map("azit_name")
+  imageUrl  String                              @map("image_url")
+  createdAt DateTime @default(now())            @map("created_at")
+  updatedAt DateTime @updatedAt @default(now()) @map("updated_at")
 
   members   AzitUser[]
   schedules AzitSchedule[]

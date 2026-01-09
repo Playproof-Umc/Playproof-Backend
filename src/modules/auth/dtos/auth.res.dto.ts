@@ -8,12 +8,12 @@ export class SignUpResDto {
   /**
    * @example "010-1234-5678"
    */
-  phoneNumber!: string;
+  phone!: string | null;
 
   /**
    * @example "홍길동"
    */
-  name!: string;
+  nickname!: string | null;
 }
 
 export class LoginResDto {
