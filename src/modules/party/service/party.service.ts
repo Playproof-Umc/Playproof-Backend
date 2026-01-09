@@ -12,20 +12,20 @@ export class PartyService {
     @inject(PartyRepository) private partyRepository: PartyRepository,
   ) {}
 
-  async createParty(dto: PartyCreateReqDto, userId: number): Promise<Result<PartyCreateResDto>> {  
-    const { azitName, azitIconUrl, azitId, ...rest } = dto;
-
-    // 1. 마스터 데이터 검증 (Game, Tier, Positions)
-    const game = await this.partyRepository.findGameById(dto.gameId);
+  // 게임 마스터 테치블 데이터 검증
+  private async validateGame(gameId: number) {
+    const game = await this.partyRepository.findGameById(gameId);
     if (!game) {
       return notFound({
         message: "게임을 찾을 수 없습니다.",
         errorCode: PartyErrorCode.NOT_FOUND_GAME,
       });
     }
+  }
 
-    if (dto.tierId) {
-      const tier = await this.partyRepository.findTierById(dto.tierId);
+  private async validateTier(tierId: number) {
+    if (tierId) {
+      const tier = await this.partyRepository.findTierById(tierId);
       if (!tier) {
         return notFound({
           message: "티어를 찾을 수 없습니다.",
@@ -33,16 +33,27 @@ export class PartyService {
         });
       }
     }
+  }
 
-    if (dto.positionIds && dto.positionIds.length > 0) {
-      const positions = await this.partyRepository.findPositionsByIds(dto.positionIds);
-      if (positions.length !== dto.positionIds.length) {
+  private async validatePositions(positionIds: number[]) {
+    if (positionIds && positionIds.length > 0) {
+      const positions = await this.partyRepository.findPositionsByIds(positionIds);
+      if (positions.length !== positionIds.length) {
         return notFound({
           message: "일부 포지션을 찾을 수 없습니다.",
           errorCode: PartyErrorCode.NOT_FOUND_POSITION,
         });
       }
     }
+  }
+
+  async createParty(dto: PartyCreateReqDto, userId: number): Promise<Result<PartyCreateResDto>> {  
+    const { azitName, azitIconUrl, azitId, ...rest } = dto;
+
+    // 1. 마스터 데이터 검증
+    this.validateGame(dto.gameId);
+    this.validateTier(dto.tierId);
+    this.validatePositions(dto.positionIds);
 
     // 2. 아지트 검증
     let targetAzitId: number;
@@ -123,36 +134,15 @@ export class PartyService {
       });
     }
 
-    // 2. 데이터 검증
-    if (dto.gameId) {
-      const game = await this.partyRepository.findGameById(dto.gameId);
-      if (!game) {
-        return notFound({
-          message: "게임을 찾을 수 없습니다.",
-          errorCode: PartyErrorCode.NOT_FOUND_GAME,
-        });
-      }
-    }
+    // 2. 마스터 데이터 검증
+    if(dto.gameId)
+      this.validateGame(dto.gameId);
 
-    if (dto.tierId) {
-      const tier = await this.partyRepository.findTierById(dto.tierId);
-      if (!tier) {
-        return notFound({
-          message: "티어를 찾을 수 없습니다.",
-          errorCode: PartyErrorCode.NOT_FOUND_TIER,
-        });
-      }
-    }
+    if (dto.tierId) 
+      this.validateTier(dto.tierId);
 
-    if (dto.positionIds && dto.positionIds.length > 0) {
-      const positions = await this.partyRepository.findPositionsByIds(dto.positionIds);
-      if (positions.length !== dto.positionIds.length) {
-        return notFound({
-          message: "일부 포지션을 찾을 수 없습니다.",
-          errorCode: PartyErrorCode.NOT_FOUND_POSITION,
-        });
-      }
-    }
+    if (dto.positionIds && dto.positionIds.length > 0) 
+      this.validatePositions(dto.positionIds);
 
     if (dto.azitId) {
       const azit = await this.partyRepository.findAzitById(dto.azitId);
@@ -182,7 +172,7 @@ export class PartyService {
       return await this.partyRepository.updateParty(id, dto, tx);
     });
 
-    // 4. 결과 반환 (CreateResDto 재사용 또는 필요시 전용 DTO 생성)
+    // 4. 결과 반환
     // 최신 정보 조회를 위해 다시 조회 (관계 데이터 포함)
     const finalParty = await this.partyRepository.findById(id);
     if (!finalParty) {
@@ -211,7 +201,7 @@ export class PartyService {
 
   async deleteParty(id: number, userId: number): Promise<Result<PartyDeleteResDto>> {
     // 1. 파티 존재 여부 및 권한 확인
-    const party = await this.partyRepository.findById(id);
+        const party = await this.partyRepository.findById(id);
     if (!party) {
       return notFound({
         message: "파티를 찾을 수 없습니다.",
