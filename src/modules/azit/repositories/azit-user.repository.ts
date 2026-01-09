@@ -1,7 +1,7 @@
 // src/modules/azit/repositories/azit-user.repository.ts
 import { singleton } from "tsyringe";
 
-import { AzitUser, AzitUserRole } from "@prisma/client";
+import { Azit, AzitUser, AzitUserRole } from "@prisma/client";
 import { prisma } from "../../../common/config/database";
 
 @singleton()
@@ -31,5 +31,24 @@ export class AzitUserRepository {
     });
 
     return azitUsers.map((azitUser) => azitUser.azit.azitName);
+  }
+
+  async findAzitsByUserId(userId: bigint): Promise<Array<Pick<Azit, 'id' | 'azitName' | 'imageUrl'>>> {
+    const azitUsers = await prisma.azitUser.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        azit: {
+          select: {
+            id: true,
+            azitName: true,
+            imageUrl: true,
+          },
+        },
+      },
+    });
+
+    return azitUsers.map((azitUser) => azitUser.azit);
   }
 }
