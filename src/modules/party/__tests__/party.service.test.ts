@@ -302,6 +302,11 @@ describe('PartyService', () => {
 
       expect(isSuccess(result)).toBe(true);
       expect(result.statusCode).toBe(200);
+      if (isSuccess(result)) {
+        expect(result.data.partyId).toBe(partyId);
+        expect(result.data.message).toBe("파티가 삭제되었습니다.");
+        expect(result.data.deletedAt).toBeInstanceOf(Date);
+      }
       expect(partyRepository.deleteParty).toHaveBeenCalledWith(partyId, null);
       expect(partyRepository.deleteAzit).toHaveBeenCalledWith(azitId, null);
     });
@@ -318,6 +323,9 @@ describe('PartyService', () => {
       const result = await partyService.deleteParty(partyId, userId);
 
       expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.partyId).toBe(partyId);
+      }
       expect(partyRepository.deleteParty).toHaveBeenCalledWith(partyId, null);
       expect(partyRepository.deleteAzit).not.toHaveBeenCalled();
     });

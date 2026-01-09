@@ -191,3 +191,23 @@ export class PartyCreateResDto {
   @IsString()
   createdAt!: Date;
 }
+
+export class PartyDeleteResDto {
+  /**
+   * @example 105
+   */
+  @IsNumber()
+  partyId!: number;
+
+  /**
+   * @example "파티가 삭제되었습니다."
+   */
+  @IsString()
+  message!: string;
+
+  /**
+   * @example "2026-01-05 15:30:00"
+   */
+  @IsString()
+  deletedAt!: Date;
+}

@@ -2,7 +2,7 @@ import { injectable, inject } from "tsyringe";
 import { PartyRepository } from "../repository/party.repository";
 import { Result, created, notFound, ok, forbidden } from "../../../common/types/result.type";
 import { PartyCreateReqDto, PartyUpdateReqDto } from "../dtos/party.req.dto";
-import { PartyCreateResDto, PartyGetResDto } from "../dtos/party.res.dto";
+import { PartyCreateResDto, PartyGetResDto, PartyDeleteResDto } from "../dtos/party.res.dto";
 import { PartyErrorCode } from "../../../common/constants/error-code";
 import { prisma } from "../../../common/config/database";
 
@@ -209,7 +209,7 @@ export class PartyService {
     } as PartyCreateResDto);
   }
 
-  async deleteParty(id: number, userId: number): Promise<Result<null>> {
+  async deleteParty(id: number, userId: number): Promise<Result<PartyDeleteResDto>> {
     // 1. 파티 존재 여부 및 권한 확인
     const party = await this.partyRepository.findById(id);
     if (!party) {
@@ -238,7 +238,11 @@ export class PartyService {
       }
     });
 
-    return ok(null);
+    return ok({
+      partyId: id,
+      message: "파티가 삭제되었습니다.",
+      deletedAt: new Date(),
+    });
   }
 
   async getParty(id: number): Promise<Result<PartyGetResDto>> {

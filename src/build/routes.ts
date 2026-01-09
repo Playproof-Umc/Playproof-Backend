@@ -215,14 +215,24 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Success_null_": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"dataType":"enum","enums":[null],"required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    "PartyDeleteResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "partyId": {"dataType":"double","required":true},
+            "message": {"dataType":"string","required":true},
+            "deletedAt": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Result_null_": {
+    "Success_PartyDeleteResDto_": {
         "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"ref":"Success_null_"},{"ref":"Failed"}],"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"PartyDeleteResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_PartyDeleteResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_PartyDeleteResDto_"},{"ref":"Failed"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Success_void_": {

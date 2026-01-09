@@ -743,7 +743,32 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Success_null_": {
+			"PartyDeleteResDto": {
+				"properties": {
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"example": 105
+					},
+					"message": {
+						"type": "string",
+						"example": "파티가 삭제되었습니다."
+					},
+					"deletedAt": {
+						"type": "string",
+						"format": "date-time",
+						"example": "2026-01-05 15:30:00"
+					}
+				},
+				"required": [
+					"partyId",
+					"message",
+					"deletedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_PartyDeleteResDto_": {
 				"properties": {
 					"error": {
 						"type": "number",
@@ -753,11 +778,7 @@
 						"nullable": true
 					},
 					"data": {
-						"type": "number",
-						"enum": [
-							null
-						],
-						"nullable": true
+						"$ref": "#/components/schemas/PartyDeleteResDto"
 					},
 					"statusCode": {
 						"type": "number",
@@ -770,10 +791,10 @@
 				],
 				"type": "object"
 			},
-			"Result_null_": {
+			"Result_PartyDeleteResDto_": {
 				"anyOf": [
 					{
-						"$ref": "#/components/schemas/Success_null_"
+						"$ref": "#/components/schemas/Success_PartyDeleteResDto_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
@@ -1150,7 +1171,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_null_"
+									"$ref": "#/components/schemas/Result_PartyDeleteResDto_"
 								}
 							}
 						}

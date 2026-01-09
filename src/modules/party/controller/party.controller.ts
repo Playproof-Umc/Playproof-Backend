@@ -2,7 +2,7 @@ import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Pa
 import { injectable, inject } from "tsyringe";
 import { PartyService } from "../service/party.service";
 import { Result } from "../../../common/types/result.type";
-import { PartyCreateResDto, PartyGetResDto } from "../dtos/party.res.dto";
+import { PartyCreateResDto, PartyGetResDto, PartyDeleteResDto } from "../dtos/party.res.dto";
 import { PartyCreateReqDto, PartyUpdateReqDto } from "../dtos/party.req.dto";
 import { validationMiddleware } from "../../../common/middlewares/validation";
 
@@ -61,7 +61,7 @@ export class PartyController extends Controller {
   public async deleteParty(
     @Path() id: number,
     @Request() req: any,
-  ): Promise<Result<null>> {
+  ): Promise<Result<PartyDeleteResDto>> {
     const userId = req.user.id;
     const result = await this.partyService.deleteParty(id, userId);
     this.setStatus(result.statusCode);
