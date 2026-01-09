@@ -2,7 +2,7 @@ import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Pa
 import { injectable, inject } from "tsyringe";
 import { PartyService } from "../service/party.service";
 import { Result } from "../../../common/types/result.type";
-import { PartyCreateResDto } from "../dtos/party.res.dto";
+import { PartyCreateResDto, PartyGetResDto } from "../dtos/party.res.dto";
 import { PartyCreateReqDto } from "../dtos/party.req.dto";
 import { validationMiddleware } from "../../../common/middlewares/validation";
 
@@ -34,7 +34,7 @@ export class PartyController extends Controller {
   @Get("{id}")
   public async getParty(
     @Path() id: number
-  ): Promise<Result<any>> {
+  ): Promise<Result<PartyGetResDto>> {
     const result = await this.partyService.getParty(id);
     this.setStatus(result.statusCode);
     return result;

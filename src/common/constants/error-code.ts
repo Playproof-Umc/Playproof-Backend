@@ -12,4 +12,7 @@ export const UserErrorCode = {
 // export const OrderErrorCode = { ... } as const;
 export const PartyErrorCode = {
   NOT_FOUND_PARTY: "PARTY_NOT_FOUND", // 파티를 찾을 수 없음
+  NOT_FOUND_GAME: "PARTY_NOT_FOUND_GAME", // 게임을 찾을 수 없음
+  NOT_FOUND_TIER: "PARTY_NOT_FOUND_TIER", // 티어를 찾을 수 없음
+  NOT_FOUND_POSITION: "PARTY_NOT_FOUND_POSITION", // 포지션을 찾을 수 없음
 } as const;

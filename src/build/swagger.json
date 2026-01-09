@@ -296,6 +296,389 @@
 					}
 				}
 			},
+			"PartyCreateResDto": {
+				"properties": {
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"userId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"gameId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"title": {
+						"type": "string",
+						"nullable": true,
+						"example": 1
+					},
+					"memo": {
+						"type": "string",
+						"nullable": true,
+						"example": 1
+					},
+					"recruitmentPeople": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"tierId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"positionIds": {
+						"items": {
+							"type": "number",
+							"format": "double"
+						},
+						"type": "array",
+						"nullable": true,
+						"example": [
+							1,
+							2
+						]
+					},
+					"isMicUse": {
+						"type": "boolean",
+						"nullable": true,
+						"example": true
+					},
+					"azitId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"azitName": {
+						"type": "string",
+						"nullable": true,
+						"example": 1
+					},
+					"azitIconUrl": {
+						"type": "string",
+						"nullable": true,
+						"example": "https://example.com/azit.png"
+					}
+				},
+				"required": [
+					"partyId",
+					"userId",
+					"gameId",
+					"title",
+					"memo",
+					"recruitmentPeople",
+					"tierId",
+					"positionIds",
+					"isMicUse",
+					"azitId",
+					"azitName",
+					"azitIconUrl"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_PartyCreateResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/PartyCreateResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_PartyCreateResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_PartyCreateResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"PartyCreateReqDto": {
+				"properties": {
+					"gameId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"title": {
+						"type": "string",
+						"example": "파티 제목"
+					},
+					"memo": {
+						"type": "string",
+						"example": "파티 내용"
+					},
+					"recruitmentPeople": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"tierId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"positionIds": {
+						"items": {
+							"type": "number",
+							"format": "double"
+						},
+						"type": "array",
+						"example": [
+							1,
+							2
+						]
+					},
+					"isMicUse": {
+						"type": "boolean",
+						"example": true
+					},
+					"azitName": {
+						"type": "string",
+						"example": "아지트 이름"
+					},
+					"azitIconUrl": {
+						"type": "string",
+						"example": "아지트 아이콘 URL"
+					}
+				},
+				"required": [
+					"gameId",
+					"title",
+					"memo",
+					"recruitmentPeople",
+					"tierId",
+					"positionIds",
+					"isMicUse",
+					"azitName",
+					"azitIconUrl"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyHostDto": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"example": "닉네임"
+					},
+					"trustScore": {
+						"type": "number",
+						"format": "double",
+						"example": 50
+					},
+					"avatarUrl": {
+						"type": "string",
+						"nullable": true,
+						"example": "https://example.com/avatar.png"
+					}
+				},
+				"required": [
+					"id",
+					"nickname",
+					"trustScore",
+					"avatarUrl"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyTagDto": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"name": {
+						"type": "string",
+						"example": "태그명"
+					}
+				},
+				"required": [
+					"id",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyPositionDto": {
+				"properties": {
+					"positionId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"positionName": {
+						"type": "string",
+						"example": "포지션명"
+					}
+				},
+				"required": [
+					"positionId",
+					"positionName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyGetResDto": {
+				"properties": {
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"host": {
+						"$ref": "#/components/schemas/PartyHostDto"
+					},
+					"title": {
+						"type": "string",
+						"example": "파티 제목"
+					},
+					"memo": {
+						"type": "string",
+						"nullable": true,
+						"example": "파티 한 줄 소개"
+					},
+					"tierName": {
+						"type": "string",
+						"nullable": true,
+						"example": "골드"
+					},
+					"azitName": {
+						"type": "string",
+						"example": "아지트 이름"
+					},
+					"participants": {
+						"type": "number",
+						"format": "double",
+						"example": 5
+					},
+					"currentParticipants": {
+						"type": "number",
+						"format": "double",
+						"example": 2
+					},
+					"isMic": {
+						"type": "boolean",
+						"example": true
+					},
+					"status": {
+						"type": "string",
+						"example": "active"
+					},
+					"viewCount": {
+						"type": "number",
+						"format": "double",
+						"example": 100
+					},
+					"tags": {
+						"items": {
+							"$ref": "#/components/schemas/PartyTagDto"
+						},
+						"type": "array"
+					},
+					"positions": {
+						"items": {
+							"$ref": "#/components/schemas/PartyPositionDto"
+						},
+						"type": "array"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"partyId",
+					"host",
+					"title",
+					"memo",
+					"tierName",
+					"azitName",
+					"participants",
+					"currentParticipants",
+					"isMic",
+					"status",
+					"viewCount",
+					"tags",
+					"positions",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_PartyGetResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/PartyGetResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_PartyGetResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_PartyGetResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"Success_void_": {
 				"properties": {
 					"error": {
@@ -321,37 +704,6 @@
 				"anyOf": [
 					{
 						"$ref": "#/components/schemas/Success_void_"
-					},
-					{
-						"$ref": "#/components/schemas/Failed"
-					}
-				]
-			},
-			"Success_any_": {
-				"properties": {
-					"error": {
-						"type": "number",
-						"enum": [
-							null
-						],
-						"nullable": true
-					},
-					"data": {},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"data",
-					"statusCode"
-				],
-				"type": "object"
-			},
-			"Result_any_": {
-				"anyOf": [
-					{
-						"$ref": "#/components/schemas/Success_any_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
@@ -587,7 +939,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_void_"
+									"$ref": "#/components/schemas/Result_PartyCreateResDto_"
 								}
 							}
 						}
@@ -606,7 +958,9 @@
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": {}
+							"schema": {
+								"$ref": "#/components/schemas/PartyCreateReqDto"
+							}
 						}
 					}
 				}
@@ -621,7 +975,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_any_"
+									"$ref": "#/components/schemas/Result_PartyGetResDto_"
 								}
 							}
 						}
