@@ -36,14 +36,14 @@ enum PlayStyle {
 
 model User {
   id                  BigInt              @id @default(autoincrement())
-  phone               String?
+  phone               String?             @unique
   isPhoneVerified     Boolean             @default(false)               @map("is_phone_verified")
   phoneVerifiedAt     DateTime?                                         @map("phone_verified_at")
-  password            String?
+  password            String?             
   email               String?
   provider            Provider            @default(LOCAL)
   providerId          String?                                           @map("provider_id")
-  nickname            String?
+  nickname            String?             @unique
   grade               Grade               @default(BASIC)
   trustScore          Int                 @default(50)                  @map("trust_score")
   playStyle           PlayStyle           @default(MANNER)              @map("play_style")
@@ -503,6 +503,7 @@ enum ChatRoomType {
 model Azit {
   id        BigInt   @id @default(autoincrement())
   azitName  String                              @map("azit_name")
+  imageUrl  String                              @map("image_url")
   createdAt DateTime @default(now())            @map("created_at")
   updatedAt DateTime @updatedAt @default(now()) @map("updated_at")
 

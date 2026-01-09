@@ -29,8 +29,8 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "id": {"dataType":"double","required":true},
-            "phoneNumber": {"dataType":"string","required":true},
-            "name": {"dataType":"string","required":true},
+            "phone": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
         },
         "additionalProperties": false,
     },
@@ -114,8 +114,8 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "id": {"dataType":"double","required":true},
-            "phoneNumber": {"dataType":"string","required":true},
-            "name": {"dataType":"string","required":true},
+            "phone": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
         },
         "additionalProperties": false,
     },
@@ -133,9 +133,9 @@ const models: TsoaRoute.Models = {
     "SignUpReqDto": {
         "dataType": "refObject",
         "properties": {
-            "name": {"dataType":"string","required":true},
+            "nickname": {"dataType":"string","required":true},
             "password": {"dataType":"string","required":true},
-            "phoneNumber": {"dataType":"string","required":true},
+            "phone": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -161,7 +161,7 @@ const models: TsoaRoute.Models = {
     "LoginReqDto": {
         "dataType": "refObject",
         "properties": {
-            "phoneNumber": {"dataType":"string","required":true},
+            "phone": {"dataType":"string","required":true},
             "password": {"dataType":"string","required":true},
         },
         "additionalProperties": false,

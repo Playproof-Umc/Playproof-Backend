@@ -1,4 +1,5 @@
 // src/app.ts
+import "dotenv/config";
 import "reflect-metadata"; 
 import express from "express";
 import cors from "cors";
@@ -7,6 +8,12 @@ import swaggerUi from "swagger-ui-express";
 import { RegisterRoutes } from "./build/routes"; 
 import swaggerDocument from "./build/swagger.json"; 
 import { globalErrorHandler } from "./common/middlewares/error.handler";
+
+// BigInt JSON 변환 처리
+(BigInt.prototype as any).toJSON = function () {
+  const n = Number(this);
+  return Number.isSafeInteger(n) ? n : this.toString();
+};
 
 export const app = express();
 

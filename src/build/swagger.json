@@ -14,19 +14,21 @@
 						"format": "double",
 						"example": 1
 					},
-					"phoneNumber": {
+					"phone": {
 						"type": "string",
+						"nullable": true,
 						"example": "010-1234-5678"
 					},
-					"name": {
+					"nickname": {
 						"type": "string",
+						"nullable": true,
 						"example": "홍길동"
 					}
 				},
 				"required": [
 					"id",
-					"phoneNumber",
-					"name"
+					"phone",
+					"nickname"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -363,19 +365,21 @@
 						"format": "double",
 						"example": 1
 					},
-					"phoneNumber": {
+					"phone": {
 						"type": "string",
+						"nullable": true,
 						"example": "010-1234-5678"
 					},
-					"name": {
+					"nickname": {
 						"type": "string",
+						"nullable": true,
 						"example": "홍길동"
 					}
 				},
 				"required": [
 					"id",
-					"phoneNumber",
-					"name"
+					"phone",
+					"nickname"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -415,7 +419,7 @@
 			},
 			"SignUpReqDto": {
 				"properties": {
-					"name": {
+					"nickname": {
 						"type": "string",
 						"example": "홍길동"
 					},
@@ -423,15 +427,15 @@
 						"type": "string",
 						"example": "strongpassword"
 					},
-					"phoneNumber": {
+					"phone": {
 						"type": "string",
 						"example": "010-1234-5678"
 					}
 				},
 				"required": [
-					"name",
+					"nickname",
 					"password",
-					"phoneNumber"
+					"phone"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -484,7 +488,7 @@
 			},
 			"LoginReqDto": {
 				"properties": {
-					"phoneNumber": {
+					"phone": {
 						"type": "string",
 						"example": "010-1234-5678"
 					},
@@ -494,7 +498,7 @@
 					}
 				},
 				"required": [
-					"phoneNumber",
+					"phone",
 					"password"
 				],
 				"type": "object",
