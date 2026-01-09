@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Path, Security, Middlewares, Request, Patch } from "tsoa";
+import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Path, Security, Middlewares, Request, Patch, Delete } from "tsoa";
 import { injectable, inject } from "tsyringe";
 import { PartyService } from "../service/party.service";
 import { Result } from "../../../common/types/result.type";
@@ -54,5 +54,17 @@ export class PartyController extends Controller {
     this.setStatus(result.statusCode);
     return result;
   }
-}
 
+  @SuccessResponse("200", "OK")
+  @Security("jwt")
+  @Delete("{id}")
+  public async deleteParty(
+    @Path() id: number,
+    @Request() req: any,
+  ): Promise<Result<null>> {
+    const userId = req.user.id;
+    const result = await this.partyService.deleteParty(id, userId);
+    this.setStatus(result.statusCode);
+    return result;
+  }
+}

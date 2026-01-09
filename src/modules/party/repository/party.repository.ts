@@ -149,7 +149,22 @@ export class PartyRepository {
     });
   }
 
-  async deleteParty(id: number) {
-    return prisma.partyPost.delete({ where: { id } });
+  async deleteParty(id: number, tx?: any) {
+    const client = tx || prisma;
+    
+    // 1. 관련 데이터 삭제
+    await client.postPosition.deleteMany({ where: { postId: id } });
+    await client.postCategory.deleteMany({ where: { postId: id } });
+    await client.application.deleteMany({ where: { postId: id } });
+    await client.postComment.deleteMany({ where: { postId: id } });
+    await client.userPostLike.deleteMany({ where: { postId: id } });
+
+    // 2. 파티 삭제
+    return client.partyPost.delete({ where: { id } });
+  }
+
+  async deleteAzit(id: number, tx?: any) {
+    const client = tx || prisma;
+    return client.azit.delete({ where: { id } });
   }
 }

@@ -155,6 +155,35 @@ export class PartyService {
     } as PartyCreateResDto);
   }
 
+  async deleteParty(id: number, userId: number): Promise<Result<null>> {
+    // 1. 파티 존재 여부 및 권한 확인
+    const party = await this.partyRepository.findById(id);
+    if (!party) {
+      return notFound({
+        message: "파티를 찾을 수 없습니다.",
+        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+      });
+    }
+
+    if (Number(party.userId) !== userId) {
+      return forbidden({
+        message: "파티 삭제 권한이 없습니다.",
+        errorCode: PartyErrorCode.FORBIDDEN,
+      });
+    }
+
+    // 2. 트랜잭션 삭제
+    await prisma.$transaction(async (tx) => {
+      // 파티 삭제 (관련 데이터 포함)
+      await this.partyRepository.deleteParty(id, tx);
+      
+      // 아지트 삭제
+      await this.partyRepository.deleteAzit(Number(party.azitId), tx);
+    });
+
+    return ok(null);
+  }
+
   async getParty(id: number): Promise<Result<PartyGetResDto>> {
     const party = await this.partyRepository.findById(id);
     if (!party) {

@@ -731,6 +731,43 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"Success_null_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_null_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_null_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"Success_void_": {
 				"properties": {
 					"error": {
@@ -1092,6 +1129,40 @@
 						}
 					}
 				}
+			},
+			"delete": {
+				"operationId": "DeleteParty",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_null_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
 		"/parties/{id}/like": {
