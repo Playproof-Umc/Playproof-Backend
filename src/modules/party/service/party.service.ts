@@ -1,7 +1,7 @@
 import { injectable, inject } from "tsyringe";
 import { PartyRepository } from "../repository/party.repository";
-import { Result, created, notFound, ok } from "../../../common/types/result.type";
-import { PartyCreateReqDto } from "../dtos/party.req.dto";
+import { Result, created, notFound, ok, forbidden } from "../../../common/types/result.type";
+import { PartyCreateReqDto, PartyUpdateReqDto } from "../dtos/party.req.dto";
 import { PartyCreateResDto, PartyGetResDto } from "../dtos/party.res.dto";
 import { PartyErrorCode } from "../../../common/constants/error-code";
 import { prisma } from "../../../common/config/database";
@@ -70,6 +70,88 @@ export class PartyService {
       azitId: Number(party.azitId),
       azitName: dto.azitName,
       azitIconUrl: dto.azitIconUrl,
+    } as PartyCreateResDto);
+  }
+
+  async updateParty(id: number, dto: PartyUpdateReqDto, userId: number): Promise<Result<PartyCreateResDto>> {
+    // 1. 파티 존재 여부 및 권한 확인
+    const party = await this.partyRepository.findById(id);
+    if (!party) {
+      return notFound({
+        message: "파티를 찾을 수 없습니다.",
+        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+      });
+    }
+
+    if (Number(party.userId) !== userId) {
+      return forbidden({
+        message: "파티 수정 권한이 없습니다.",
+        errorCode: PartyErrorCode.FORBIDDEN,
+      });
+    }
+
+    // 2. 데이터 검증
+    if (dto.gameId) {
+      const game = await this.partyRepository.findGameById(dto.gameId);
+      if (!game) {
+        return notFound({
+          message: "게임을 찾을 수 없습니다.",
+          errorCode: PartyErrorCode.NOT_FOUND_GAME,
+        });
+      }
+    }
+
+    if (dto.tierId) {
+      const tier = await this.partyRepository.findTierById(dto.tierId);
+      if (!tier) {
+        return notFound({
+          message: "티어를 찾을 수 없습니다.",
+          errorCode: PartyErrorCode.NOT_FOUND_TIER,
+        });
+      }
+    }
+
+    if (dto.positionIds && dto.positionIds.length > 0) {
+      const positions = await this.partyRepository.findPositionsByIds(dto.positionIds);
+      if (positions.length !== dto.positionIds.length) {
+        return notFound({
+          message: "일부 포지션을 찾을 수 없습니다.",
+          errorCode: PartyErrorCode.NOT_FOUND_POSITION,
+        });
+      }
+    }
+
+    // 3. 트랜잭션 업데이트
+    const updatedParty = await prisma.$transaction(async (tx) => {
+      // 아지트 정보 업데이트 (필요한 경우)
+      if (dto.azitName || dto.azitIconUrl) {
+        await this.partyRepository.updateAzit(
+          Number(party.azitId),
+          dto.azitName,
+          dto.azitIconUrl,
+          tx
+        );
+      }
+
+      // 파티 정보 업데이트
+      return await this.partyRepository.updateParty(id, dto, tx);
+    });
+
+    // 4. 결과 반환 (CreateResDto 재사용 또는 필요시 전용 DTO 생성)
+    // 여기서는 기존 PartyCreateResDto의 구조를 맞춰서 반환
+    return ok({
+      partyId: Number(updatedParty.id),
+      userId: Number(updatedParty.userId),
+      gameId: Number(updatedParty.gameId),
+      title: updatedParty.title,
+      memo: updatedParty.memo,
+      recruitmentPeople: updatedParty.recruitmentPeople,
+      tierId: updatedParty.tierId ? Number(updatedParty.tierId) : null,
+      positionIds: dto.positionIds || party.postPositions.map((pp: any) => Number(pp.positionId)),
+      isMicUse: updatedParty.isMicUse,
+      azitId: Number(updatedParty.azitId),
+      azitName: dto.azitName || (party as any).azit.azitName,
+      azitIconUrl: dto.azitIconUrl || (party as any).azit.imageUrl,
     } as PartyCreateResDto);
   }
 

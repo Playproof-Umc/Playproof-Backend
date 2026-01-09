@@ -1,9 +1,9 @@
-import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Path, Security, Middlewares, Request } from "tsoa";
+import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Path, Security, Middlewares, Request, Patch } from "tsoa";
 import { injectable, inject } from "tsyringe";
 import { PartyService } from "../service/party.service";
 import { Result } from "../../../common/types/result.type";
 import { PartyCreateResDto, PartyGetResDto } from "../dtos/party.res.dto";
-import { PartyCreateReqDto } from "../dtos/party.req.dto";
+import { PartyCreateReqDto, PartyUpdateReqDto } from "../dtos/party.req.dto";
 import { validationMiddleware } from "../../../common/middlewares/validation";
 
 @Route("parties")
@@ -36,6 +36,21 @@ export class PartyController extends Controller {
     @Path() id: number
   ): Promise<Result<PartyGetResDto>> {
     const result = await this.partyService.getParty(id);
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  @SuccessResponse("200", "OK")
+  @Security("jwt")
+  @Middlewares(validationMiddleware(PartyUpdateReqDto))
+  @Patch("{id}")
+  public async updateParty(
+    @Path() id: number,
+    @Body() requestBody: PartyUpdateReqDto,
+    @Request() req: any,
+  ): Promise<Result<PartyCreateResDto>> {
+    const userId = req.user.id;
+    const result = await this.partyService.updateParty(id, requestBody, userId);
     this.setStatus(result.statusCode);
     return result;
   }

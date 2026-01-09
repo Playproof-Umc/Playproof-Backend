@@ -118,8 +118,35 @@ export class PartyRepository {
     return prisma.partyPost.findMany({ where: { tierId } });
   }
 
-  async updateParty(id: number, data: any) {
-    return prisma.partyPost.update({ where: { id }, data });
+  async updateParty(id: number, data: any, tx?: any) {
+    const client = tx || prisma;
+    const { positionIds, gameId, tierId, azitName, azitIconUrl, ...rest } = data;
+
+    return client.partyPost.update({
+      where: { id },
+      data: {
+        ...rest,
+        game: gameId ? { connect: { id: gameId } } : undefined,
+        tier: tierId !== undefined ? (tierId ? { connect: { id: tierId } } : { disconnect: true }) : undefined,
+        postPositions: positionIds
+          ? {
+              deleteMany: {},
+              create: positionIds.map((pid: number) => ({ positionId: pid })),
+            }
+          : undefined,
+      },
+    });
+  }
+
+  async updateAzit(id: number, azitName?: string, imageUrl?: string, tx?: any) {
+    const client = tx || prisma;
+    return client.azit.update({
+      where: { id },
+      data: {
+        azitName,
+        imageUrl,
+      },
+    });
   }
 
   async deleteParty(id: number) {

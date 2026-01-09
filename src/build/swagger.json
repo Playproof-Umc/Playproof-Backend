@@ -679,6 +679,58 @@
 					}
 				]
 			},
+			"PartyUpdateReqDto": {
+				"properties": {
+					"gameId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"title": {
+						"type": "string",
+						"example": "수정된 파티 제목"
+					},
+					"memo": {
+						"type": "string",
+						"example": "수정된 파티 내용"
+					},
+					"recruitmentPeople": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"tierId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"positionIds": {
+						"items": {
+							"type": "number",
+							"format": "double"
+						},
+						"type": "array",
+						"example": [
+							1,
+							2
+						]
+					},
+					"isMicUse": {
+						"type": "boolean",
+						"example": true
+					},
+					"azitName": {
+						"type": "string",
+						"example": "수정된 아지트 이름"
+					},
+					"azitIconUrl": {
+						"type": "string",
+						"example": "수정된 아지트 아이콘 URL"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Success_void_": {
 				"properties": {
 					"error": {
@@ -996,6 +1048,50 @@
 						}
 					}
 				]
+			},
+			"patch": {
+				"operationId": "UpdateParty",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_PartyCreateResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PartyUpdateReqDto"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/parties/{id}/like": {
