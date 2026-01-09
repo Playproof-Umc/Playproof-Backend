@@ -89,6 +89,42 @@ describe('PartyService', () => {
       }
     });
 
+    it('should return error if azitId is provided but azit not found', async () => {
+      partyRepository.findGameById.mockResolvedValue({ id: 1 } as any);
+      partyRepository.findTierById.mockResolvedValue({ id: 1 } as any);
+      partyRepository.findPositionsByIds.mockResolvedValue([{ id: 1 }, { id: 2 }] as any);
+      partyRepository.findAzitById.mockResolvedValue(null);
+
+      const result = await partyService.createParty({ ...validDto, azitId: 999 }, userId);
+
+      expect(isSuccess(result)).toBe(false);
+      expect(result.statusCode).toBe(404);
+      if (!isSuccess(result)) {
+        expect(result.error.code).toBe(PartyErrorCode.NOT_FOUND_AZIT);
+        expect(result.error.message).toBe('아지트를 찾을 수 없습니다.');
+      }
+    });
+
+    it('should return error if neither azitId nor azitName/Url are provided', async () => {
+      partyRepository.findGameById.mockResolvedValue({ id: 1 } as any);
+      partyRepository.findTierById.mockResolvedValue({ id: 1 } as any);
+      partyRepository.findPositionsByIds.mockResolvedValue([{ id: 1 }, { id: 2 }] as any);
+
+      const result = await partyService.createParty({ 
+        ...validDto, 
+        azitId: undefined, 
+        azitName: undefined, 
+        azitIconUrl: undefined 
+      }, userId);
+
+      expect(isSuccess(result)).toBe(false);
+      expect(result.statusCode).toBe(404);
+      if (!isSuccess(result)) {
+        expect(result.error.code).toBe(PartyErrorCode.NOT_FOUND_AZIT);
+        expect(result.error.message).toBe('아지트 이름과 아이콘 URL이 필요합니다.');
+      }
+    });
+
     it('should successfully create a party with new azit', async () => {
       partyRepository.findGameById.mockResolvedValue({ id: 1 } as any);
       partyRepository.findTierById.mockResolvedValue({ id: 1 } as any);
