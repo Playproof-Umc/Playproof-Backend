@@ -1,3 +1,4 @@
+// src/common/config/s3.ts
 import { S3Client } from '@aws-sdk/client-s3';
 
 export const s3Client = new S3Client({

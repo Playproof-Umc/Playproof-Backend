@@ -1,3 +1,4 @@
+// src/common/config/multer.ts
 import multer from 'multer';
 
 const IMAGE_MIME_TYPE_PREFIX = 'image/';
