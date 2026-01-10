@@ -1,5 +1,5 @@
-// src/common/utils/file-upload.ts
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+// src/common/utils/file-util.ts
+import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { s3Client, BUCKET_NAME } from '../config/s3';
 
 /**
@@ -30,3 +30,20 @@ export async function uploadFileToS3(
   const region = process.env.AWS_REGION || 'ap-northeast-2';
   return `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`;
 }
+
+/**
+ * S3에서 파일을 삭제합니다.
+ * @param fileUrl - 삭제할 파일의 S3 URL
+ */
+export async function deleteFileFromS3(fileUrl: string): Promise<void> {
+  // URL에서 key 추출
+  const url = new URL(fileUrl);
+  const key = url.pathname.substring(1);
+
+  // S3에서 파일 삭제
+  await s3Client.send(new DeleteObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key,
+  }));
+}
+

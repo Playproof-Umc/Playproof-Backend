@@ -5,7 +5,7 @@ import { AzitUserRepository } from "../repositories/azit-user.repository";
 import { AzitCreateReqDto } from "../dtos/azit.req.dto";
 import { AzitCreateResDto } from "../dtos/azit.res.dto";
 import { Result, created, conflict, internalServerError } from "../../../common/types/result.type";
-import { uploadFileToS3 } from "../../../common/utils/file-upload";
+import { uploadFileToS3 } from "../../../common/utils/file-util";
 import { AzitUserRole } from "@prisma/client";
 
 @injectable()
