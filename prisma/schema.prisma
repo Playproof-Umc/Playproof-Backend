@@ -153,8 +153,8 @@ model Position {
   name String @map("position_name")
 
   // 사용 X
-  gameInfos  GameInfo[]
-  partyPosts PartyPost[]
+  gameInfos      GameInfo[]
+  postPositions  PostPosition[]
 
   @@map("positions")
 }
@@ -402,7 +402,6 @@ model PartyPost {
   userId            BigInt                                            @map("user_id")
   gameId            BigInt                                            @map("game_id")
   title             String
-  positionId        BigInt?                                           @map("position_id")
   tierId            BigInt?                                           @map("tier_id")
   azitId            BigInt                                            @map("azit_id")
   memo              String?            @db.Text
@@ -415,16 +414,27 @@ model PartyPost {
 
   user              User               @relation(fields: [userId], references: [id])
   game              Game               @relation(fields: [gameId], references: [id])
-  position          Position?          @relation(fields: [positionId], references: [id])
   tier              Tier?              @relation(fields: [tierId], references: [id])
   azit              Azit               @relation(fields: [azitId], references: [id])
 
   postCategories    PostCategory[]
+  postPositions     PostPosition[]
   applications      Application[]
   comments          PostComment[]
   likes             UserPostLike[]
 
   @@map("party_posts")
+}
+
+model PostPosition {
+  postId     BigInt     @map("post_id")
+  positionId BigInt     @map("position_id")
+
+  post       PartyPost  @relation(fields: [postId], references: [id])
+  position   Position   @relation(fields: [positionId], references: [id])
+
+  @@id([postId, positionId])
+  @@map("post_position")
 }
 
 model PostCategory {
