@@ -1,5 +1,5 @@
 // src/modules/azit/dtos/azit.req.dto.ts
-import { IsString, MinLength } from "class-validator";
+import { IsString, MinLength, IsOptional, IsBoolean } from "class-validator";
 
 export class AzitCreateReqDto {
   /**
@@ -8,4 +8,22 @@ export class AzitCreateReqDto {
   @IsString()
   @MinLength(2)
   azit_name!: string;
+}
+
+export class AzitUpdateReqDto {
+  /**
+   * @example "수정된 아지트 이름"
+   * @example null
+   */
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  azit_name?: string | null;
+
+  /**
+   * @example true
+   * @example false
+   */
+  @IsBoolean()
+  is_delete_icon: boolean = false;
 }

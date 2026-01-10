@@ -12,6 +12,8 @@ import { PartyInteractionController } from './../modules/party/controller/party-
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { PartyCommentController } from './../modules/party/controller/party-comment.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { AzitUpdateController } from './../modules/azit/controllers/azit-update.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AzitListController } from './../modules/azit/controllers/azit-list.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AzitController } from './../modules/azit/controllers/azit-create.controller';
@@ -126,6 +128,36 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_AzitCreateResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"AzitCreateResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_AzitCreateResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_AzitCreateResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ForbiddenError": {
+        "dataType": "refObject",
+        "properties": {
+            "error": {"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},
+            "data": {"dataType":"enum","enums":[null],"required":true},
+            "statusCode": {"dataType":"enum","enums":[403],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "NotFoundError": {
+        "dataType": "refObject",
+        "properties": {
+            "error": {"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},
+            "data": {"dataType":"enum","enums":[null],"required":true},
+            "statusCode": {"dataType":"enum","enums":[404],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AzitListResDto": {
         "dataType": "refObject",
         "properties": {
@@ -142,16 +174,6 @@ const models: TsoaRoute.Models = {
     "Result_AzitListResDto_": {
         "dataType": "refAlias",
         "type": {"dataType":"union","subSchemas":[{"ref":"Success_AzitListResDto_"},{"ref":"Failed"}],"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Success_AzitCreateResDto_": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"AzitCreateResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Result_AzitCreateResDto_": {
-        "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"ref":"Success_AzitCreateResDto_"},{"ref":"Failed"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "SignUpResDto": {
@@ -404,6 +426,52 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 next,
                 validatedArgs,
                 successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAzitUpdateController_updateAzit: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                azit_id: {"in":"path","name":"azit_id","required":true,"dataType":"double"},
+                azit_name: {"in":"formData","name":"azit_name","dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
+                is_delete_icon: {"in":"formData","name":"is_delete_icon","dataType":"boolean"},
+                azit_icon: {"in":"formData","name":"azit_icon","dataType":"file"},
+        };
+        app.patch('/azits/:azit_id',
+            authenticateMiddleware([{"jwt":[]}]),
+            upload.fields([
+                {
+                    name: "azit_icon",
+                    maxCount: 1
+                }
+            ]),
+            ...(fetchMiddlewares<RequestHandler>(AzitUpdateController)),
+            ...(fetchMiddlewares<RequestHandler>(AzitUpdateController.prototype.updateAzit)),
+
+            async function AzitUpdateController_updateAzit(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAzitUpdateController_updateAzit, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<AzitUpdateController>(AzitUpdateController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'updateAzit',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
               });
             } catch (err) {
                 return next(err);

@@ -51,4 +51,18 @@ export class AzitUserRepository {
 
     return azitUsers.map((azitUser) => azitUser.azit);
   }
+
+  async findAzitUserRoleByUserIdAndAzitId(userId: bigint, azitId: bigint): Promise<AzitUserRole | null> {
+    const azitUser = await prisma.azitUser.findFirst({
+      where: {
+        userId,
+        azitId,
+      },
+      select: {
+        role: true,
+      },
+    });
+    
+    return azitUser?.role ?? null;
+  }
 }

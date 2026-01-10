@@ -15,4 +15,27 @@ export class AzitRepository {
       },
     });
   }
+
+  async findAzitById(azitId: bigint): Promise<Azit | null> {
+    return prisma.azit.findUnique({
+      where: {
+        id: azitId,
+      },
+    });
+  }
+
+  async updateAzit(
+    azitId: bigint,
+    data: {
+      azitName: string;
+      imageUrl?: string | null;
+    }
+  ): Promise<Azit> {
+    return prisma.azit.update({
+      where: {
+        id: azitId,
+      },
+      data,
+    });
+  }
 }

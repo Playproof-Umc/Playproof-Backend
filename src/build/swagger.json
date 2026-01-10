@@ -383,6 +383,149 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"Success_AzitCreateResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/AzitCreateResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_AzitCreateResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_AzitCreateResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"ForbiddenError": {
+				"description": "403 에러 (Forbidden)",
+				"properties": {
+					"error": {
+						"properties": {
+							"errors": {
+								"items": {
+									"$ref": "#/components/schemas/ApiErrorDetail"
+								},
+								"type": "array"
+							},
+							"message": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"code"
+						],
+						"type": "object"
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"statusCode": {
+						"type": "number",
+						"enum": [
+							403
+						],
+						"nullable": false
+					}
+				},
+				"required": [
+					"error",
+					"data",
+					"statusCode"
+				],
+				"type": "object",
+				"additionalProperties": false,
+				"example": {
+					"statusCode": 403,
+					"data": null,
+					"error": {
+						"code": "AUTH_FORBIDDEN",
+						"message": "접근 권한이 없습니다."
+					}
+				}
+			},
+			"NotFoundError": {
+				"description": "404 에러 (Not Found)",
+				"properties": {
+					"error": {
+						"properties": {
+							"errors": {
+								"items": {
+									"$ref": "#/components/schemas/ApiErrorDetail"
+								},
+								"type": "array"
+							},
+							"message": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"code"
+						],
+						"type": "object"
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"statusCode": {
+						"type": "number",
+						"enum": [
+							404
+						],
+						"nullable": false
+					}
+				},
+				"required": [
+					"error",
+					"data",
+					"statusCode"
+				],
+				"type": "object",
+				"additionalProperties": false,
+				"example": {
+					"statusCode": 404,
+					"data": null,
+					"error": {
+						"code": "RESOURCE_NOT_FOUND",
+						"message": "요청하신 리소스를 찾을 수 없습니다."
+					}
+				}
+			},
 			"AzitListResDto": {
 				"properties": {
 					"azits": {
@@ -437,39 +580,6 @@
 				"anyOf": [
 					{
 						"$ref": "#/components/schemas/Success_AzitListResDto_"
-					},
-					{
-						"$ref": "#/components/schemas/Failed"
-					}
-				]
-			},
-			"Success_AzitCreateResDto_": {
-				"properties": {
-					"error": {
-						"type": "number",
-						"enum": [
-							null
-						],
-						"nullable": true
-					},
-					"data": {
-						"$ref": "#/components/schemas/AzitCreateResDto"
-					},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"data",
-					"statusCode"
-				],
-				"type": "object"
-			},
-			"Result_AzitCreateResDto_": {
-				"anyOf": [
-					{
-						"$ref": "#/components/schemas/Success_AzitCreateResDto_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
@@ -846,6 +956,105 @@
 									"content"
 								],
 								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/azits/{azit_id}": {
+			"patch": {
+				"operationId": "UpdateAzit",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_AzitCreateResDto_"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "Conflict",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ConflictError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Azit"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"azit_name": {
+										"type": "string",
+										"nullable": true
+									},
+									"is_delete_icon": {
+										"type": "boolean"
+									},
+									"azit_icon": {
+										"type": "string",
+										"format": "binary"
+									}
+								}
 							}
 						}
 					}
