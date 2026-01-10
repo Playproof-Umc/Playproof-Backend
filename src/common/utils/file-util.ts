@@ -38,12 +38,19 @@ export async function uploadFileToS3(
 export async function deleteFileFromS3(fileUrl: string): Promise<void> {
   // URL에서 key 추출
   const url = new URL(fileUrl);
-  const key = url.pathname.substring(1);
+  let key = url.pathname.substring(1);
+  
+  // URL 디코딩 (한글 등 특수문자 처리)
+  try {
+    key = decodeURIComponent(key);
+  } catch (error) {
+    // 디코딩 실패 시 원본 key 사용
+    console.warn('Failed to decode URL, using original key:', key);
+  }
 
   // S3에서 파일 삭제
-  await s3Client.send(new DeleteObjectCommand({
+  const result = await s3Client.send(new DeleteObjectCommand({
     Bucket: BUCKET_NAME,
     Key: key,
   }));
 }
-
