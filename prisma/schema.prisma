@@ -150,9 +150,9 @@ model Position {
   id   BigInt @id @default(autoincrement())
   name String @map("position_name")
 
-  // 사용 X
-  gameInfos      GameInfo[]
-  postPositions  PostPosition[]
+  // 1. 역관계 정의
+  gameInfos     GameInfo[]
+  postPositions PostPosition[]
 
   @@map("positions")
 }
@@ -381,7 +381,6 @@ model PartyPost {
   id                BigInt   @id @default(autoincrement()) @map("post_id")
   userId            BigInt   @map("user_id")
   gameId            BigInt   @map("game_id")
-  positionId        BigInt   @map("position_id")
   tierId            BigInt   @map("tier_id")
   azitId            BigInt   @map("azit_id")
   title             String
@@ -393,16 +392,18 @@ model PartyPost {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
 
+  // 1. 관계 설정
   user User @relation(fields: [userId], references: [id], map: "party_posts_user_id_fkey")
   game Game @relation(fields: [gameId], references: [id], map: "party_posts_game_id_fkey")
   tier Tier @relation(fields: [tierId], references: [id], map: "party_posts_tier_id_fkey")
   azit Azit @relation(fields: [azitId], references: [id], map: "party_posts_azit_id_fkey")
 
+  // 2. 연관 테이블 리스트
   postCategories PostCategory[]
   postComments   PostComment[]
   postLikes      UserPostLike[]
   applications   Application[]
-  position       Position       @relation(fields: [positionId], references: [id])
+  postPositions  PostPosition[] 
 
   @@map("party_posts")
 }
@@ -411,6 +412,7 @@ model PostPosition {
   postId     BigInt     @map("post_id")
   positionId BigInt     @map("position_id")
 
+  // 1. 다대다 연결 관계
   post       PartyPost  @relation(fields: [postId], references: [id])
   position   Position   @relation(fields: [positionId], references: [id])
 
