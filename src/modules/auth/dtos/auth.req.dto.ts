@@ -39,3 +39,12 @@ export class LoginReqDto {
   @IsNotEmpty()
   password!: string;
 }
+
+export class SendCertificationReqDto {
+  /**
+   * @example "010-1234-5678"
+   */
+  @IsString()
+  @IsPhoneNumber("KR", { message: "형식에 맞지 않는 전화번호입니다. "})
+  phone!: string;
+}

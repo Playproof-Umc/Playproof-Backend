@@ -1,11 +1,12 @@
 import { injectable, inject } from "tsyringe";
 import bcrypt from "bcrypt";
 import * as jose from "jose";
-import { UserRepository } from "../user/user.repository";
-import { SignUpReqDto, LoginReqDto } from "./dtos/auth.req.dto";
-import { SignUpResDto, LoginResDto } from "./dtos/auth.res.dto"
-import { Result, created, ok, unauthorized, conflict } from "../../common/types/result.type";
-import { UserErrorCode } from "../../common/constants/error-code"
+import { UserRepository } from "../../user/user.repository";
+import { SignUpReqDto, LoginReqDto, SendCertificationReqDto} from "../dtos/auth.req.dto";
+import { SignUpResDto, LoginResDto, SendCertificationResDto } from "../dtos/auth.res.dto"
+import { Result, created, ok, unauthorized, conflict, isSuccess } from "../../../common/types/result.type";
+import { UserErrorCode } from "../../../common/constants/error-code"
+import { sendVerificationSms } from "../../../common/utils/sms";
 
 @injectable()
 export class AuthService {
@@ -64,5 +65,29 @@ export class AuthService {
       .sign(this.SECRET);
 
     return ok({ accessToken });
+  }
+
+  async sendCertification(dto: SendCertificationReqDto): Promise<Result<SendCertificationResDto>> {
+    // 전화번호 중복 확인
+    const isPhoneExists = await this.userRepository.findByPhoneNumber(dto.phone);
+    if (isPhoneExists) {
+      return conflict({ message: "이미 가입된 번호입니다.", 
+        errorCode: UserErrorCode.DUPLICATE_PHONE_NUMBER, 
+        errors: [
+          { field: "phone", value: dto.phone, reason: "이미 사용 중인 전화번호입니다." }
+        ] });
+    }
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 3. Redis 저장 (코드 생략)
+    // await this.redisClient.set(...)
+
+    const smsResult = await sendVerificationSms(dto.phone, code);
+
+    if (!isSuccess(smsResult)) {
+      return smsResult; 
+    }
+
+    return ok({ status: "OK" });
   }
 }
