@@ -15,6 +15,11 @@ export const PartyErrorCode = {
   FORBIDDEN: "PARTY_FORBIDDEN",           // 파티에 대한 권한이 없음 (방장 아님 등)
   ALREADY_COMPLETED: "PARTY_ALREADY_COMPLETED", // 이미 모집이 완료된 파티
   
+  NOT_FOUND_GAME: "PARTY_NOT_FOUND_GAME", // 게임을 찾을 수 없음
+  NOT_FOUND_TIER: "PARTY_NOT_FOUND_TIER", // 티어를 찾을 수 없음
+  NOT_FOUND_POSITION: "PARTY_NOT_FOUND_POSITION", // 포지션을 찾을 수 없음
+  NOT_FOUND_AZIT: "PARTY_NOT_FOUND_AZIT", // 아지트를 찾을 수 없음
+  
   // 가입 신청(Application) 관련
   APPLICATION_NOT_FOUND: "PARTY_APPLICATION_NOT_FOUND", // 신청 내역을 찾을 수 없음
   ALREADY_APPLIED: "PARTY_ALREADY_APPLIED",             // 이미 신청한 파티
