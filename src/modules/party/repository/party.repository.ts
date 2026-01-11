@@ -104,6 +104,37 @@ export class PartyRepository {
     });
   }
 
+  // 아지트 작업 완료 후 AzitService/Repository로 이동 필요
+  async createTempAzit(azitName: string, imageUrl: string, tx?: any) {
+    const client = tx || prisma;
+    return client.azit.create({
+      data: {
+        azitName,
+        imageUrl,
+      },
+    });
+  }
+
+  async findAzitById(id: number) {
+    return prisma.azit.findUnique({ where: { id } });
+  }
+
+  async findGameById(id: number) {
+    return prisma.game.findUnique({ where: { id } });
+  }
+
+  async findTierById(id: number) {
+    return prisma.tier.findUnique({ where: { id } });
+  }
+
+  async findPositionsByIds(ids: number[]) {
+    return prisma.position.findMany({
+      where: {
+        id: { in: ids },
+      },
+    });
+  }
+
   async findById(id: number) {
     return prisma.partyPost.findUnique({
       where: { id: BigInt(id) },
@@ -124,6 +155,65 @@ export class PartyRepository {
     });
   }
 
+  async findByUserId(userId: number) {
+    return prisma.partyPost.findMany({ where: { userId } });
+  }
+
+  async findByGameId(gameId: number) {
+    return prisma.partyPost.findMany({ where: { gameId } });
+  }
+
+  async findByAzitId(azitId: number) {
+    return prisma.partyPost.findMany({ where: { azitId } });
+  }
+
+  async findByPositionId(positionId: number) {
+    return prisma.partyPost.findMany({
+      where: {
+        postPositions: {
+          some: { positionId },
+        },
+      },
+    });
+  }
+
+  async findByTierId(tierId: number) {
+    return prisma.partyPost.findMany({ where: { tierId } });
+  }
+
+  async updateParty(id: number, data: any, tx?: any) {
+    const client = tx || prisma;
+    const { positionIds, gameId, tierId, azitName, azitIconUrl, azitId, ...rest } = data;
+
+    return client.partyPost.update({
+      where: { id },
+      data: {
+        ...rest,
+        game: gameId ? { connect: { id: gameId } } : undefined,
+        tier: tierId !== undefined ? (tierId ? { connect: { id: tierId } } : { disconnect: true }) : undefined,
+        azit: azitId ? { connect: { id: azitId } } : undefined,
+        postPositions: positionIds
+          ? {
+              deleteMany: {},
+              create: positionIds.map((pid: number) => ({ positionId: pid })),
+            }
+          : undefined,
+      },
+    });
+  }
+
+
+  async updateAzit(id: number, azitName?: string, imageUrl?: string, tx?: any) {
+    const client = tx || prisma;
+    return client.azit.update({
+      where: { id },
+      data: {
+        azitName,
+        imageUrl,
+      },
+    });
+  }
+
   async deleteParty(id: number, tx?: any) {
     const client = tx || prisma;
     const bigIntId = BigInt(id);
@@ -135,6 +225,17 @@ export class PartyRepository {
 
     return client.partyPost.delete({ where: { id: bigIntId } });
   }
+
+  async deleteAzit(id: number, tx?: any) {
+    const client = tx || prisma;
+    return client.azit.delete({ where: { id } });
+  }
+
+  async countPartiesByAzitId(azitId: number, tx?: any) {
+    const client = tx || prisma;
+    return client.partyPost.count({ where: { azitId } });
+  }
+
 
   // 9. 기타 헬퍼 메소드들
   async countAll() {
