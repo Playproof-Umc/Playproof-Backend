@@ -11,6 +11,7 @@ export const UserErrorCode = {
 // 파티 및 매칭 관련 에러 코드
 export const PartyErrorCode = {
   // 파티 공통
+  NOT_FOUND_PARTY: "PARTY_NOT_FOUND", // 파티를 찾을 수 없음
   NOT_FOUND: "PARTY_NOT_FOUND",           // 파티 게시글을 찾을 수 없음
   FORBIDDEN: "PARTY_FORBIDDEN",           // 파티에 대한 권한이 없음 (방장 아님 등)
   ALREADY_COMPLETED: "PARTY_ALREADY_COMPLETED", // 이미 모집이 완료된 파티
