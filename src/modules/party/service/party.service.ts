@@ -61,9 +61,8 @@ export class PartyService {
     if (posError) return posError;
 
     // 2. 아지트 검증
-    let targetAzitId: number;
     let finalAzitName: string;
-    let finalAzitIconUrl: string;
+    let finalAzitIconUrl: string | null;
 
     if (azitId) {
       const azit = await this.partyRepository.findAzitById(azitId);
@@ -73,7 +72,6 @@ export class PartyService {
           errorCode: PartyErrorCode.NOT_FOUND_AZIT,
         });
       }
-      targetAzitId = Number(azit.id);
       finalAzitName = azit.azitName;
       finalAzitIconUrl = azit.imageUrl;
     } else {
