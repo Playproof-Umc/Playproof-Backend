@@ -29,3 +29,10 @@ export class SendCertificationResDto {
    */
   status!: string;
 }
+
+export class VerifyCertificationResDto {
+  /**
+   * @example "VERIFIED"
+   */
+  status!: string;
+}

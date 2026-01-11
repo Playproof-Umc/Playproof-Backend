@@ -2,9 +2,9 @@ import { injectable, inject } from "tsyringe";
 import bcrypt from "bcrypt";
 import * as jose from "jose";
 import { UserRepository } from "../../user/user.repository";
-import { SignUpReqDto, LoginReqDto, SendCertificationReqDto} from "../dtos/auth.req.dto";
-import { SignUpResDto, LoginResDto, SendCertificationResDto } from "../dtos/auth.res.dto"
-import { Result, created, ok, unauthorized, conflict, isSuccess } from "../../../common/types/result.type";
+import { SignUpReqDto, LoginReqDto, SendCertificationReqDto, VerifyCertificationReqDto} from "../dtos/auth.req.dto";
+import { SignUpResDto, LoginResDto, SendCertificationResDto, VerifyCertificationResDto } from "../dtos/auth.res.dto"
+import { Result, created, ok, unauthorized, conflict, isSuccess, badRequest } from "../../../common/types/result.type";
 import { UserErrorCode } from "../../../common/constants/error-code"
 import { sendVerificationSms } from "../../../common/utils/sms";
 import { redisClient } from "../../../common/config/database";
@@ -95,5 +95,35 @@ export class AuthService {
     }
 
     return ok({ status: "OK" });
+  }
+
+  async verifyCertification(dto: VerifyCertificationReqDto): Promise<Result<VerifyCertificationResDto>> {
+    const key = `sms:${dto.phone}`;
+    
+    // 인증번호 가져오기
+    const storedCode = await redisClient.get(key);
+
+    // error: 데이터가 없는 경우
+    if (!storedCode) {
+      return badRequest({ 
+        message: "인증 시간이 만료되었거나 인증 코드가 존재하지 않습니다.", 
+        errorCode: "AUTH_CODE_EXPIRED",
+        errors: [] 
+      });
+    }
+
+    // error: 인증번호 불일치
+    if (storedCode !== dto.code) {
+      return badRequest({ 
+        message: "인증 번호가 일치하지 않습니다.", 
+        errorCode: "AUTH_CODE_MISMATCH",
+        errors: [] 
+      });
+    }
+
+    // 성공시, 인증 데이터 삭제
+    await redisClient.del(key);
+
+    return ok({ status: "VERIFIED" });
   }
 }
