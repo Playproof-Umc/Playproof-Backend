@@ -13,7 +13,8 @@ export class PartyCommentService {
 
   // 1. 날짜 포맷팅 유틸리티
   private formatDate(date: Date): string {
-    return date.toISOString().replace('T', ' ').substring(0, 19);
+    const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+    return kstDate.toISOString().replace('T', ' ').substring(0, 19);
   }
 
   // 2. 댓글 목록 조회
