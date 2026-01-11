@@ -526,7 +526,7 @@ model AzitUser {
   role                    AzitUserRole  @default(MEMBER)
 
   user                    User @relation(fields: [userId], references: [id])
-  azit                    Azit @relation(fields: [azitId], references: [id])
+  azit                    Azit @relation(fields: [azitId], references: [id], onDelete: Cascade)
 
   scheduleParticipations  AzitScheduleParticipation[]
   
@@ -546,7 +546,7 @@ model AzitSchedule {
   createdAt         DateTime @default(now())              @map("created_at")
   updatedAt         DateTime @updatedAt @default(now())   @map("updated_at")
 
-  azit              Azit     @relation(fields: [azitId], references: [id])
+  azit              Azit     @relation(fields: [azitId], references: [id], onDelete: Cascade)
   participations    AzitScheduleParticipation[]
 
   @@map("azit_schedule")
@@ -558,8 +558,8 @@ model AzitScheduleParticipation {
   role            AzitScheduleRole @default(PARTICIPANT)
   participationAt DateTime         @default(now())  @map("participation_at")
 
-  member          AzitUser         @relation(fields: [memberId], references: [id])
-  schedule        AzitSchedule     @relation(fields: [scheduleId], references: [id])
+  member          AzitUser         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  schedule        AzitSchedule     @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
 
   @@id([memberId, scheduleId])
   @@map("azit_schedule_participation")
@@ -574,7 +574,7 @@ model ChatRoom {
   createdAt DateTime      @default(now())               @map("created_at")
   updatedAt DateTime      @updatedAt @default(now())    @map("updated_at")
 
-  azit      Azit          @relation(fields: [azitId], references: [id])
+  azit      Azit          @relation(fields: [azitId], references: [id], onDelete: Cascade)
   chats     Chat[]
 
   @@map("chat_rooms")
@@ -588,8 +588,8 @@ model Chat {
   createdAt   DateTime    @default(now())               @map("created_at")
   updatedAt   DateTime    @updatedAt @default(now())    @map("updated_at")
 
-  chatRoom    ChatRoom    @relation(fields: [chatRoomId], references: [id])
-  member      AzitUser    @relation(fields: [memberId], references: [id])
+  chatRoom    ChatRoom    @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  member      AzitUser    @relation(fields: [memberId], references: [id], onDelete: Cascade)
   medias      ChatMedia[]
 
   @@map("chats")
@@ -601,7 +601,7 @@ model ChatMedia {
   mediaUrl  String                                @map("media_url")
   uploadAt  DateTime @default(now())              @map("upload_at")
 
-  chat      Chat     @relation(fields: [chatId], references: [id])
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@map("chat_medias")
 }
