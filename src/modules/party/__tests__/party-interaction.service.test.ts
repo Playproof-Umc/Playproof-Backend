@@ -63,7 +63,9 @@ describe('PartyInteractionService', () => {
 
       // 3. 레포지토리에서 신청서 생성 성공 (ID 100번 발급)
       interactionRepo.createApplication.mockResolvedValue({ 
-        id: BigInt(100) 
+        id: BigInt(100),
+        postId: BigInt(postId),
+        applicationAt: new Date()
       } as any);
 
       const result = await service.applyParty(userId, postId);
