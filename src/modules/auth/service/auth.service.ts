@@ -7,6 +7,7 @@ import { SignUpResDto, LoginResDto, SendCertificationResDto } from "../dtos/auth
 import { Result, created, ok, unauthorized, conflict, isSuccess } from "../../../common/types/result.type";
 import { UserErrorCode } from "../../../common/constants/error-code"
 import { sendVerificationSms } from "../../../common/utils/sms";
+import { redisClient } from "../../../common/config/database";
 
 @injectable()
 export class AuthService {
@@ -79,12 +80,17 @@ export class AuthService {
     }
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // 3. Redis 저장 (코드 생략)
-    // await this.redisClient.set(...)
+    // 레디스 저장
+    await redisClient.set(`sms:${dto.phone}`, code, { 
+      EX: 300 // 5분
+    });
 
+    // SMS 발송
     const smsResult = await sendVerificationSms(dto.phone, code);
 
+    // SMS 발송 실패 시 레디스에서 코드 삭제 및 에러 객체 반환
     if (!isSuccess(smsResult)) {
+      await redisClient.del(`sms:${dto.phone}`);
       return smsResult; 
     }
 
