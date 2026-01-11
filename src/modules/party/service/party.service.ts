@@ -123,7 +123,7 @@ export class PartyService {
     if (!party) {
       return notFound({
         message: "파티를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+        errorCode: PartyErrorCode.NOT_FOUND,
       });
     }
 
@@ -178,7 +178,7 @@ export class PartyService {
     if (!finalParty) {
       return notFound({
         message: "파티를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+        errorCode: PartyErrorCode.NOT_FOUND,
       });
     }
 
@@ -205,7 +205,7 @@ export class PartyService {
     if (!party) {
       return notFound({
         message: "파티를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+        errorCode: PartyErrorCode.NOT_FOUND,
       });
     }
 
@@ -240,7 +240,7 @@ export class PartyService {
     if (!party) {
       return notFound({
         message: "파티를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+        errorCode: PartyErrorCode.NOT_FOUND,
       });
     }
 
