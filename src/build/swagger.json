@@ -296,6 +296,860 @@
 					}
 				}
 			},
+			"PartyHostDto": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"example": "닉네임"
+					},
+					"trustScore": {
+						"type": "number",
+						"format": "double",
+						"example": 50
+					},
+					"avatarUrl": {
+						"type": "string",
+						"nullable": true,
+						"example": "https://example.com/avatar.png"
+					}
+				},
+				"required": [
+					"id",
+					"nickname",
+					"trustScore",
+					"avatarUrl"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyTagDto": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"name": {
+						"type": "string",
+						"example": "태그명"
+					}
+				},
+				"required": [
+					"id",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyPositionDto": {
+				"properties": {
+					"positionId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"positionName": {
+						"type": "string",
+						"example": "포지션명"
+					}
+				},
+				"required": [
+					"positionId",
+					"positionName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyGetResDto": {
+				"properties": {
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"host": {
+						"$ref": "#/components/schemas/PartyHostDto"
+					},
+					"title": {
+						"type": "string",
+						"example": "파티 제목"
+					},
+					"memo": {
+						"type": "string",
+						"nullable": true,
+						"example": "파티 한 줄 소개"
+					},
+					"tierName": {
+						"type": "string",
+						"nullable": true,
+						"example": "골드"
+					},
+					"azitName": {
+						"type": "string",
+						"example": "아지트 이름"
+					},
+					"participants": {
+						"type": "number",
+						"format": "double",
+						"example": 5
+					},
+					"currentParticipants": {
+						"type": "number",
+						"format": "double",
+						"example": 2
+					},
+					"isMic": {
+						"type": "boolean",
+						"example": true
+					},
+					"status": {
+						"type": "string",
+						"example": "active"
+					},
+					"viewCount": {
+						"type": "number",
+						"format": "double",
+						"example": 100
+					},
+					"tags": {
+						"items": {
+							"$ref": "#/components/schemas/PartyTagDto"
+						},
+						"type": "array"
+					},
+					"positions": {
+						"items": {
+							"$ref": "#/components/schemas/PartyPositionDto"
+						},
+						"type": "array"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"partyId",
+					"host",
+					"title",
+					"memo",
+					"tierName",
+					"azitName",
+					"participants",
+					"currentParticipants",
+					"isMic",
+					"status",
+					"viewCount",
+					"tags",
+					"positions",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyListResDto": {
+				"properties": {
+					"parties": {
+						"items": {
+							"$ref": "#/components/schemas/PartyGetResDto"
+						},
+						"type": "array",
+						"example": []
+					},
+					"nextCursor": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 2
+					},
+					"hasNext": {
+						"type": "boolean",
+						"example": true
+					}
+				},
+				"required": [
+					"parties",
+					"nextCursor",
+					"hasNext"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_PartyListResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/PartyListResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_PartyListResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_PartyListResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"PartyCreateResDto": {
+				"properties": {
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"userId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"gameId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"title": {
+						"type": "string",
+						"nullable": true,
+						"example": 1
+					},
+					"memo": {
+						"type": "string",
+						"nullable": true,
+						"example": 1
+					},
+					"recruitmentPeople": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"tierId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"positionIds": {
+						"items": {
+							"type": "number",
+							"format": "double"
+						},
+						"type": "array",
+						"nullable": true,
+						"example": [
+							1,
+							2
+						]
+					},
+					"isMicUse": {
+						"type": "boolean",
+						"nullable": true,
+						"example": true
+					},
+					"azitId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"example": 1
+					},
+					"azitName": {
+						"type": "string",
+						"nullable": true,
+						"example": 1
+					},
+					"azitIconUrl": {
+						"type": "string",
+						"nullable": true,
+						"example": "https://example.com/azit.png"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"partyId",
+					"userId",
+					"gameId",
+					"title",
+					"memo",
+					"recruitmentPeople",
+					"tierId",
+					"positionIds",
+					"isMicUse",
+					"azitId",
+					"azitName",
+					"azitIconUrl",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_PartyCreateResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/PartyCreateResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_PartyCreateResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_PartyCreateResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"PartyCreateReqDto": {
+				"properties": {
+					"gameId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"title": {
+						"type": "string",
+						"example": "파티 제목"
+					},
+					"memo": {
+						"type": "string",
+						"example": "파티 내용"
+					},
+					"recruitmentPeople": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"tierId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"positionIds": {
+						"items": {
+							"type": "number",
+							"format": "double"
+						},
+						"type": "array",
+						"example": [
+							1
+						]
+					},
+					"isMicUse": {
+						"type": "boolean",
+						"example": true
+					},
+					"azitId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"azitName": {
+						"type": "string",
+						"example": "아지트 이름"
+					},
+					"azitIconUrl": {
+						"type": "string",
+						"example": "아지트 아이콘 URL"
+					}
+				},
+				"required": [
+					"gameId",
+					"title",
+					"memo",
+					"recruitmentPeople",
+					"tierId",
+					"positionIds",
+					"isMicUse"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_PartyGetResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/PartyGetResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_PartyGetResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_PartyGetResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"PartyUpdateReqDto": {
+				"properties": {
+					"gameId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"title": {
+						"type": "string",
+						"example": "수정된 파티 제목"
+					},
+					"memo": {
+						"type": "string",
+						"example": "수정된 파티 내용"
+					},
+					"recruitmentPeople": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"tierId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"positionIds": {
+						"items": {
+							"type": "number",
+							"format": "double"
+						},
+						"type": "array",
+						"example": [
+							1,
+							2
+						]
+					},
+					"isMicUse": {
+						"type": "boolean",
+						"example": true
+					},
+					"azitId": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"azitName": {
+						"type": "string",
+						"example": "수정된 아지트 이름"
+					},
+					"azitIconUrl": {
+						"type": "string",
+						"example": "수정된 아지트 아이콘 URL"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartyDeleteResDto": {
+				"properties": {
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"example": 105
+					},
+					"message": {
+						"type": "string",
+						"example": "파티가 삭제되었습니다."
+					},
+					"deletedAt": {
+						"type": "string",
+						"format": "date-time",
+						"example": "2026-01-05 15:30:00"
+					}
+				},
+				"required": [
+					"partyId",
+					"message",
+					"deletedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_PartyDeleteResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/PartyDeleteResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_PartyDeleteResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_PartyDeleteResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"ApplyPartyResDto": {
+				"properties": {
+					"applicationId": {
+						"type": "number",
+						"format": "double",
+						"description": "생성된 신청 ID",
+						"example": 1
+					},
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"description": "파티 게시글 ID",
+						"example": 10
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"PENDING"
+						],
+						"nullable": false,
+						"description": "신청 상태",
+						"example": "PENDING"
+					},
+					"createdAt": {
+						"type": "string",
+						"description": "신청 일시",
+						"example": "2026-01-10 01:21:00"
+					},
+					"message": {
+						"type": "string",
+						"description": "결과 메시지",
+						"example": "신청이 완료되었습니다."
+					}
+				},
+				"required": [
+					"applicationId",
+					"partyId",
+					"status",
+					"createdAt",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_ApplyPartyResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/ApplyPartyResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_ApplyPartyResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_ApplyPartyResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"HandleApplicationResDto": {
+				"properties": {
+					"applicationId": {
+						"type": "number",
+						"format": "double",
+						"description": "신청 ID",
+						"example": 1
+					},
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"description": "파티 게시글 ID",
+						"example": 10
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"APPROVED",
+							"REJECTED"
+						],
+						"description": "처리 결과 상태",
+						"example": "APPROVED"
+					},
+					"updatedAt": {
+						"type": "string",
+						"description": "수정 일시",
+						"example": "2026-01-10 14:20:00"
+					},
+					"message": {
+						"type": "string",
+						"description": "결과 메시지",
+						"example": "신청이 수락되었습니다."
+					}
+				},
+				"required": [
+					"applicationId",
+					"partyId",
+					"status",
+					"updatedAt",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_HandleApplicationResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/HandleApplicationResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_HandleApplicationResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_HandleApplicationResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"HandleApplicationReqDto": {
+				"properties": {
+					"isAccepted": {
+						"type": "boolean",
+						"description": "승낙 여부 (true: 승낙, false: 거절)",
+						"example": true
+					}
+				},
+				"required": [
+					"isAccepted"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ToggleLikeResDto": {
+				"properties": {
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"description": "파티 게시글 ID",
+						"example": 10
+					},
+					"isLiked": {
+						"type": "boolean",
+						"description": "좋아요 여부",
+						"example": true
+					},
+					"message": {
+						"type": "string",
+						"description": "결과 메시지",
+						"example": "좋아요 성공"
+					}
+				},
+				"required": [
+					"partyId",
+					"isLiked",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_ToggleLikeResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/ToggleLikeResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_ToggleLikeResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_ToggleLikeResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"InteractionMessageResDto": {
+				"properties": {
+					"message": {
+						"type": "string",
+						"description": "결과 메시지",
+						"example": "가입 신청이 성공적으로 취소되었습니다."
+					},
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"description": "취소된 파티 ID",
+						"example": 10
+					},
+					"updatedAt": {
+						"type": "string",
+						"description": "취소 처리 일시",
+						"example": "2026-01-05 14:05:00"
+					}
+				},
+				"required": [
+					"message",
+					"partyId",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_InteractionMessageResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/InteractionMessageResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_InteractionMessageResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_InteractionMessageResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"Success_void_": {
 				"properties": {
 					"error": {
@@ -321,37 +1175,6 @@
 				"anyOf": [
 					{
 						"$ref": "#/components/schemas/Success_void_"
-					},
-					{
-						"$ref": "#/components/schemas/Failed"
-					}
-				]
-			},
-			"Success_any_": {
-				"properties": {
-					"error": {
-						"type": "number",
-						"enum": [
-							null
-						],
-						"nullable": true
-					},
-					"data": {},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"data",
-					"statusCode"
-				],
-				"type": "object"
-			},
-			"Result_any_": {
-				"anyOf": [
-					{
-						"$ref": "#/components/schemas/Success_any_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
@@ -735,9 +1558,9 @@
 		},
 		"securitySchemes": {
 			"jwt": {
-				"type": "apiKey",
-				"name": "Authorization",
-				"in": "header"
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
 			}
 		}
 	},
@@ -807,6 +1630,60 @@
 			}
 		},
 		"/parties": {
+			"get": {
+				"operationId": "GetParties",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_PartyListResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 1,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"default": "latest",
+							"type": "string",
+							"enum": [
+								"latest",
+								"mostliked"
+							]
+						}
+					}
+				]
+			},
 			"post": {
 				"operationId": "CreateParty",
 				"responses": {
@@ -815,7 +1692,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_void_"
+									"$ref": "#/components/schemas/Result_PartyCreateResDto_"
 								}
 							}
 						}
@@ -834,7 +1711,9 @@
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": {}
+							"schema": {
+								"$ref": "#/components/schemas/PartyCreateReqDto"
+							}
 						}
 					}
 				}
@@ -849,7 +1728,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_any_"
+									"$ref": "#/components/schemas/Result_PartyGetResDto_"
 								}
 							}
 						}
@@ -870,18 +1749,16 @@
 						}
 					}
 				]
-			}
-		},
-		"/parties/{id}/like": {
-			"post": {
-				"operationId": "LikeParty",
+			},
+			"patch": {
+				"operationId": "UpdateParty",
 				"responses": {
 					"200": {
 						"description": "OK",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_void_"
+									"$ref": "#/components/schemas/Result_PartyCreateResDto_"
 								}
 							}
 						}
@@ -899,6 +1776,202 @@
 					{
 						"in": "path",
 						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PartyUpdateReqDto"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteParty",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_PartyDeleteResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/parties/{postId}/applications": {
+			"post": {
+				"operationId": "ApplyParty",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_ApplyPartyResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Interaction"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/parties/applications/{applicationId}": {
+			"patch": {
+				"operationId": "HandleApplication",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_HandleApplicationResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Interaction"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "applicationId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/HandleApplicationReqDto"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "CancelApplication",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_InteractionMessageResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Interaction"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "applicationId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/parties/{postId}/likes": {
+			"post": {
+				"operationId": "ToggleLike",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_ToggleLikeResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Interaction"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "postId",
 						"required": true,
 						"schema": {
 							"format": "double",
