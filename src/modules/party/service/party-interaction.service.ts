@@ -44,7 +44,9 @@ export class PartyInteractionService {
   async handleApplication(leaderId: number, applicationId: number, isAccepted: boolean): Promise<Result<HandleApplicationResDto>> {
     const application = await this.partyInteractionRepository.findApplicationWithPost(applicationId);
     if (!application) return notFound({ message: "신청 내역을 찾을 수 없습니다.", errorCode: "APP_404" });
-
+    if (application.isAccepted && isAccepted) {
+      return conflict({ message: "이미 수락된 신청입니다.", errorCode: "APP_409" });
+    }
     if (Number(application.post.userId) !== leaderId) {
       return forbidden({ message: "방장만 처리할 수 있습니다.", errorCode: "APP_403" });
     }

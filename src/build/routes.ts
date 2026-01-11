@@ -255,6 +255,98 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"union","subSchemas":[{"ref":"Success_PartyDeleteResDto_"},{"ref":"Failed"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApplyPartyResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "applicationId": {"dataType":"double","required":true},
+            "partyId": {"dataType":"double","required":true},
+            "status": {"dataType":"enum","enums":["PENDING"],"required":true},
+            "createdAt": {"dataType":"string","required":true},
+            "message": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_ApplyPartyResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"ApplyPartyResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_ApplyPartyResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_ApplyPartyResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "HandleApplicationResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "applicationId": {"dataType":"double","required":true},
+            "partyId": {"dataType":"double","required":true},
+            "status": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["APPROVED"]},{"dataType":"enum","enums":["REJECTED"]}],"required":true},
+            "updatedAt": {"dataType":"string","required":true},
+            "message": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_HandleApplicationResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"HandleApplicationResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_HandleApplicationResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_HandleApplicationResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "HandleApplicationReqDto": {
+        "dataType": "refObject",
+        "properties": {
+            "isAccepted": {"dataType":"boolean","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ToggleLikeResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "partyId": {"dataType":"double","required":true},
+            "isLiked": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_ToggleLikeResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"ToggleLikeResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_ToggleLikeResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_ToggleLikeResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "InteractionMessageResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "message": {"dataType":"string","required":true},
+            "partyId": {"dataType":"double","required":true},
+            "updatedAt": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_InteractionMessageResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"InteractionMessageResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_InteractionMessageResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_InteractionMessageResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Success_void_": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"dataType":"void","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
@@ -559,22 +651,22 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsPartyInteractionController_likeParty: Record<string, TsoaRoute.ParameterSchema> = {
-                id: {"in":"path","name":"id","required":true,"dataType":"double"},
-                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+        const argsPartyInteractionController_applyParty: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                postId: {"in":"path","name":"postId","required":true,"dataType":"double"},
         };
-        app.post('/parties/:id/like',
+        app.post('/parties/:postId/applications',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(PartyInteractionController)),
-            ...(fetchMiddlewares<RequestHandler>(PartyInteractionController.prototype.likeParty)),
+            ...(fetchMiddlewares<RequestHandler>(PartyInteractionController.prototype.applyParty)),
 
-            async function PartyInteractionController_likeParty(request: ExRequest, response: ExResponse, next: any) {
+            async function PartyInteractionController_applyParty(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsPartyInteractionController_likeParty, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsPartyInteractionController_applyParty, request, response });
 
                 const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
 
@@ -584,12 +676,124 @@ export function RegisterRoutes(app: Router) {
                 }
 
               await templateService.apiHandler({
-                methodName: 'likeParty',
+                methodName: 'applyParty',
                 controller,
                 response,
                 next,
                 validatedArgs,
-                successStatus: 200,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsPartyInteractionController_handleApplication: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                applicationId: {"in":"path","name":"applicationId","required":true,"dataType":"double"},
+                body: {"in":"body","name":"body","required":true,"ref":"HandleApplicationReqDto"},
+        };
+        app.patch('/parties/applications/:applicationId',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(PartyInteractionController)),
+            ...(fetchMiddlewares<RequestHandler>(PartyInteractionController.prototype.handleApplication)),
+
+            async function PartyInteractionController_handleApplication(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsPartyInteractionController_handleApplication, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<PartyInteractionController>(PartyInteractionController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'handleApplication',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsPartyInteractionController_toggleLike: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                postId: {"in":"path","name":"postId","required":true,"dataType":"double"},
+        };
+        app.post('/parties/:postId/likes',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(PartyInteractionController)),
+            ...(fetchMiddlewares<RequestHandler>(PartyInteractionController.prototype.toggleLike)),
+
+            async function PartyInteractionController_toggleLike(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsPartyInteractionController_toggleLike, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<PartyInteractionController>(PartyInteractionController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'toggleLike',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsPartyInteractionController_cancelApplication: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                applicationId: {"in":"path","name":"applicationId","required":true,"dataType":"double"},
+        };
+        app.delete('/parties/applications/:applicationId',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(PartyInteractionController)),
+            ...(fetchMiddlewares<RequestHandler>(PartyInteractionController.prototype.cancelApplication)),
+
+            async function PartyInteractionController_cancelApplication(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsPartyInteractionController_cancelApplication, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<PartyInteractionController>(PartyInteractionController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'cancelApplication',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
               });
             } catch (err) {
                 return next(err);

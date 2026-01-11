@@ -381,7 +381,6 @@ model PartyPost {
   id                BigInt   @id @default(autoincrement()) @map("post_id")
   userId            BigInt   @map("user_id")
   gameId            BigInt   @map("game_id")
-  positionId        BigInt   @map("position_id")
   tierId            BigInt   @map("tier_id")
   azitId            BigInt   @map("azit_id")
   title             String
@@ -402,7 +401,7 @@ model PartyPost {
   postComments   PostComment[]
   postLikes      UserPostLike[]
   applications   Application[]
-  position       Position       @relation(fields: [positionId], references: [id])
+  postPositions  PostPosition[]
 
   @@map("party_posts")
 }
