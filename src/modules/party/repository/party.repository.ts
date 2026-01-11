@@ -105,7 +105,7 @@ export class PartyRepository {
   }
 
   // 아지트 작업 완료 후 AzitService/Repository로 이동 필요
-  async createTempAzit(azitName: string, imageUrl: string, tx?: any) {
+  async createTempAzit(azitName: string, imageUrl: string | null, tx?: any) {
     const client = tx || prisma;
     return client.azit.create({
       data: {
