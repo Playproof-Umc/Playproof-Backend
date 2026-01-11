@@ -132,6 +132,13 @@ describe('PartyInteractionService', () => {
         isAccepted: false,
         post: { userId: BigInt(leaderId) }
       } as any);
+
+      interactionRepo.updateApplicationStatus.mockResolvedValue({
+        id: BigInt(appId),
+        postId: BigInt(appId),
+        isAccepted: true,
+      } as any);
+
       const result = await service.handleApplication(leaderId, appId, true);
       expect(isSuccess(result)).toBe(true);
       expect(interactionRepo.updateApplicationStatus).toHaveBeenCalledWith(appId, true);
