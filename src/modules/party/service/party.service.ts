@@ -51,9 +51,9 @@ export class PartyService {
     const { azitName, azitIconUrl, azitId, ...rest } = dto;
 
     // 1. 마스터 데이터 검증
-    this.validateGame(dto.gameId);
-    this.validateTier(dto.tierId);
-    this.validatePositions(dto.positionIds);
+    await this.validateGame(dto.gameId);
+    await this.validateTier(dto.tierId);
+    await this.validatePositions(dto.positionIds);
 
     // 2. 아지트 검증
     let targetAzitId: number;
@@ -136,13 +136,13 @@ export class PartyService {
 
     // 2. 마스터 데이터 검증
     if(dto.gameId)
-      this.validateGame(dto.gameId);
+      await this.validateGame(dto.gameId);
 
     if (dto.tierId) 
-      this.validateTier(dto.tierId);
+      await this.validateTier(dto.tierId);
 
     if (dto.positionIds && dto.positionIds.length > 0) 
-      this.validatePositions(dto.positionIds);
+      await this.validatePositions(dto.positionIds);
 
     if (dto.azitId) {
       const azit = await this.partyRepository.findAzitById(dto.azitId);
