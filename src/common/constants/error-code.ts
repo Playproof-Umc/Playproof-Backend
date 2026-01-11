@@ -8,13 +8,30 @@ export const UserErrorCode = {
   DUPLICATE_NAME: "USER_DUPLICATE_NAME" // 이미 존재하는 이름
 } as const;
 
-// 나중에 다른 도메인이 생기면 추가
-// export const OrderErrorCode = { ... } as const;
+// 파티 및 매칭 관련 에러 코드
 export const PartyErrorCode = {
-  NOT_FOUND_PARTY: "PARTY_NOT_FOUND", // 파티를 찾을 수 없음
+  // 파티 공통
+  NOT_FOUND: "PARTY_NOT_FOUND",           // 파티 게시글을 찾을 수 없음
+  FORBIDDEN: "PARTY_FORBIDDEN",           // 파티에 대한 권한이 없음 (방장 아님 등)
+  ALREADY_COMPLETED: "PARTY_ALREADY_COMPLETED", // 이미 모집이 완료된 파티
+  
   NOT_FOUND_GAME: "PARTY_NOT_FOUND_GAME", // 게임을 찾을 수 없음
   NOT_FOUND_TIER: "PARTY_NOT_FOUND_TIER", // 티어를 찾을 수 없음
   NOT_FOUND_POSITION: "PARTY_NOT_FOUND_POSITION", // 포지션을 찾을 수 없음
   NOT_FOUND_AZIT: "PARTY_NOT_FOUND_AZIT", // 아지트를 찾을 수 없음
-  FORBIDDEN: "PARTY_FORBIDDEN", // 권한이 없음
+  
+  // 가입 신청(Application) 관련
+  APPLICATION_NOT_FOUND: "PARTY_APPLICATION_NOT_FOUND", // 신청 내역을 찾을 수 없음
+  ALREADY_APPLIED: "PARTY_ALREADY_APPLIED",             // 이미 신청한 파티
+  CANNOT_APPLY_TO_OWN_PARTY: "PARTY_CANNOT_APPLY_TO_OWN", // 본인 파티에 본인이 신청 불가
+  ALREADY_ACCEPTED: "PARTY_ALREADY_ACCEPTED",           // 이미 승낙된 신청
+  PARTY_FULL: "PARTY_RECRUITMENT_FULL",                 // 모집 인원이 초과됨
+  
+  // 좋아요(Like) 관련
+  ALREADY_LIKED: "PARTY_ALREADY_LIKED",   // 이미 좋아요를 누른 상태
+  LIKE_NOT_FOUND: "PARTY_LIKE_NOT_FOUND"   // 좋아요를 누른 적이 없음
 } as const;
+
+
+// 나중에 다른 도메인이 생기면 추가
+// export const OrderErrorCode = { ... } as const;

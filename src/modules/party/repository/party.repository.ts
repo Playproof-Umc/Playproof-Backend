@@ -1,77 +1,112 @@
-import { prisma } from "../../../common/config/database"; 
+import { prisma } from "../../../common/config/database";
 import { singleton } from "tsyringe";
+import { Application, UserPostLike, PartyPost } from "@prisma/client";
 
 @singleton()
 export class PartyRepository {
+  // 1. 파티 게시글 상세 조회 (인터랙션 및 권한 체크용)
+  async findPartyPostById(postId: number): Promise<PartyPost | null> {
+    return prisma.partyPost.findUnique({
+      where: { id: BigInt(postId) },
+    });
+  }
+
+  // 2. 파티 신청 상세 조회 (포스트 정보 포함)
+  async findApplicationWithPost(applicationId: number): Promise<(Application & { post: PartyPost }) | null> {
+    return (await prisma.application.findUnique({
+      where: { id: BigInt(applicationId) },
+      include: { post: true },
+    })) as (Application & { post: PartyPost }) | null;
+  }
+
+  // 3. 특정 유저의 신청 내역 확인 (중복 방지용)
+  async findApplication(userId: number, postId: number): Promise<Application | null> {
+    return prisma.application.findFirst({
+      where: {
+        userId: BigInt(userId),
+        postId: BigInt(postId),
+      },
+    });
+  }
+
+  // 4. 파티 신청 생성
+  async createApplication(userId: number, postId: number): Promise<Application> {
+    return prisma.application.create({
+      data: {
+        userId: BigInt(userId),
+        postId: BigInt(postId),
+      },
+    });
+  }
+
+  // 5. 신청 상태 업데이트 (수락/거절)
+  async updateApplicationStatus(applicationId: number, isAccepted: boolean): Promise<Application> {
+    return prisma.application.update({
+      where: { id: BigInt(applicationId) },
+      data: { isAccepted },
+    });
+  }
+
+  // 6. 신청 삭제 (취소)
+  async deleteApplication(applicationId: number): Promise<Application> {
+    return prisma.application.delete({
+      where: { id: BigInt(applicationId) },
+    });
+  }
+
+  // 7. 좋아요 관련 메소드들
+  async findLike(userId: number, postId: number): Promise<UserPostLike | null> {
+    return prisma.userPostLike.findUnique({
+      where: {
+        userId_postId: {
+          userId: BigInt(userId),
+          postId: BigInt(postId),
+        },
+      },
+    });
+  }
+
+  async createLike(userId: number, postId: number): Promise<UserPostLike> {
+    return prisma.userPostLike.create({
+      data: {
+        userId: BigInt(userId),
+        postId: BigInt(postId),
+      },
+    });
+  }
+
+  async deleteLike(userId: number, postId: number): Promise<UserPostLike> {
+    return prisma.userPostLike.delete({
+      where: {
+        userId_postId: {
+          userId: BigInt(userId),
+          postId: BigInt(postId),
+        },
+      },
+    });
+  }
+
+  // 8. 기존 파티 CRUD 메소드 (dev 브랜치 내용 유지)
   async createParty(data: any, userId: number, azitId: number, tx?: any) {
     const client = tx || prisma;
-    const { positionIds, gameId, tierId, azitName, azitIconUrl, ...rest } = data;
+    const { positionIds, gameId, tierId, ...rest } = data;
     return client.partyPost.create({
       data: {
         ...rest,
         postPositions: {
           create: positionIds.map((id: number) => ({ positionId: id })),
         },
-        user: {
-          connect: {
-            id: userId,
-          },
-        },
-        game: {
-          connect: {
-            id: gameId,
-          },
-        },
-        tier: tierId
-          ? {
-              connect: {
-                id: tierId,
-              },
-            }
-          : undefined,
-        azit: {
-          connect: {
-            id: azitId,
-          },
-        },
-      },
-    });
-  }
-
-  // 아지트 작업 완료 후 AzitService/Repository로 이동 필요
-  async createTempAzit(azitName: string, imageUrl: string, tx?: any) {
-    const client = tx || prisma;
-    return client.azit.create({
-      data: {
-        azitName,
-        imageUrl,
-      },
-    });
-  }
-
-  async findAzitById(id: number) {
-    return prisma.azit.findUnique({ where: { id } });
-  }
-
-  async findGameById(id: number) {
-    return prisma.game.findUnique({ where: { id } });
-  }
-
-  async findTierById(id: number) {
-    return prisma.tier.findUnique({ where: { id } });
-  }
-
-  async findPositionsByIds(ids: number[]) {
-    return prisma.position.findMany({
-      where: {
-        id: { in: ids },
+        user: { connect: { id: userId } },
+        game: { connect: { id: gameId } },
+        tier: tierId ? { connect: { id: tierId } } : undefined,
+        azit: { connect: { id: azitId } },
       },
     });
   }
 
   async findById(id: number) {
     return prisma.partyPost.findUnique({
-      where: { id },
+      where: { id: BigInt(id) },
       include: {
         user: {
           include: {
@@ -83,142 +118,44 @@ export class PartyRepository {
         },
         tier: true,
         azit: true,
-        postCategories: {
-          include: { category: true },
-        },
-        postPositions: {
-          include: { position: true },
-        },
-        applications: {
-          where: { isAccepted: true },
-        },
-      },
-    });
-  }
-
-  async findByUserId(userId: number) {
-    return prisma.partyPost.findMany({ where: { userId } });
-  }
-
-  async findByGameId(gameId: number) {
-    return prisma.partyPost.findMany({ where: { gameId } });
-  }
-
-  async findByAzitId(azitId: number) {
-    return prisma.partyPost.findMany({ where: { azitId } });
-  }
-
-  async findByPositionId(positionId: number) {
-    return prisma.partyPost.findMany({
-      where: {
-        postPositions: {
-          some: { positionId },
-        },
-      },
-    });
-  }
-
-  async findByTierId(tierId: number) {
-    return prisma.partyPost.findMany({ where: { tierId } });
-  }
-
-  async updateParty(id: number, data: any, tx?: any) {
-    const client = tx || prisma;
-    const { positionIds, gameId, tierId, azitName, azitIconUrl, azitId, ...rest } = data;
-
-    return client.partyPost.update({
-      where: { id },
-      data: {
-        ...rest,
-        game: gameId ? { connect: { id: gameId } } : undefined,
-        tier: tierId !== undefined ? (tierId ? { connect: { id: tierId } } : { disconnect: true }) : undefined,
-        azit: azitId ? { connect: { id: azitId } } : undefined,
-        postPositions: positionIds
-          ? {
-              deleteMany: {},
-              create: positionIds.map((pid: number) => ({ positionId: pid })),
-            }
-          : undefined,
-      },
-    });
-  }
-
-  async updateAzit(id: number, azitName?: string, imageUrl?: string, tx?: any) {
-    const client = tx || prisma;
-    return client.azit.update({
-      where: { id },
-      data: {
-        azitName,
-        imageUrl,
+        postPositions: { include: { position: true } },
+        applications: { where: { isAccepted: true } },
       },
     });
   }
 
   async deleteParty(id: number, tx?: any) {
     const client = tx || prisma;
+    const bigIntId = BigInt(id);
     
-    // 1. 관련 데이터 삭제
-    await client.postPosition.deleteMany({ where: { postId: id } });
-    await client.postCategory.deleteMany({ where: { postId: id } });
-    await client.application.deleteMany({ where: { postId: id } });
-    await client.postComment.deleteMany({ where: { postId: id } });
-    await client.userPostLike.deleteMany({ where: { postId: id } });
+    await client.postPosition.deleteMany({ where: { postId: bigIntId } });
+    await client.postCategory.deleteMany({ where: { postId: bigIntId } });
+    await client.application.deleteMany({ where: { postId: bigIntId } });
+    await client.userPostLike.deleteMany({ where: { postId: bigIntId } });
 
-    // 2. 파티 삭제
-    return client.partyPost.delete({ where: { id } });
+    return client.partyPost.delete({ where: { id: bigIntId } });
   }
 
-  async deleteAzit(id: number, tx?: any) {
-    const client = tx || prisma;
-    return client.azit.delete({ where: { id } });
-  }
-
-  async countPartiesByAzitId(azitId: number, tx?: any) {
-    const client = tx || prisma;
-    return client.partyPost.count({ where: { azitId } });
+  // 9. 기타 헬퍼 메소드들
+  async countAll() {
+    return prisma.partyPost.count();
   }
 
   async findParties(page: number, size: number, sort: "latest" | "mostliked") {
     const skip = (page - 1) * size;
-    const orderBy: any = {};
-
-    if (sort === "latest") {
-      orderBy.createdAt = "desc";
-    } else if (sort === "mostliked") {
-      orderBy.likes = {
-        _count: "desc",
-      };
-    }
+    const orderBy: any = sort === "latest" ? { createdAt: "desc" } : { likes: { _count: "desc" } };
 
     return prisma.partyPost.findMany({
       skip,
       take: size,
       orderBy,
       include: {
-        user: {
-          include: {
-            userAvatars: {
-              where: { isEquipped: true },
-              include: { avatar: true },
-            },
-          },
-        },
+        user: { include: { userAvatars: { where: { isEquipped: true }, include: { avatar: true } } } },
         tier: true,
         azit: true,
-        postCategories: {
-          include: { category: true },
-        },
-        postPositions: {
-          include: { position: true },
-        },
-        applications: {
-          where: { isAccepted: true },
-        },
+        postPositions: { include: { position: true } },
+        applications: { where: { isAccepted: true } },
       },
     });
-  }
-
-  async countAll() {
-    return prisma.partyPost.count();
   }
 }
