@@ -50,7 +50,7 @@ export class PartyCommentService {
   }
 
   // 3. 댓글 작성
-  async createComment(userId: number, partyId: number, content: string, parentId?: number): Promise<Result<CommentActionResDto>> {
+  async createComment(userId: number, partyId: number, content: string, parentId?: number | null): Promise<Result<CommentActionResDto>> {
     const party = await this.partyRepository.findPartyPostById(partyId);
     if (!party) return notFound({ message: "존재하지 않는 파티입니다.", errorCode: "PARTY_404" });
 

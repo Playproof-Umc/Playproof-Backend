@@ -3,6 +3,7 @@ import { Controller, Get, Post, Patch, Delete, Path, Body, Query, Request, Route
 import { PartyCommentService } from "../service/party-comment.service";
 import { CommentListResDto, CommentActionResDto } from "../dtos/party-comment.res.dto";
 import { Result } from "../../../common/types/result.type";
+import { CreateCommentReqDto } from "../dtos/party-comment.req.dto";
 
 @injectable()
 @Route('')
@@ -28,9 +29,14 @@ export class PartyCommentController extends Controller {
   public async createComment(
     @Request() request: any,
     @Path() partyId: number,
-    @Body() body: { content: string, parentId?: number }
+    @Body() body: CreateCommentReqDto
   ): Promise<Result<CommentActionResDto>> {
-    const result = await this.partyCommentService.createComment(request.user.id, partyId, body.content, body.parentId);
+    const result = await this.partyCommentService.createComment(
+      request.user.id, 
+      partyId, 
+      body.content, 
+      body.parentId
+    );
     this.setStatus(result.statusCode);
     return result;
   }

@@ -17,7 +17,7 @@ export class CreateCommentReqDto {
    */
   @IsOptional()
   @IsNumber()
-  parentId?: number;
+  parentId?: number | null;
 }
 
 // 2. 댓글 수정 요청

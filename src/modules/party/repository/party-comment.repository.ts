@@ -43,7 +43,7 @@ export class PartyCommentRepository {
   }
 
   // 3. 댓글 생성
-  async create(userId: number, postId: number, content: string, parentId?: number): Promise<PostComment> {
+  async create(userId: number, postId: number, content: string, parentId?: number | null): Promise<PostComment> {
     return prisma.postComment.create({
       data: {
         userId: BigInt(userId),
