@@ -38,4 +38,12 @@ export class AzitRepository {
       data,
     });
   }
+
+  async deleteAzit(azitId: bigint): Promise<void> {
+    await prisma.azit.delete({
+      where: {
+        id: azitId,
+      },
+    });
+  }
 }
