@@ -1349,6 +1349,143 @@
 					}
 				}
 			},
+			"RemoveAzitMemberResDto": {
+				"properties": {
+					"member_id": {
+						"type": "number",
+						"format": "double",
+						"description": "멤버 ID (AzitUser의 id)",
+						"example": 104
+					},
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"description": "아지트 ID",
+						"example": 1
+					},
+					"user_id": {
+						"type": "number",
+						"format": "double",
+						"description": "사용자 ID",
+						"example": 1002
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"description": "닉네임",
+						"example": "채나"
+					},
+					"removed_at": {
+						"type": "string",
+						"format": "date-time",
+						"description": "제거 일시",
+						"example": "2025-01-09T11:45:00Z"
+					},
+					"reason": {
+						"type": "string",
+						"description": "제거 사유 (FORCE_REMOVE: 강제 제거, SELF_LEAVE: 자진 탈퇴)",
+						"example": "FORCE_REMOVE"
+					}
+				},
+				"required": [
+					"member_id",
+					"azit_id",
+					"user_id",
+					"nickname",
+					"removed_at",
+					"reason"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_RemoveAzitMemberResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/RemoveAzitMemberResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_RemoveAzitMemberResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_RemoveAzitMemberResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"UnauthorizedError": {
+				"description": "401 에러 (Unauthorized)",
+				"properties": {
+					"error": {
+						"properties": {
+							"errors": {
+								"items": {
+									"$ref": "#/components/schemas/ApiErrorDetail"
+								},
+								"type": "array"
+							},
+							"message": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"code"
+						],
+						"type": "object"
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"statusCode": {
+						"type": "number",
+						"enum": [
+							401
+						],
+						"nullable": false
+					}
+				},
+				"required": [
+					"error",
+					"data",
+					"statusCode"
+				],
+				"type": "object",
+				"additionalProperties": false,
+				"example": {
+					"statusCode": 401,
+					"data": null,
+					"error": {
+						"code": "AUTH_UNAUTHORIZED",
+						"message": "인증이 필요합니다."
+					}
+				}
+			},
 			"AzitMemberResDto": {
 				"properties": {
 					"member_id": {
@@ -1521,61 +1658,6 @@
 					}
 				]
 			},
-			"UnauthorizedError": {
-				"description": "401 에러 (Unauthorized)",
-				"properties": {
-					"error": {
-						"properties": {
-							"errors": {
-								"items": {
-									"$ref": "#/components/schemas/ApiErrorDetail"
-								},
-								"type": "array"
-							},
-							"message": {
-								"type": "string"
-							},
-							"code": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"message",
-							"code"
-						],
-						"type": "object"
-					},
-					"data": {
-						"type": "number",
-						"enum": [
-							null
-						],
-						"nullable": true
-					},
-					"statusCode": {
-						"type": "number",
-						"enum": [
-							401
-						],
-						"nullable": false
-					}
-				},
-				"required": [
-					"error",
-					"data",
-					"statusCode"
-				],
-				"type": "object",
-				"additionalProperties": false,
-				"example": {
-					"statusCode": 401,
-					"data": null,
-					"error": {
-						"code": "AUTH_UNAUTHORIZED",
-						"message": "인증이 필요합니다."
-					}
-				}
-			},
 			"AddAzitMemberResDto": {
 				"properties": {
 					"member_id": {
@@ -1684,7 +1766,7 @@
 						"type": "number",
 						"format": "double",
 						"description": "추가할 사용자 ID",
-						"example": 1002
+						"example": 1
 					}
 				},
 				"required": [
@@ -2533,6 +2615,102 @@
 					{
 						"in": "path",
 						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/azits/{azit_id}/members/{member_id}": {
+			"delete": {
+				"operationId": "RemoveAzitMember",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_RemoveAzitMemberResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"description": "아지트 멤버 제거\n특정 아지트에서 멤버를 제거합니다. (아지트장만 가능 또는 본인이 탈퇴)",
+				"tags": [
+					"Azit"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "path",
+						"name": "member_id",
 						"required": true,
 						"schema": {
 							"format": "double",

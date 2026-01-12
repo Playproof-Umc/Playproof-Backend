@@ -148,4 +148,37 @@ export class AzitUserRepository {
       },
     });
   }
+
+  async findAzitUserById(memberId: bigint) {
+    return prisma.azitUser.findUnique({
+      where: {
+        id: memberId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+      },
+    });
+  }
+
+  async countHostsByAzitId(azitId: bigint): Promise<number> {
+    return prisma.azitUser.count({
+      where: {
+        azitId,
+        role: AzitUserRole.HOST,
+      },
+    });
+  }
+
+  async deleteAzitUser(memberId: bigint) {
+    return prisma.azitUser.delete({
+      where: {
+        id: memberId,
+      },
+    });
+  }
 }

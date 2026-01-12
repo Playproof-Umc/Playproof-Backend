@@ -184,3 +184,41 @@ export class AddAzitMemberResDto {
      */
     joined_at!: Date;
 }
+
+export class RemoveAzitMemberResDto {
+    /**
+     * 멤버 ID (AzitUser의 id)
+     * @example 104
+     */
+    member_id!: number;
+
+    /**
+     * 아지트 ID
+     * @example 1
+     */
+    azit_id!: number;
+
+    /**
+     * 사용자 ID
+     * @example 1002
+     */
+    user_id!: number;
+
+    /**
+     * 닉네임
+     * @example "채나"
+     */
+    nickname!: string | null;
+
+    /**
+     * 제거 일시
+     * @example "2025-01-09T11:45:00Z"
+     */
+    removed_at!: Date;
+
+    /**
+     * 제거 사유 (FORCE_REMOVE: 강제 제거, SELF_LEAVE: 자진 탈퇴)
+     * @example "FORCE_REMOVE"
+     */
+    reason!: string;
+}
