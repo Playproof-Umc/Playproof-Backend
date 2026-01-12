@@ -128,3 +128,59 @@ export class GetAzitMembersResDto {
      */
     pagination!: PaginationResDto;
 }
+
+export class AddAzitMemberResDto {
+    /**
+     * 멤버 ID (AzitUser의 id)
+     * @example 104
+     */
+    member_id!: number;
+
+    /**
+     * 아지트 ID
+     * @example 1
+     */
+    azit_id!: number;
+
+    /**
+     * 사용자 ID
+     * @example 1002
+     */
+    user_id!: number;
+
+    /**
+     * 닉네임
+     * @example "채나"
+     */
+    nickname!: string | null;
+
+    /**
+     * 아바타 URL
+     * @example "https://example.com/avatar/2.png"
+     */
+    avatar_url!: string | null;
+
+    /**
+     * 역할 (HOST 또는 MEMBER)
+     * @example "MEMBER"
+     */
+    role!: string;
+
+    /**
+     * 등급 (BASIC 또는 PRO)
+     * @example "BASIC"
+     */
+    grade!: string;
+
+    /**
+     * 신뢰도 점수
+     * @example 72
+     */
+    trust_score!: number;
+
+    /**
+     * 가입 일시
+     * @example "2025-01-09T10:30:00Z"
+     */
+    joined_at!: Date;
+}

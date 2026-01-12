@@ -114,4 +114,38 @@ export class AzitUserRepository {
 
     return members;
   }
+
+  async findAzitUserByUserIdAndAzitId(userId: bigint, azitId: bigint): Promise<AzitUser | null> {
+    return prisma.azitUser.findFirst({
+      where: {
+        userId,
+        azitId,
+      },
+    });
+  }
+
+  async createAzitUserWithDetails(userId: bigint, azitId: bigint, role: AzitUserRole = AzitUserRole.MEMBER) {
+    return prisma.azitUser.create({
+      data: {
+        userId,
+        azitId,
+        role,
+      },
+      include: {
+        user: {
+          include: {
+            userAvatars: {
+              where: {
+                isEquipped: true,
+              },
+              include: {
+                avatar: true,
+              },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+  }
 }

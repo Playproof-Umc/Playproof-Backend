@@ -50,3 +50,14 @@ export class GetAzitMembersReqDto {
   @Min(1)
   size?: number = 20;
 }
+
+export class AddAzitMemberReqDto {
+  /**
+   * 추가할 사용자 ID
+   * @example 1
+   */
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  user_id!: number;
+}

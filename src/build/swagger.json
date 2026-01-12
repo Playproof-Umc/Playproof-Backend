@@ -1576,6 +1576,123 @@
 					}
 				}
 			},
+			"AddAzitMemberResDto": {
+				"properties": {
+					"member_id": {
+						"type": "number",
+						"format": "double",
+						"description": "멤버 ID (AzitUser의 id)",
+						"example": 104
+					},
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"description": "아지트 ID",
+						"example": 1
+					},
+					"user_id": {
+						"type": "number",
+						"format": "double",
+						"description": "사용자 ID",
+						"example": 1002
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"description": "닉네임",
+						"example": "채나"
+					},
+					"avatar_url": {
+						"type": "string",
+						"nullable": true,
+						"description": "아바타 URL",
+						"example": "https://example.com/avatar/2.png"
+					},
+					"role": {
+						"type": "string",
+						"description": "역할 (HOST 또는 MEMBER)",
+						"example": "MEMBER"
+					},
+					"grade": {
+						"type": "string",
+						"description": "등급 (BASIC 또는 PRO)",
+						"example": "BASIC"
+					},
+					"trust_score": {
+						"type": "number",
+						"format": "double",
+						"description": "신뢰도 점수",
+						"example": 72
+					},
+					"joined_at": {
+						"type": "string",
+						"format": "date-time",
+						"description": "가입 일시",
+						"example": "2025-01-09T10:30:00Z"
+					}
+				},
+				"required": [
+					"member_id",
+					"azit_id",
+					"user_id",
+					"nickname",
+					"avatar_url",
+					"role",
+					"grade",
+					"trust_score",
+					"joined_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_AddAzitMemberResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/AddAzitMemberResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_AddAzitMemberResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_AddAzitMemberResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"AddAzitMemberReqDto": {
+				"properties": {
+					"user_id": {
+						"type": "number",
+						"format": "double",
+						"description": "추가할 사용자 ID",
+						"example": 1002
+					}
+				},
+				"required": [
+					"user_id"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"AzitListResDto": {
 				"properties": {
 					"azits": {
@@ -2518,6 +2635,113 @@
 						}
 					}
 				]
+			}
+		},
+		"/azits/{azit_id}/members": {
+			"post": {
+				"operationId": "AddAzitMember",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_AddAzitMemberResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "Conflict",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ConflictError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"description": "아지트 멤버 추가\n특정 아지트에 새로운 멤버를 추가합니다. (아지트장만 가능)",
+				"tags": [
+					"Azit"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddAzitMemberReqDto"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/azits": {
