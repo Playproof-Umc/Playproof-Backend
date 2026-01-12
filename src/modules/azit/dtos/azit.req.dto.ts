@@ -1,5 +1,6 @@
 // src/modules/azit/dtos/azit.req.dto.ts
-import { IsString, MinLength, IsOptional, IsBoolean } from "class-validator";
+import { IsString, MinLength, IsOptional, IsBoolean, IsInt, Min } from "class-validator";
+import { Type } from "class-transformer";
 
 export class AzitCreateReqDto {
   /**
@@ -26,4 +27,26 @@ export class AzitUpdateReqDto {
    */
   @IsBoolean()
   is_delete_icon: boolean = false;
+}
+
+export class GetAzitMembersReqDto {
+  /**
+   * 페이지 번호 (0부터 시작)
+   * @example 0
+   */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  page?: number = 0;
+
+  /**
+   * 페이지당 항목 수 (최소 1)
+   * @example 20
+   */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  size?: number = 20;
 }

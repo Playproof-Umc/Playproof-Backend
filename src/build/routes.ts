@@ -14,6 +14,8 @@ import { PartyCommentController } from './../modules/party/controller/party-comm
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AzitUpdateController } from './../modules/azit/controllers/azit-update.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { AzitMemberListController } from './../modules/azit/controllers/azit-member-list.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AzitListController } from './../modules/azit/controllers/azit-list.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AzitDeleteController } from './../modules/azit/controllers/azit-delete.controller';
@@ -403,6 +405,64 @@ const models: TsoaRoute.Models = {
             "error": {"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},
             "data": {"dataType":"enum","enums":[null],"required":true},
             "statusCode": {"dataType":"enum","enums":[404],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "AzitMemberResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "member_id": {"dataType":"double","required":true},
+            "user_id": {"dataType":"double","required":true},
+            "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "avatar_url": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "role": {"dataType":"string","required":true},
+            "grade": {"dataType":"string","required":true},
+            "trust_score": {"dataType":"double","required":true},
+            "joined_at": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PaginationResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "page": {"dataType":"double","required":true},
+            "size": {"dataType":"double","required":true},
+            "total_pages": {"dataType":"double","required":true},
+            "total_elements": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "GetAzitMembersResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "azit_id": {"dataType":"double","required":true},
+            "azit_name": {"dataType":"string","required":true},
+            "total_members": {"dataType":"double","required":true},
+            "members": {"dataType":"array","array":{"dataType":"refObject","ref":"AzitMemberResDto"},"required":true},
+            "pagination": {"ref":"PaginationResDto","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_GetAzitMembersResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"GetAzitMembersResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_GetAzitMembersResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_GetAzitMembersResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UnauthorizedError": {
+        "dataType": "refObject",
+        "properties": {
+            "error": {"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},
+            "data": {"dataType":"enum","enums":[null],"required":true},
+            "statusCode": {"dataType":"enum","enums":[401],"required":true},
         },
         "additionalProperties": false,
     },
@@ -941,6 +1001,45 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
               await templateService.apiHandler({
                 methodName: 'updateAzit',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAzitMemberListController_getAzitMembers: Record<string, TsoaRoute.ParameterSchema> = {
+                azitId: {"in":"path","name":"azitId","required":true,"dataType":"double"},
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                page: {"in":"query","name":"page","dataType":"double"},
+                size: {"in":"query","name":"size","dataType":"double"},
+        };
+        app.get('/azits/:azitId/members',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(AzitMemberListController)),
+            ...(fetchMiddlewares<RequestHandler>(AzitMemberListController.prototype.getAzitMembers)),
+
+            async function AzitMemberListController_getAzitMembers(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAzitMemberListController_getAzitMembers, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<AzitMemberListController>(AzitMemberListController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getAzitMembers',
                 controller,
                 response,
                 next,

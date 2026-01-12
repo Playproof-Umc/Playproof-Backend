@@ -65,4 +65,53 @@ export class AzitUserRepository {
     
     return azitUser?.role ?? null;
   }
+
+  async countMembersByAzitId(azitId: bigint): Promise<number> {
+    return prisma.azitUser.count({
+      where: {
+        azitId,
+      },
+    });
+  }
+
+  async findMembersByAzitIdWithPagination(
+    azitId: bigint,
+    page: number,
+    size: number,
+  ) {
+    const skip = page * size;
+
+    const members = await prisma.azitUser.findMany({
+      where: {
+        azitId,
+      },
+      include: {
+        user: {
+          include: {
+            userAvatars: {
+              where: {
+                isEquipped: true,
+              },
+              include: {
+                avatar: true,
+              },
+              take: 1,
+            },
+          },
+        },
+      },
+      orderBy: [
+        {
+          role: 'asc', // HOST가 먼저
+        },
+        {
+          joinedAt: 'asc',
+        },
+      ],
+      skip,
+      take: size,
+    });
+
+    return members;
+  }
 }
