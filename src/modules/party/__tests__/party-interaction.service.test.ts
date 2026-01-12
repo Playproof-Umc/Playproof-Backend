@@ -63,9 +63,7 @@ describe('PartyInteractionService', () => {
 
       // 3. 레포지토리에서 신청서 생성 성공 (ID 100번 발급)
       interactionRepo.createApplication.mockResolvedValue({ 
-        id: BigInt(100),
-        postId: BigInt(postId),
-        applicationAt: new Date()
+        id: BigInt(100) 
       } as any);
 
       const result = await service.applyParty(userId, postId);
@@ -132,13 +130,6 @@ describe('PartyInteractionService', () => {
         isAccepted: false,
         post: { userId: BigInt(leaderId) }
       } as any);
-
-      interactionRepo.updateApplicationStatus.mockResolvedValue({
-        id: BigInt(appId),
-        postId: BigInt(appId),
-        isAccepted: true,
-      } as any);
-
       const result = await service.handleApplication(leaderId, appId, true);
       expect(isSuccess(result)).toBe(true);
       expect(interactionRepo.updateApplicationStatus).toHaveBeenCalledWith(appId, true);

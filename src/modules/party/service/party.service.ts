@@ -51,14 +51,9 @@ export class PartyService {
     const { azitName, azitIconUrl, azitId, ...rest } = dto;
 
     // 1. 마스터 데이터 검증
-    const gameError = await this.validateGame(dto.gameId);
-    if (gameError) return gameError;
-    
-    const tierError = await this.validateTier(dto.tierId);
-    if (tierError) return tierError;
-    
-    const posError = await this.validatePositions(dto.positionIds);
-    if (posError) return posError;
+    this.validateGame(dto.gameId);
+    this.validateTier(dto.tierId);
+    this.validatePositions(dto.positionIds);
 
     // 2. 아지트 검증
     let finalAzitName: string;
@@ -126,7 +121,7 @@ export class PartyService {
     if (!party) {
       return notFound({
         message: "파티를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+        errorCode: PartyErrorCode.NOT_FOUND,
       });
     }
 
@@ -138,20 +133,14 @@ export class PartyService {
     }
 
     // 2. 마스터 데이터 검증
-    if(dto.gameId) {
-      const gameError = await this.validateGame(dto.gameId);
-      if (gameError) return gameError;
-    }
+    if(dto.gameId)
+      this.validateGame(dto.gameId);
 
-    if (dto.tierId) {
-      const tierError = await this.validateTier(dto.tierId);
-      if (tierError) return tierError;
-    }
+    if (dto.tierId) 
+      this.validateTier(dto.tierId);
 
-    if (dto.positionIds && dto.positionIds.length > 0) {
-      const posError = await this.validatePositions(dto.positionIds);
-      if (posError) return posError;
-    }
+    if (dto.positionIds && dto.positionIds.length > 0) 
+      this.validatePositions(dto.positionIds);
 
     if (dto.azitId) {
       const azit = await this.partyRepository.findAzitById(dto.azitId);
@@ -187,7 +176,7 @@ export class PartyService {
     if (!finalParty) {
       return notFound({
         message: "파티를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+        errorCode: PartyErrorCode.NOT_FOUND,
       });
     }
 
@@ -214,7 +203,7 @@ export class PartyService {
     if (!party) {
       return notFound({
         message: "파티를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+        errorCode: PartyErrorCode.NOT_FOUND,
       });
     }
 
@@ -249,7 +238,7 @@ export class PartyService {
     if (!party) {
       return notFound({
         message: "파티를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_PARTY,
+        errorCode: PartyErrorCode.NOT_FOUND,
       });
     }
 
