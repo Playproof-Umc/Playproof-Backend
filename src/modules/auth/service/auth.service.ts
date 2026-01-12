@@ -109,7 +109,9 @@ export class AuthService {
       return badRequest({ 
         message: "인증 시간이 만료되었거나 인증 코드가 존재하지 않습니다.", 
         errorCode: SmsErrorCode.CERTIFICATION_EXPIRED,
-        errors: [] 
+        errors: [
+          { field: "code", value: dto.code, reason: "만료되거나 존재하지 않는 인증 코드입니다." }
+        ] 
       });
     }
 
@@ -118,7 +120,9 @@ export class AuthService {
       return badRequest({ 
         message: "인증 번호가 일치하지 않습니다.", 
         errorCode: SmsErrorCode.CERTIFICATION_MISMATCH,
-        errors: [] 
+        errors: [
+          { field: "code", value: dto.code, reason: "인증 코드가 일치하지 않습니다." }
+        ] 
       });
     }
 
