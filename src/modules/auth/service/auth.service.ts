@@ -4,11 +4,12 @@ import * as jose from "jose";
 import { UserRepository } from "../../user/user.repository";
 import { SignUpReqDto, LoginReqDto, SendCertificationReqDto, VerifyCertificationReqDto} from "../dtos/auth.req.dto";
 import { SignUpResDto, LoginResDto, SendCertificationResDto, VerifyCertificationResDto } from "../dtos/auth.res.dto"
-import { Result, created, ok, unauthorized, conflict, isSuccess, badRequest } from "../../../common/types/result.type";
+import { Result, created, ok, unauthorized, conflict, isSuccess, badRequest, ConflictError } from "../../../common/types/result.type";
 import { UserErrorCode } from "../../../common/constants/error-code"
 import { sendVerificationSms } from "../../../common/utils/sms";
 import { redisClient } from "../../../common/config/database";
 import { SmsErrorCode } from "../../../common/constants/error-code";
+import { checkPhoneNumberDuplicate, checkNicknameDuplicate } from "../utils/auth.validator";
 
 @injectable()
 export class AuthService {
@@ -17,24 +18,13 @@ export class AuthService {
   constructor(@inject(UserRepository) private userRepository: UserRepository) {}
 
   async signUp(dto: SignUpReqDto): Promise<Result<SignUpResDto>> {
-    const isPhoneExists = await this.userRepository.findByPhoneNumber(dto.phone);
-    if (isPhoneExists) {
-      return conflict({ message: "이미 가입된 번호입니다.", 
-        errorCode: UserErrorCode.DUPLICATE_PHONE_NUMBER, 
-        errors: [
-          { field: "phone", value: dto.phone, reason: "이미 사용 중인 전화번호입니다." }
-        ] });
-    }
-    const isNameExists = await this.userRepository.findByName(dto.nickname)
-    if (isNameExists) {
-      return conflict( {
-        message: "이미 가입된 이름입니다.",
-        errorCode: UserErrorCode.DUPLICATE_NAME,
-        errors: [
-          { field: "nickname", value: dto.nickname, reason: "이미 사용 중인 닉네임입니다." }
-        ]
-      })
-    }
+    // 전화번호 중복 검증
+    const phoneDuplicateError = await checkPhoneNumberDuplicate<SignUpResDto>(this.userRepository, dto.phone);
+    if (phoneDuplicateError) return phoneDuplicateError;
+    
+    // 닉네임 중복 검증
+    const nicknameDuplicateError = await checkNicknameDuplicate<SignUpResDto>(this.userRepository, dto.nickname);
+    if (nicknameDuplicateError) return nicknameDuplicateError;
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -70,15 +60,10 @@ export class AuthService {
   }
 
   async sendCertification(dto: SendCertificationReqDto): Promise<Result<SendCertificationResDto>> {
-    // 전화번호 중복 확인
-    const isPhoneExists = await this.userRepository.findByPhoneNumber(dto.phone);
-    if (isPhoneExists) {
-      return conflict({ message: "이미 가입된 번호입니다.", 
-        errorCode: UserErrorCode.DUPLICATE_PHONE_NUMBER, 
-        errors: [
-          { field: "phone", value: dto.phone, reason: "이미 사용 중인 전화번호입니다." }
-        ] });
-    }
+    // 전화번호 중복 검증
+    const phoneDuplicateError = await checkPhoneNumberDuplicate<SendCertificationResDto>(this.userRepository, dto.phone);
+    if (phoneDuplicateError) return phoneDuplicateError;
+
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     // 레디스 저장
