@@ -13,8 +13,9 @@ export class PartyInteractionService {
   ) {}
 
   // 2. 날짜 포맷팅 유틸리티
-  private formatDate(date: Date): string {
-    return date.toISOString().replace('T', ' ').substring(0, 19);
+  private formatDate(date?: Date): string {
+    const targetDate = (date instanceof Date && !isNaN(date.getTime())) ? date : new Date();
+    return targetDate.toISOString().replace('T', ' ').substring(0, 19);
   }
 
   // 3. 파티 참가 신청 (applyParty)
@@ -42,15 +43,31 @@ export class PartyInteractionService {
 
   // 4. 파티 신청 수락/거절 (handleApplication)
   async handleApplication(leaderId: number, applicationId: number, isAccepted: boolean): Promise<Result<HandleApplicationResDto>> {
+    // 1. 신청 내역 및 파티 정보 조회
     const application = await this.partyInteractionRepository.findApplicationWithPost(applicationId);
-    if (!application) return notFound({ message: "신청 내역을 찾을 수 없습니다.", errorCode: "APP_404" });
+    if (!application) {
+      return notFound({ message: "신청 내역을 찾을 수 없습니다.", errorCode: "APP_404" });
+    }
 
+    // 2. 이미 승낙된 신청인지 확인 (테스트 409 에러 해결 포인트)
+    // 💡 이미 isAccepted가 true인 경우, 중복 승낙을 방지하기 위해 409 Conflict 반환
+    if (application.isAccepted) {
+      return conflict({ message: "이미 승낙된 신청입니다.", errorCode: "APP_409" });
+    }
+
+    // 3. 권한 확인 (방장 여부)
     if (Number(application.post.userId) !== leaderId) {
       return forbidden({ message: "방장만 처리할 수 있습니다.", errorCode: "APP_403" });
     }
 
+    // 4. 상태 업데이트 실행
     const updated = await this.partyInteractionRepository.updateApplicationStatus(applicationId, isAccepted);
     
+    if (!updated) {
+      return notFound({ message: "상태 업데이트 중 신청 내역을 찾을 수 없습니다.", errorCode: "APP_404_1" });
+    }
+    
+    // 5. 결과 반환
     return ok({
       applicationId: Number(updated.id),
       partyId: Number(updated.postId),
