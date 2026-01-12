@@ -35,6 +35,11 @@ export const PartyErrorCode = {
   INTERNAL_SERVER_ERROR: "SERVER_500",
 } as const;
 
+export const SmsErrorCode = {
+  SEND_FAILED: "SMS_SEND_FAILED", // SMS 발송 실패
+  CERTIFICATION_MISMATCH: "SMS_CERTIFICATION_MISMATCH", // 인증번호 불일치
+  CERTIFICATION_EXPIRED: "SMS_CERTIFICATION_EXPIRED", // 인증번호 만료
+} as const;
 
 // 나중에 다른 도메인이 생기면 추가
 // export const OrderErrorCode = { ... } as const;

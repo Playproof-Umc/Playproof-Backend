@@ -2,6 +2,7 @@
 import mysms from "coolsms-node-sdk";
 import "dotenv/config";
 import { Result, ok, internalServerError } from "../types/result.type";
+import { SmsErrorCode } from "../constants/error-code";
 
 const API_KEY = process.env.SOLAPI_API_KEY!;
 const API_SECRET = process.env.SOLAPI_API_SECRET!;
@@ -32,7 +33,7 @@ export const sendVerificationSms = async (toPhoneNumber: string, code: string): 
 
     return internalServerError({
       message: "문자 발송 시스템에 오류가 발생했습니다.",
-      errorCode: "SMS_SEND_FAILED",
+      errorCode: SmsErrorCode.SEND_FAILED,
       errors: [
         { 
           field: "sms", 

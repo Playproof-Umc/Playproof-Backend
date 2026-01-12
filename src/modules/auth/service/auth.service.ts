@@ -8,6 +8,7 @@ import { Result, created, ok, unauthorized, conflict, isSuccess, badRequest } fr
 import { UserErrorCode } from "../../../common/constants/error-code"
 import { sendVerificationSms } from "../../../common/utils/sms";
 import { redisClient } from "../../../common/config/database";
+import { SmsErrorCode } from "../../../common/constants/error-code";
 
 @injectable()
 export class AuthService {
@@ -107,7 +108,7 @@ export class AuthService {
     if (!storedCode) {
       return badRequest({ 
         message: "인증 시간이 만료되었거나 인증 코드가 존재하지 않습니다.", 
-        errorCode: "AUTH_CODE_EXPIRED",
+        errorCode: SmsErrorCode.CERTIFICATION_EXPIRED,
         errors: [] 
       });
     }
@@ -116,7 +117,7 @@ export class AuthService {
     if (storedCode !== dto.code) {
       return badRequest({ 
         message: "인증 번호가 일치하지 않습니다.", 
-        errorCode: "AUTH_CODE_MISMATCH",
+        errorCode: SmsErrorCode.CERTIFICATION_MISMATCH,
         errors: [] 
       });
     }
