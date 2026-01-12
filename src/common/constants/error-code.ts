@@ -29,7 +29,10 @@ export const PartyErrorCode = {
   
   // 좋아요(Like) 관련
   ALREADY_LIKED: "PARTY_ALREADY_LIKED",   // 이미 좋아요를 누른 상태
-  LIKE_NOT_FOUND: "PARTY_LIKE_NOT_FOUND"   // 좋아요를 누른 적이 없음
+  LIKE_NOT_FOUND: "PARTY_LIKE_NOT_FOUND",   // 좋아요를 누른 적이 없음
+
+  // 서버 오류
+  INTERNAL_SERVER_ERROR: "SERVER_500",
 } as const;
 
 
