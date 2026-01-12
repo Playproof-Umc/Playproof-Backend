@@ -435,9 +435,9 @@ enum ChatRoomType {
 
 model Azit {
   id        BigInt   @id @default(autoincrement())
-  azitName  String   @map("azit_name")
-  imageUrl  String   @map("image_url")
-  createdAt DateTime @default(now()) @map("created_at")
+  azitName  String                              @map("azit_name")
+  imageUrl  String?                             @map("image_url")
+  createdAt DateTime @default(now())            @map("created_at")
   updatedAt DateTime @updatedAt @default(now()) @map("updated_at")
   members   AzitUser[]
   schedules AzitSchedule[]
@@ -455,7 +455,7 @@ model AzitUser {
   joinedAt DateTime     @default(now()) @map("joined_at")
   role     AzitUserRole @default(MEMBER)
   user     User         @relation(fields: [userId], references: [id])
-  azit     Azit         @relation(fields: [azitId], references: [id])
+  azit     Azit         @relation(fields: [azitId], references: [id], onDelete: Cascade)
   scheduleParticipations AzitScheduleParticipation[]
   chats    Chat[]
 
@@ -463,16 +463,17 @@ model AzitUser {
 }
 
 model AzitSchedule {
-  id               BigInt   @id @default(autoincrement())
-  azitId           BigInt   @map("azit_id")
-  title            String
-  gameStartAt      DateTime @map("game_start_at")
-  gameEndAt        DateTime @map("game_end_at")
-  recruitmentEndAt DateTime @map("recruitment_end_at")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
-  azit             Azit     @relation(fields: [azitId], references: [id])
-  participations   AzitScheduleParticipation[]
+  id                BigInt   @id @default(autoincrement())
+  azitId            BigInt                                @map("azit_id")
+  title             String
+  gameStartAt       DateTime                              @map("game_start_at")
+  gameEndAt         DateTime                              @map("game_end_at")
+  recruitmentEndAt  DateTime                              @map("recruitment_end_at")
+  createdAt         DateTime @default(now())              @map("created_at")
+  updatedAt         DateTime @updatedAt @default(now())   @map("updated_at")
+
+  azit              Azit     @relation(fields: [azitId], references: [id], onDelete: Cascade)
+  participations    AzitScheduleParticipation[]
 
   @@map("azit_schedule")
 }
@@ -482,8 +483,9 @@ model AzitScheduleParticipation {
   scheduleId      BigInt           @map("schedule_id")
   role            AzitScheduleRole @default(PARTICIPANT)
   participationAt DateTime         @default(now()) @map("participation_at")
-  member          AzitUser         @relation(fields: [memberId], references: [id])
-  schedule        AzitSchedule     @relation(fields: [scheduleId], references: [id])
+
+  member          AzitUser         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  schedule        AzitSchedule     @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
 
   @@id([memberId, scheduleId])
   @@map("azit_schedule_participation")
@@ -497,7 +499,8 @@ model ChatRoom {
   isPrivate Boolean      @default(false) @map("is_private")
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @default(now()) @updatedAt @map("updated_at")
-  azit      Azit         @relation(fields: [azitId], references: [id])
+
+  azit      Azit         @relation(fields: [azitId], references: [id], onDelete: Cascade)
   chats     Chat[]
 
   @@map("chat_rooms")
@@ -510,8 +513,9 @@ model Chat {
   content    String   @db.Text
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
-  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
-  member     AzitUser @relation(fields: [memberId], references: [id])
+
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  member     AzitUser @relation(fields: [memberId], references: [id], onDelete: Cascade)
   medias     ChatMedia[]
 
   @@map("chats")
@@ -522,7 +526,8 @@ model ChatMedia {
   chatId   BigInt   @map("chat_id")
   mediaUrl String   @map("media_url")
   uploadAt DateTime @default(now()) @map("upload_at")
-  chat     Chat     @relation(fields: [chatId], references: [id])
+  
+  chat     Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@map("chat_medias")
 }

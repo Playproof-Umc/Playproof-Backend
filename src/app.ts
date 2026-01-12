@@ -8,6 +8,7 @@ import swaggerUi from "swagger-ui-express";
 import { RegisterRoutes } from "./build/routes"; 
 import swaggerDocument from "./build/swagger.json"; 
 import { globalErrorHandler } from "./common/middlewares/error.handler";
+import { upload } from "./common/config/multer";
 
 // BigInt JSON 변환 처리
 (BigInt.prototype as any).toJSON = function () {
@@ -25,8 +26,8 @@ app.use(express.urlencoded({ extended: true }));
 // Swagger UI
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// TSOA Routes 등록
-RegisterRoutes(app);
+// TSOA Routes 등록 (커스텀 multer 사용)
+RegisterRoutes(app, { multer: upload });
 
 // Global Error Handler (반드시 라우트 등록 뒤에!)
 app.use(globalErrorHandler);

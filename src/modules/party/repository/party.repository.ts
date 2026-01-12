@@ -21,10 +21,41 @@ export class PartyRepository {
         postPositions: {
           create: positionIds.map((id: number) => ({ positionId: BigInt(id) })),
         },
-        user: { connect: { id: BigInt(userId) } },
-        game: { connect: { id: BigInt(gameId) } },
+        user: { connect: { id: userId } },
+        game: { connect: { id: gameId } },
         tier: tierId ? { connect: { id: BigInt(tierId) } } : undefined,
-        azit: { connect: { id: BigInt(azitId) } },
+        azit: { connect: { id: azitId } },
+      },
+    });
+  }
+
+  // 아지트 작업 완료 후 AzitService/Repository로 이동 필요
+  async createTempAzit(azitName: string, imageUrl: string | null, tx?: any) {
+    const client = tx || prisma;
+    return client.azit.create({
+      data: {
+        azitName,
+        imageUrl,
+      },
+    });
+  }
+
+  async findAzitById(id: number) {
+    return prisma.azit.findUnique({ where: { id } });
+  }
+
+  async findGameById(id: number) {
+    return prisma.game.findUnique({ where: { id } });
+  }
+
+  async findTierById(id: number) {
+    return prisma.tier.findUnique({ where: { id } });
+  }
+
+  async findPositionsByIds(ids: number[]) {
+    return prisma.position.findMany({
+      where: {
+        id: { in: ids },
       },
     });
   }
