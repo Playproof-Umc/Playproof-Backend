@@ -1652,6 +1652,124 @@
 					}
 				]
 			},
+			"AzitScheduleCreateResDto": {
+				"properties": {
+					"schedule_id": {
+						"type": "number",
+						"format": "double",
+						"description": "일정 ID",
+						"example": 1
+					},
+					"title": {
+						"type": "string",
+						"description": "일정 제목",
+						"example": "증바람 5인큐"
+					},
+					"max_participants": {
+						"type": "number",
+						"format": "double",
+						"description": "최대 모집 인원",
+						"example": 5
+					},
+					"game_start_at": {
+						"type": "string",
+						"description": "게임 시작 시간",
+						"example": "2026-03-01T20:00:00"
+					},
+					"game_end_at": {
+						"type": "string",
+						"description": "게임 종료 시간",
+						"example": "2026-03-02T00:00:00"
+					},
+					"recruitment_end_at": {
+						"type": "string",
+						"description": "모집 마감 시간",
+						"example": "2026-02-28T13:00:00"
+					}
+				},
+				"required": [
+					"schedule_id",
+					"title",
+					"max_participants",
+					"game_start_at",
+					"game_end_at",
+					"recruitment_end_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_AzitScheduleCreateResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/AzitScheduleCreateResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_AzitScheduleCreateResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_AzitScheduleCreateResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"AzitScheduleCreateReqDto": {
+				"properties": {
+					"title": {
+						"type": "string",
+						"description": "일정 제목",
+						"example": "증바람 5인큐"
+					},
+					"max_participants": {
+						"type": "number",
+						"format": "double",
+						"description": "최대 모집 인원",
+						"example": 5
+					},
+					"game_start_at": {
+						"type": "string",
+						"description": "게임 시작 시간",
+						"example": "2026-03-01T20:00:00"
+					},
+					"game_end_at": {
+						"type": "string",
+						"description": "게임 종료 시간",
+						"example": "2026-03-02T00:00:00"
+					},
+					"recruitment_end_at": {
+						"type": "string",
+						"description": "모집 마감 시간",
+						"example": "2026-02-28T13:00:00"
+					}
+				},
+				"required": [
+					"title",
+					"max_participants",
+					"game_start_at",
+					"game_end_at",
+					"recruitment_end_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"SignUpResDto": {
 				"properties": {
 					"id": {
@@ -2794,6 +2912,82 @@
 						}
 					}
 				]
+			}
+		},
+		"/azits/{azit_id}/schedules": {
+			"post": {
+				"operationId": "CreateSchedule",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_AzitScheduleCreateResDto_"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Azit Schedule"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AzitScheduleCreateReqDto"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/auth/signup": {
