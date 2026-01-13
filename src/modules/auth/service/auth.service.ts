@@ -1,19 +1,21 @@
 import { injectable, inject } from "tsyringe";
-import bcrypt from "bcrypt";
 import * as jose from "jose";
 import { UserRepository } from "../../user/user.repository";
 import { SignUpReqDto, LoginReqDto, SendCertificationReqDto, VerifyCertificationReqDto} from "../dtos/auth.req.dto";
 import { SignUpResDto, LoginResDto, SendCertificationResDto, VerifyCertificationResDto } from "../dtos/auth.res.dto"
-import { Result, created, ok, unauthorized, conflict, isSuccess, badRequest, ConflictError } from "../../../common/types/result.type";
-import { UserErrorCode } from "../../../common/constants/error-code"
-import { sendVerificationSms } from "../../../common/utils/sms";
+import { Result, created, ok, unauthorized, conflict, isSuccess, badRequest } from "../../../common/types/result.type";
+import { sendVerificationSms } from "../../../common/utils/sms.util";
 import { redisClient } from "../../../common/config/database";
 import { SmsErrorCode } from "../../../common/constants/error-code";
 import { checkPhoneNumberDuplicate, checkNicknameDuplicate } from "../utils/auth.validator";
+import { REDIS_PREFIX } from "../../../common/constants/redis.const";
+import { smsConfig } from "../../../common/config/sms";
+import { authConfig } from "../../../common/config/auth";
+import { hashPassword, comparePassword } from "../../../common/utils/password.util";
 
 @injectable()
 export class AuthService {
-  private readonly SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "default_fallback_secret_key");
+  private readonly SECRET = new TextEncoder().encode(authConfig.jwtSecret);
 
   constructor(@inject(UserRepository) private userRepository: UserRepository) {}
 
@@ -26,7 +28,10 @@ export class AuthService {
     const nicknameDuplicateError = await checkNicknameDuplicate<SignUpResDto>(this.userRepository, dto.nickname);
     if (nicknameDuplicateError) return nicknameDuplicateError;
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    // 비밀번호 해쉬
+    const hashedPasswordResult = await hashPassword(dto.password)
+    if(!isSuccess(hashedPasswordResult)) return hashedPasswordResult;
+    const hashedPassword = hashedPasswordResult.data;
 
     const newUser = await this.userRepository.createUser({
       ...dto,
@@ -43,7 +48,10 @@ export class AuthService {
   async login(dto: LoginReqDto): Promise<Result<LoginResDto>> {
     const user = await this.userRepository.findByPhoneNumber(dto.phone);
 
-    if (!user || !(await bcrypt.compare(dto.password, user.password!))) {
+    // 비밀번호 일치 여부 확인 및 유저 존재 여부 확인
+    const comparePasswordResult = user ? await comparePassword(dto.password, user.password!) : ok(false);
+    if(!isSuccess(comparePasswordResult)) return comparePasswordResult;
+    if (!user || !comparePasswordResult.data) {
       return unauthorized({ 
         message: "전화번호 또는 비밀번호가 일치하지 않습니다.", 
         errorCode: "AUTH_FAILED" 
@@ -51,9 +59,9 @@ export class AuthService {
     }
 
     const accessToken = await new jose.SignJWT({ userId: user.id })
-      .setProtectedHeader({ alg: "HS256" })
+      .setProtectedHeader({ alg: authConfig.jwtAlgorithm })
       .setIssuedAt()
-      .setExpirationTime("2h") // 2시간 후 만료
+      .setExpirationTime(authConfig.jwtExpiration)
       .sign(this.SECRET);
 
     return ok({ accessToken });
@@ -67,8 +75,8 @@ export class AuthService {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     // 레디스 저장
-    await redisClient.set(`sms:${dto.phone}`, code, { 
-      EX: 300 // 5분
+    await redisClient.set(`${REDIS_PREFIX.SMS}${dto.phone}`, code, { 
+      EX: smsConfig.verificationTTL 
     });
 
     // SMS 발송

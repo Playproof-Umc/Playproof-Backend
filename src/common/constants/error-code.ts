@@ -41,5 +41,10 @@ export const SmsErrorCode = {
   CERTIFICATION_EXPIRED: "SMS_CERTIFICATION_EXPIRED", // 인증번호 만료
 } as const;
 
+export const AuthErrorCode = {
+  ENCRYPTION_FAILED: "PASSWORD_ENCRYPTION_ERROR", // 비밀번호 해싱 실패
+  COMPARE_ERROR: "PASSWORD_COMPARE_ERROR", // 비밀번호 일치 검사 실패 
+}
+
 // 나중에 다른 도메인이 생기면 추가
 // export const OrderErrorCode = { ... } as const;
