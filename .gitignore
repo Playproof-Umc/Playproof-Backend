@@ -142,3 +142,6 @@ vite.config.ts.timestamp-*
 
 # macOS system files
 .DS_Store
+
+# tsoa 빌드 파일
+/src/build

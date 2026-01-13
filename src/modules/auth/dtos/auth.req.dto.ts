@@ -39,3 +39,28 @@ export class LoginReqDto {
   @IsNotEmpty()
   password!: string;
 }
+
+export class SendCertificationReqDto {
+  /**
+   * @example "010-1234-5678"
+   */
+  @IsString()
+  @IsPhoneNumber("KR", { message: "형식에 맞지 않는 전화번호입니다. "})
+  phone!: string;
+}
+
+export class VerifyCertificationReqDto {
+  /**
+   * @example "010-1234-5678"
+   */
+  @IsString()
+  @IsPhoneNumber("KR", { message: "형식에 맞지 않는 전화번호입니다. "})
+  phone!: string;
+
+  /**
+   * @example "123456"
+   */
+  @IsString()
+  @Matches(/^\d{6}$/, { message: "인증 코드는 6자리 숫자여야 합니다." })
+  code!: string;
+}

@@ -22,3 +22,17 @@ export class LoginResDto {
    */
   accessToken!: string;
 }
+
+export class SendCertificationResDto {
+  /**
+   * @example "OK"
+   */
+  status!: string;
+}
+
+export class VerifyCertificationResDto {
+  /**
+   * @example "VERIFIED"
+   */
+  status!: string;
+}
