@@ -3,6 +3,8 @@ import { AuthService } from "../service/auth.service";
 import { UserRepository } from "../../user/user.repository";
 import { SendCertificationReqDto } from "../dtos/auth.req.dto";
 import { isSuccess, ok, internalServerError } from "../../../common/types/result.type";
+import { REDIS_PREFIX } from "../../../common/constants/redis.const";
+import { smsConfig } from "../../../common/config/sms";
 
 const mockRedisSet = jest.fn();
 const mockRedisDel = jest.fn();
@@ -23,7 +25,7 @@ jest.mock("../../../common/config/database", () => ({
 }));
 
 const mockSendVerificationSms = jest.fn();
-jest.mock("../../../common/utils/sms", () => ({
+jest.mock("../../../common/utils/sms.util", () => ({
   sendVerificationSms: (phone: string, code: string) => mockSendVerificationSms(phone, code),
 }));
 
@@ -45,6 +47,7 @@ describe("AuthService", () => {
 
   describe("sendCertification", () => {
     const dto: SendCertificationReqDto = { phone: "010-1234-5678" };
+    const redisKey = `${REDIS_PREFIX.SMS}${dto.phone}`;
 
     // 이미 가입된 전화번호 테스트
     it("이미 가입된 전화번호라면 409 Conflict 에러를 반환해야 한다", async () => {
@@ -80,9 +83,9 @@ describe("AuthService", () => {
 
       // Redis 저장 검증
       expect(mockRedisSet).toHaveBeenCalledWith(
-        `sms:${dto.phone}`, 
+        redisKey, 
         expect.any(String), 
-        { EX: 300 }
+        { EX: smsConfig.verificationTTL }
       );
 
       // SMS 발송 호출 검증
@@ -91,7 +94,7 @@ describe("AuthService", () => {
         expect.any(String)
       );
     });
-    
+
     // 롤백 테스트
     it("SMS 발송 실패 시(500 에러), Redis 데이터를 삭제하고 에러를 반환해야 한다 (롤백 테스트)", async () => {
       // Given: 유저 없음
@@ -109,11 +112,24 @@ describe("AuthService", () => {
       expect(isSuccess(result)).toBe(false); 
       expect(result.statusCode).toBe(500);   
 
-      //Redis 저장 환인
+      //Redis 저장 검증
       expect(mockRedisSet).toHaveBeenCalled();
 
       //실패시 Redis 삭제
-      expect(mockRedisDel).toHaveBeenCalledWith(`sms:${dto.phone}`);
+      expect(mockRedisDel).toHaveBeenCalledWith(redisKey);
+    });
+    
+    // 레디스 저장 실패 
+    it("Redis 저장 중 에러 발생 시(Infra Error), SMS를 보내지 않고 에러를 던져야 한다", async () => {
+      userRepository.findByPhoneNumber.mockResolvedValue(null);
+      // Redis 서버 문제
+      mockRedisSet.mockRejectedValue(new Error("Redis Connection Error"));
+
+      await expect(authService.sendCertification(dto))
+        .rejects.toThrow("Redis Connection Error");
+
+      // SMS API 실행 금지
+      expect(mockSendVerificationSms).not.toHaveBeenCalled();
     });
   });
 });

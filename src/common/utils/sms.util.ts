@@ -1,4 +1,4 @@
-// src/common/utils/sms.ts
+// src/common/utils/sms.util.ts
 import mysms from "coolsms-node-sdk";
 import "dotenv/config";
 import { Result, ok, internalServerError } from "../types/result.type";

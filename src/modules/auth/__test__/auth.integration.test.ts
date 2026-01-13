@@ -5,7 +5,7 @@ import { redisClient } from "../../../common/config/database"; // 진짜 Redis �
 import { ok } from "../../../common/types/result.type";
 
 const mockSendVerificationSms = jest.fn();
-jest.mock("../../../common/utils/sms", () => ({
+jest.mock("../../../common/utils/sms.util", () => ({
   sendVerificationSms: (phone: string, code: string) => mockSendVerificationSms(phone, code),
 }));
 
