@@ -55,16 +55,15 @@ export class AzitMemberController extends Controller {
     public async getAzitMembers(
         @Path() azitId: number,
         @Request() req: any,
-        @Query() page?: number,
+        @Query() cursor?: number,
         @Query() size?: number,
     ): Promise<Result<GetAzitMembersResDto>> {
         const azitIdBigInt = BigInt(azitId);
-        const pageNum = page !== undefined ? page : 0;
         const sizeNum = size !== undefined ? size : 20;
 
         const result = await this.azitMemberService.getAzitMembers(
             azitIdBigInt,
-            pageNum,
+            cursor,
             sizeNum,
         );
 

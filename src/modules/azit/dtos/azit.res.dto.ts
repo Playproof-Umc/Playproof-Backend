@@ -49,30 +49,18 @@ export class AzitMemberResDto {
     role!: string;
 }
 
-export class PaginationResDto {
+export class CursorPaginationResDto {
     /**
-     * 현재 페이지 번호 (0부터 시작)
-     * @example 0
+     * 다음 커서 (더 이상 데이터가 없으면 null)
+     * @example 125
      */
-    page!: number;
+    next_cursor!: number | null;
 
     /**
-     * 페이지 크기
-     * @example 20
+     * 다음 페이지 존재 여부
+     * @example true
      */
-    size!: number;
-
-    /**
-     * 전체 페이지 수
-     * @example 1
-     */
-    total_pages!: number;
-
-    /**
-     * 전체 요소 수
-     * @example 3
-     */
-    total_elements!: number;
+    has_next!: boolean;
 }
 
 export class GetAzitMembersResDto {
@@ -89,20 +77,21 @@ export class GetAzitMembersResDto {
     azit_name!: string;
 
     /**
-     * 전체 멤버 수
-     * @example 3
-     */
-    total_members!: number;
-
-    /**
      * 멤버 목록
      */
     members!: AzitMemberResDto[];
 
     /**
-     * 페이지네이션 정보
+     * 다음 커서 (더 이상 데이터가 없으면 null)
+     * @example 125
      */
-    pagination!: PaginationResDto;
+    next_cursor!: number | null;
+
+    /**
+     * 다음 페이지 존재 여부
+     * @example true
+     */
+    has_next!: boolean;
 }
 
 export class AddAzitMemberResDto {

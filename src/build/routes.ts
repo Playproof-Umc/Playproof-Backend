@@ -420,25 +420,14 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "PaginationResDto": {
-        "dataType": "refObject",
-        "properties": {
-            "page": {"dataType":"double","required":true},
-            "size": {"dataType":"double","required":true},
-            "total_pages": {"dataType":"double","required":true},
-            "total_elements": {"dataType":"double","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "GetAzitMembersResDto": {
         "dataType": "refObject",
         "properties": {
             "azit_id": {"dataType":"double","required":true},
             "azit_name": {"dataType":"string","required":true},
-            "total_members": {"dataType":"double","required":true},
             "members": {"dataType":"array","array":{"dataType":"refObject","ref":"AzitMemberResDto"},"required":true},
-            "pagination": {"ref":"PaginationResDto","required":true},
+            "next_cursor": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "has_next": {"dataType":"boolean","required":true},
         },
         "additionalProperties": false,
     },
@@ -1063,7 +1052,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         const argsAzitMemberController_getAzitMembers: Record<string, TsoaRoute.ParameterSchema> = {
                 azitId: {"in":"path","name":"azitId","required":true,"dataType":"double"},
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
-                page: {"in":"query","name":"page","dataType":"double"},
+                cursor: {"in":"query","name":"cursor","dataType":"double"},
                 size: {"in":"query","name":"size","dataType":"double"},
         };
         app.get('/azits/:azitId/members',

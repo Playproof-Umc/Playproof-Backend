@@ -1384,42 +1384,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"PaginationResDto": {
-				"properties": {
-					"page": {
-						"type": "number",
-						"format": "double",
-						"description": "현재 페이지 번호 (0부터 시작)",
-						"example": 0
-					},
-					"size": {
-						"type": "number",
-						"format": "double",
-						"description": "페이지 크기",
-						"example": 20
-					},
-					"total_pages": {
-						"type": "number",
-						"format": "double",
-						"description": "전체 페이지 수",
-						"example": 1
-					},
-					"total_elements": {
-						"type": "number",
-						"format": "double",
-						"description": "전체 요소 수",
-						"example": 3
-					}
-				},
-				"required": [
-					"page",
-					"size",
-					"total_pages",
-					"total_elements"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"GetAzitMembersResDto": {
 				"properties": {
 					"azit_id": {
@@ -1433,12 +1397,6 @@
 						"description": "아지트 이름",
 						"example": "Playproof 공식 클랜"
 					},
-					"total_members": {
-						"type": "number",
-						"format": "double",
-						"description": "전체 멤버 수",
-						"example": 3
-					},
 					"members": {
 						"items": {
 							"$ref": "#/components/schemas/AzitMemberResDto"
@@ -1446,17 +1404,25 @@
 						"type": "array",
 						"description": "멤버 목록"
 					},
-					"pagination": {
-						"$ref": "#/components/schemas/PaginationResDto",
-						"description": "페이지네이션 정보"
+					"next_cursor": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "다음 커서 (더 이상 데이터가 없으면 null)",
+						"example": 125
+					},
+					"has_next": {
+						"type": "boolean",
+						"description": "다음 페이지 존재 여부",
+						"example": true
 					}
 				},
 				"required": [
 					"azit_id",
 					"azit_name",
-					"total_members",
 					"members",
-					"pagination"
+					"next_cursor",
+					"has_next"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -2639,7 +2605,7 @@
 					},
 					{
 						"in": "query",
-						"name": "page",
+						"name": "cursor",
 						"required": false,
 						"schema": {
 							"format": "double",

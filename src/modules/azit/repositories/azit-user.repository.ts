@@ -74,16 +74,15 @@ export class AzitUserRepository {
     });
   }
 
-  async findMembersByAzitIdWithPagination(
+  async findMembersByAzitIdWithCursor(
     azitId: bigint,
-    page: number,
+    cursor: bigint | null,
     size: number,
   ) {
-    const skip = page * size;
-
     const members = await prisma.azitUser.findMany({
       where: {
         azitId,
+        ...(cursor && { id: { gt: cursor } }),
       },
       include: {
         user: {
@@ -105,11 +104,10 @@ export class AzitUserRepository {
           role: 'asc', // HOST가 먼저
         },
         {
-          joinedAt: 'asc',
+          id: 'asc', // 커서 기반 정렬
         },
       ],
-      skip,
-      take: size,
+      take: size + 1, // 하나 더 가져와서 has_next 판단
     });
 
     return members;

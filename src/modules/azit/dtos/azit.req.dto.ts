@@ -31,17 +31,17 @@ export class AzitUpdateReqDto {
 
 export class GetAzitMembersReqDto {
   /**
-   * 페이지 번호 (0부터 시작)
-   * @example 0
+   * 커서 (마지막으로 받은 member_id, 첫 요청 시 생략)
+   * @example 105
    */
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  @Min(0)
-  page?: number = 0;
+  @Min(1)
+  cursor?: number;
 
   /**
-   * 페이지당 항목 수 (최소 1)
+   * 가져올 항목 수 (최소 1, 최대 100)
    * @example 20
    */
   @IsOptional()
