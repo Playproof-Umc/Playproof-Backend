@@ -174,10 +174,13 @@ export class AzitMemberService {
             });
         }
 
-        // 4. 권한 확인: 아지트장이거나 본인인 경우만 가능
+        // 4. 권한 조합 계산
         const isSelf = targetMember.userId === requestUserId;
         const isHost = requestUserRole === AzitUserRole.HOST;
+        const targetIsHost = targetMember.role === AzitUserRole.HOST;
 
+        // 5. 권한 검증 
+        // Case 1: (!isSelf && !isHost) 
         if (!isSelf && !isHost) {
             return forbidden({
                 message: "멤버를 제거할 권한이 없습니다.",
@@ -185,8 +188,10 @@ export class AzitMemberService {
             });
         }
 
-        // 5. 마지막 아지트장인지 확인
-        if (targetMember.role === AzitUserRole.HOST) {
+        // 6. 마지막 호스트 보호 (호스트 제거 시도 시)
+        // Case 2: (isSelf && isHost && hostCount <= 1) 
+        // Case 3: (!isSelf && isHost && targetIsHost && hostCount <= 1) 
+        if (targetIsHost) {
             const hostCount = await this.azitUserRepository.countHostsByAzitId(azitId);
             if (hostCount <= 1) {
                 return badRequest({
@@ -203,10 +208,15 @@ export class AzitMemberService {
             }
         }
 
-        // 6. 멤버 제거
+        // 7. 정상 케이스 (권한 통과)
+        // Case 4: (!isSelf && isHost) 
+        // Case 5: (isSelf && !isHost) 
+        // Case 6: (isSelf && isHost && hostCount > 1)
+
+        // 8. 멤버 제거
         await this.azitUserRepository.deleteAzitUser(memberId);
 
-        // 7. 제거 사유 결정
+        // 9. 제거 사유 결정
         const reason = isSelf ? "SELF_LEAVE" : "FORCE_REMOVE";
 
         const response: RemoveAzitMemberResDto = {
