@@ -14,11 +14,7 @@ import { PartyCommentController } from './../modules/party/controller/party-comm
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AzitUpdateController } from './../modules/azit/controllers/azit-update.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { AzitMemberRemoveController } from './../modules/azit/controllers/azit-member-remove.controller';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { AzitMemberListController } from './../modules/azit/controllers/azit-member-list.controller';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { AzitMemberAddController } from './../modules/azit/controllers/azit-member-add.controller';
+import { AzitMemberController } from './../modules/azit/controllers/azit-member.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AzitListController } from './../modules/azit/controllers/azit-list.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -413,39 +409,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "RemoveAzitMemberResDto": {
-        "dataType": "refObject",
-        "properties": {
-            "member_id": {"dataType":"double","required":true},
-            "azit_id": {"dataType":"double","required":true},
-            "user_id": {"dataType":"double","required":true},
-            "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
-            "removed_at": {"dataType":"datetime","required":true},
-            "reason": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Success_RemoveAzitMemberResDto_": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"RemoveAzitMemberResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Result_RemoveAzitMemberResDto_": {
-        "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"ref":"Success_RemoveAzitMemberResDto_"},{"ref":"Failed"}],"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "UnauthorizedError": {
-        "dataType": "refObject",
-        "properties": {
-            "error": {"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},
-            "data": {"dataType":"enum","enums":[null],"required":true},
-            "statusCode": {"dataType":"enum","enums":[401],"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AzitMemberResDto": {
         "dataType": "refObject",
         "properties": {
@@ -494,6 +457,16 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"union","subSchemas":[{"ref":"Success_GetAzitMembersResDto_"},{"ref":"Failed"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UnauthorizedError": {
+        "dataType": "refObject",
+        "properties": {
+            "error": {"dataType":"nestedObjectLiteral","nestedProperties":{"errors":{"dataType":"array","array":{"dataType":"refObject","ref":"ApiErrorDetail"}},"message":{"dataType":"string","required":true},"code":{"dataType":"string","required":true}},"required":true},
+            "data": {"dataType":"enum","enums":[null],"required":true},
+            "statusCode": {"dataType":"enum","enums":[401],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AddAzitMemberResDto": {
         "dataType": "refObject",
         "properties": {
@@ -526,6 +499,29 @@ const models: TsoaRoute.Models = {
             "user_id": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "RemoveAzitMemberResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "member_id": {"dataType":"double","required":true},
+            "azit_id": {"dataType":"double","required":true},
+            "user_id": {"dataType":"double","required":true},
+            "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "removed_at": {"dataType":"datetime","required":true},
+            "reason": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_RemoveAzitMemberResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"RemoveAzitMemberResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_RemoveAzitMemberResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_RemoveAzitMemberResDto_"},{"ref":"Failed"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AzitListResDto": {
@@ -1073,45 +1069,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsAzitMemberRemoveController_removeAzitMember: Record<string, TsoaRoute.ParameterSchema> = {
-                req: {"in":"request","name":"req","required":true,"dataType":"object"},
-                azit_id: {"in":"path","name":"azit_id","required":true,"dataType":"double"},
-                member_id: {"in":"path","name":"member_id","required":true,"dataType":"double"},
-        };
-        app.delete('/azits/:azit_id/members/:member_id',
-            authenticateMiddleware([{"jwt":[]}]),
-            ...(fetchMiddlewares<RequestHandler>(AzitMemberRemoveController)),
-            ...(fetchMiddlewares<RequestHandler>(AzitMemberRemoveController.prototype.removeAzitMember)),
-
-            async function AzitMemberRemoveController_removeAzitMember(request: ExRequest, response: ExResponse, next: any) {
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsAzitMemberRemoveController_removeAzitMember, request, response });
-
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<AzitMemberRemoveController>(AzitMemberRemoveController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
-
-              await templateService.apiHandler({
-                methodName: 'removeAzitMember',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: 200,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsAzitMemberListController_getAzitMembers: Record<string, TsoaRoute.ParameterSchema> = {
+        const argsAzitMemberController_getAzitMembers: Record<string, TsoaRoute.ParameterSchema> = {
                 azitId: {"in":"path","name":"azitId","required":true,"dataType":"double"},
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 page: {"in":"query","name":"page","dataType":"double"},
@@ -1119,20 +1077,20 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         };
         app.get('/azits/:azitId/members',
             authenticateMiddleware([{"jwt":[]}]),
-            ...(fetchMiddlewares<RequestHandler>(AzitMemberListController)),
-            ...(fetchMiddlewares<RequestHandler>(AzitMemberListController.prototype.getAzitMembers)),
+            ...(fetchMiddlewares<RequestHandler>(AzitMemberController)),
+            ...(fetchMiddlewares<RequestHandler>(AzitMemberController.prototype.getAzitMembers)),
 
-            async function AzitMemberListController_getAzitMembers(request: ExRequest, response: ExResponse, next: any) {
+            async function AzitMemberController_getAzitMembers(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsAzitMemberListController_getAzitMembers, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsAzitMemberController_getAzitMembers, request, response });
 
                 const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
 
-                const controller: any = await container.get<AzitMemberListController>(AzitMemberListController);
+                const controller: any = await container.get<AzitMemberController>(AzitMemberController);
                 if (typeof controller['setStatus'] === 'function') {
                 controller.setStatus(undefined);
                 }
@@ -1150,27 +1108,27 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsAzitMemberAddController_addAzitMember: Record<string, TsoaRoute.ParameterSchema> = {
+        const argsAzitMemberController_addAzitMember: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 azit_id: {"in":"path","name":"azit_id","required":true,"dataType":"double"},
                 body: {"in":"body","name":"body","required":true,"ref":"AddAzitMemberReqDto"},
         };
         app.post('/azits/:azit_id/members',
             authenticateMiddleware([{"jwt":[]}]),
-            ...(fetchMiddlewares<RequestHandler>(AzitMemberAddController)),
-            ...(fetchMiddlewares<RequestHandler>(AzitMemberAddController.prototype.addAzitMember)),
+            ...(fetchMiddlewares<RequestHandler>(AzitMemberController)),
+            ...(fetchMiddlewares<RequestHandler>(AzitMemberController.prototype.addAzitMember)),
 
-            async function AzitMemberAddController_addAzitMember(request: ExRequest, response: ExResponse, next: any) {
+            async function AzitMemberController_addAzitMember(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsAzitMemberAddController_addAzitMember, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsAzitMemberController_addAzitMember, request, response });
 
                 const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
 
-                const controller: any = await container.get<AzitMemberAddController>(AzitMemberAddController);
+                const controller: any = await container.get<AzitMemberController>(AzitMemberController);
                 if (typeof controller['setStatus'] === 'function') {
                 controller.setStatus(undefined);
                 }
@@ -1182,6 +1140,44 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 next,
                 validatedArgs,
                 successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAzitMemberController_removeAzitMember: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                azit_id: {"in":"path","name":"azit_id","required":true,"dataType":"double"},
+                member_id: {"in":"path","name":"member_id","required":true,"dataType":"double"},
+        };
+        app.delete('/azits/:azit_id/members/:member_id',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(AzitMemberController)),
+            ...(fetchMiddlewares<RequestHandler>(AzitMemberController.prototype.removeAzitMember)),
+
+            async function AzitMemberController_removeAzitMember(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAzitMemberController_removeAzitMember, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<AzitMemberController>(AzitMemberController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'removeAzitMember',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
               });
             } catch (err) {
                 return next(err);
