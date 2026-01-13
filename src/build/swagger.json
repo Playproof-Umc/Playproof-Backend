@@ -1357,12 +1357,6 @@
 						"description": "멤버 ID (AzitUser의 id)",
 						"example": 101
 					},
-					"user_id": {
-						"type": "number",
-						"format": "double",
-						"description": "사용자 ID",
-						"example": 1001
-					},
 					"nickname": {
 						"type": "string",
 						"nullable": true,
@@ -1400,7 +1394,6 @@
 				},
 				"required": [
 					"member_id",
-					"user_id",
 					"nickname",
 					"avatar_url",
 					"role",
@@ -1590,12 +1583,6 @@
 						"description": "아지트 ID",
 						"example": 1
 					},
-					"user_id": {
-						"type": "number",
-						"format": "double",
-						"description": "사용자 ID",
-						"example": 1002
-					},
 					"nickname": {
 						"type": "string",
 						"nullable": true,
@@ -1634,7 +1621,6 @@
 				"required": [
 					"member_id",
 					"azit_id",
-					"user_id",
 					"nickname",
 					"avatar_url",
 					"role",
@@ -1707,12 +1693,6 @@
 						"description": "아지트 ID",
 						"example": 1
 					},
-					"user_id": {
-						"type": "number",
-						"format": "double",
-						"description": "사용자 ID",
-						"example": 1002
-					},
 					"nickname": {
 						"type": "string",
 						"nullable": true,
@@ -1734,7 +1714,6 @@
 				"required": [
 					"member_id",
 					"azit_id",
-					"user_id",
 					"nickname",
 					"removed_at",
 					"reason"

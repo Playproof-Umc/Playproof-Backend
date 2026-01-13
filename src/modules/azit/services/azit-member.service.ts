@@ -49,7 +49,6 @@ export class AzitMemberService {
 
             return {
                 member_id: Number(azitUser.id),
-                user_id: Number(azitUser.user.id),
                 nickname: azitUser.user.nickname,
                 avatar_url: avatarUrl,
                 role: azitUser.role,
@@ -137,7 +136,6 @@ export class AzitMemberService {
         const response: AddAzitMemberResDto = {
             member_id: Number(newMember.id),
             azit_id: Number(azit.id),
-            user_id: Number(newMember.user.id),
             nickname: newMember.user.nickname,
             avatar_url: avatarUrl,
             role: newMember.role,
@@ -222,7 +220,6 @@ export class AzitMemberService {
         const response: RemoveAzitMemberResDto = {
             member_id: Number(targetMember.id),
             azit_id: Number(azit.id),
-            user_id: Number(targetMember.user.id),
             nickname: targetMember.user.nickname,
             removed_at: new Date(),
             reason,

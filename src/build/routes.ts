@@ -413,7 +413,6 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "member_id": {"dataType":"double","required":true},
-            "user_id": {"dataType":"double","required":true},
             "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "avatar_url": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "role": {"dataType":"string","required":true},
@@ -472,7 +471,6 @@ const models: TsoaRoute.Models = {
         "properties": {
             "member_id": {"dataType":"double","required":true},
             "azit_id": {"dataType":"double","required":true},
-            "user_id": {"dataType":"double","required":true},
             "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "avatar_url": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "role": {"dataType":"string","required":true},
@@ -506,7 +504,6 @@ const models: TsoaRoute.Models = {
         "properties": {
             "member_id": {"dataType":"double","required":true},
             "azit_id": {"dataType":"double","required":true},
-            "user_id": {"dataType":"double","required":true},
             "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "removed_at": {"dataType":"datetime","required":true},
             "reason": {"dataType":"string","required":true},

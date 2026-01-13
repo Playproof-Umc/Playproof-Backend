@@ -31,12 +31,6 @@ export class AzitMemberResDto {
     member_id!: number;
 
     /**
-     * 사용자 ID
-     * @example 1001
-     */
-    user_id!: number;
-
-    /**
      * 닉네임
      * @example "채나"
      */
@@ -143,12 +137,6 @@ export class AddAzitMemberResDto {
     azit_id!: number;
 
     /**
-     * 사용자 ID
-     * @example 1002
-     */
-    user_id!: number;
-
-    /**
      * 닉네임
      * @example "채나"
      */
@@ -197,12 +185,6 @@ export class RemoveAzitMemberResDto {
      * @example 1
      */
     azit_id!: number;
-
-    /**
-     * 사용자 ID
-     * @example 1002
-     */
-    user_id!: number;
 
     /**
      * 닉네임
