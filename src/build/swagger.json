@@ -1373,33 +1373,13 @@
 						"type": "string",
 						"description": "역할 (HOST 또는 MEMBER)",
 						"example": "HOST"
-					},
-					"grade": {
-						"type": "string",
-						"description": "등급 (BASIC 또는 PRO)",
-						"example": "PRO"
-					},
-					"trust_score": {
-						"type": "number",
-						"format": "double",
-						"description": "신뢰도 점수",
-						"example": 85
-					},
-					"joined_at": {
-						"type": "string",
-						"format": "date-time",
-						"description": "가입 일시",
-						"example": "2023-10-15T10:30:00Z"
 					}
 				},
 				"required": [
 					"member_id",
 					"nickname",
 					"avatar_url",
-					"role",
-					"grade",
-					"trust_score",
-					"joined_at"
+					"role"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1599,23 +1579,6 @@
 						"type": "string",
 						"description": "역할 (HOST 또는 MEMBER)",
 						"example": "MEMBER"
-					},
-					"grade": {
-						"type": "string",
-						"description": "등급 (BASIC 또는 PRO)",
-						"example": "BASIC"
-					},
-					"trust_score": {
-						"type": "number",
-						"format": "double",
-						"description": "신뢰도 점수",
-						"example": 72
-					},
-					"joined_at": {
-						"type": "string",
-						"format": "date-time",
-						"description": "가입 일시",
-						"example": "2025-01-09T10:30:00Z"
 					}
 				},
 				"required": [
@@ -1623,10 +1586,7 @@
 					"azit_id",
 					"nickname",
 					"avatar_url",
-					"role",
-					"grade",
-					"trust_score",
-					"joined_at"
+					"role"
 				],
 				"type": "object",
 				"additionalProperties": false

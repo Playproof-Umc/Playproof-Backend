@@ -47,24 +47,6 @@ export class AzitMemberResDto {
      * @example "HOST"
      */
     role!: string;
-
-    /**
-     * 등급 (BASIC 또는 PRO)
-     * @example "PRO"
-     */
-    grade!: string;
-
-    /**
-     * 신뢰도 점수
-     * @example 85
-     */
-    trust_score!: number;
-
-    /**
-     * 가입 일시
-     * @example "2023-10-15T10:30:00Z"
-     */
-    joined_at!: Date;
 }
 
 export class PaginationResDto {
@@ -153,24 +135,6 @@ export class AddAzitMemberResDto {
      * @example "MEMBER"
      */
     role!: string;
-
-    /**
-     * 등급 (BASIC 또는 PRO)
-     * @example "BASIC"
-     */
-    grade!: string;
-
-    /**
-     * 신뢰도 점수
-     * @example 72
-     */
-    trust_score!: number;
-
-    /**
-     * 가입 일시
-     * @example "2025-01-09T10:30:00Z"
-     */
-    joined_at!: Date;
 }
 
 export class RemoveAzitMemberResDto {

@@ -52,9 +52,6 @@ export class AzitMemberService {
                 nickname: azitUser.user.nickname,
                 avatar_url: avatarUrl,
                 role: azitUser.role,
-                grade: azitUser.user.grade,
-                trust_score: azitUser.user.trustScore,
-                joined_at: azitUser.joinedAt,
             };
         });
 
@@ -139,9 +136,6 @@ export class AzitMemberService {
             nickname: newMember.user.nickname,
             avatar_url: avatarUrl,
             role: newMember.role,
-            grade: newMember.user.grade,
-            trust_score: newMember.user.trustScore,
-            joined_at: newMember.joinedAt,
         };
 
         return created(response);
