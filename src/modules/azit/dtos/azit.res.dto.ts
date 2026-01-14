@@ -82,10 +82,10 @@ export class GetAzitMembersResDto {
     members!: AzitMemberResDto[];
 
     /**
-     * 다음 커서 (더 이상 데이터가 없으면 null)
-     * @example 125
+     * 다음 커서 (마지막 멤버의 닉네임, 더 이상 데이터가 없으면 null)
+     * @example "채나"
      */
-    next_cursor!: number | null;
+    next_cursor!: string | null;
 
     /**
      * 다음 페이지 존재 여부

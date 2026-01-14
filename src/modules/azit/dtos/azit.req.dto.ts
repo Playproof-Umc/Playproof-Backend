@@ -31,14 +31,12 @@ export class AzitUpdateReqDto {
 
 export class GetAzitMembersReqDto {
   /**
-   * 커서 (마지막으로 받은 member_id, 첫 요청 시 생략)
-   * @example 105
+   * 커서 (마지막으로 받은 닉네임, 첫 요청 시 생략)
+   * @example "채나"
    */
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  cursor?: number;
+  @IsString()
+  cursor?: string;
 
   /**
    * 가져올 항목 수 (최소 1, 최대 100)

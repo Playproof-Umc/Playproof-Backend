@@ -55,7 +55,7 @@ export class AzitMemberController extends Controller {
     public async getAzitMembers(
         @Path() azitId: number,
         @Request() req: any,
-        @Query() cursor?: number,
+        @Query() cursor?: string,
         @Query() size?: number,
     ): Promise<Result<GetAzitMembersResDto>> {
         const azitIdBigInt = BigInt(azitId);

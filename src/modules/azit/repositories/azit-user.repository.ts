@@ -76,14 +76,24 @@ export class AzitUserRepository {
 
   async findMembersByAzitIdWithCursor(
     azitId: bigint,
-    cursor: bigint | null,
+    cursor: string | null,
     size: number,
   ) {
+    const whereCondition: any = {
+      azitId,
+    };
+
+    // 커서가 있으면 닉네임이 커서보다 큰 멤버만 조회
+    if (cursor) {
+      whereCondition.user = {
+        nickname: {
+          gt: cursor,
+        },
+      };
+    }
+
     const members = await prisma.azitUser.findMany({
-      where: {
-        azitId,
-        ...(cursor && { id: { gt: cursor } }),
-      },
+      where: whereCondition,
       include: {
         user: {
           include: {
@@ -99,14 +109,11 @@ export class AzitUserRepository {
           },
         },
       },
-      orderBy: [
-        {
-          role: 'asc', // HOST가 먼저
+      orderBy: {
+        user: {
+          nickname: 'asc', // 닉네임 오름차순 정렬
         },
-        {
-          id: 'asc', // 커서 기반 정렬
-        },
-      ],
+      },
       take: size + 1, // 하나 더 가져와서 has_next 판단
     });
 

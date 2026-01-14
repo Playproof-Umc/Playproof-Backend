@@ -426,7 +426,7 @@ const models: TsoaRoute.Models = {
             "azit_id": {"dataType":"double","required":true},
             "azit_name": {"dataType":"string","required":true},
             "members": {"dataType":"array","array":{"dataType":"refObject","ref":"AzitMemberResDto"},"required":true},
-            "next_cursor": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "next_cursor": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "has_next": {"dataType":"boolean","required":true},
         },
         "additionalProperties": false,
@@ -1052,7 +1052,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         const argsAzitMemberController_getAzitMembers: Record<string, TsoaRoute.ParameterSchema> = {
                 azitId: {"in":"path","name":"azitId","required":true,"dataType":"double"},
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
-                cursor: {"in":"query","name":"cursor","dataType":"double"},
+                cursor: {"in":"query","name":"cursor","dataType":"string"},
                 size: {"in":"query","name":"size","dataType":"double"},
         };
         app.get('/azits/:azitId/members',

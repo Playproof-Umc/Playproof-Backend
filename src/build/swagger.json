@@ -1405,11 +1405,10 @@
 						"description": "멤버 목록"
 					},
 					"next_cursor": {
-						"type": "number",
-						"format": "double",
+						"type": "string",
 						"nullable": true,
-						"description": "다음 커서 (더 이상 데이터가 없으면 null)",
-						"example": 125
+						"description": "다음 커서 (마지막 멤버의 닉네임, 더 이상 데이터가 없으면 null)",
+						"example": "채나"
 					},
 					"has_next": {
 						"type": "boolean",
@@ -2608,8 +2607,7 @@
 						"name": "cursor",
 						"required": false,
 						"schema": {
-							"format": "double",
-							"type": "number"
+							"type": "string"
 						}
 					},
 					{

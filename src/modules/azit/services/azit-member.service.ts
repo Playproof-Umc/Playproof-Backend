@@ -19,7 +19,7 @@ export class AzitMemberService {
 
     async getAzitMembers(
         azitId: bigint,
-        cursor: number | undefined,
+        cursor: string | undefined,
         size: number,
     ): Promise<Result<GetAzitMembersResDto>> {
         // 아지트 존재 여부 확인
@@ -33,10 +33,9 @@ export class AzitMemberService {
         }
 
         // 커서 기반 멤버 목록 조회 (size + 1개 조회)
-        const cursorBigInt = cursor ? BigInt(cursor) : null;
         const membersData = await this.azitUserRepository.findMembersByAzitIdWithCursor(
             azitId,
-            cursorBigInt,
+            cursor || null,
             size,
         );
 
@@ -57,9 +56,10 @@ export class AzitMemberService {
             };
         });
 
-        // next_cursor 계산 (마지막 항목의 id)
-        const nextCursor = hasNext && actualMembers.length > 0 
-            ? Number(actualMembers[actualMembers.length - 1].id) 
+        // next_cursor 계산 (마지막 항목의 닉네임, null이면 null)
+        const lastMember = actualMembers[actualMembers.length - 1];
+        const nextCursor = hasNext && lastMember && lastMember.user.nickname
+            ? lastMember.user.nickname
             : null;
 
         const response: GetAzitMembersResDto = {
