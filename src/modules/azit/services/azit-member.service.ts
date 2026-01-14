@@ -177,10 +177,9 @@ export class AzitMemberService {
         // 4. 권한 조합 계산
         const isSelf = targetMember.userId === requestUserId;
         const isHost = requestUserRole === AzitUserRole.HOST;
-        const targetIsHost = targetMember.role === AzitUserRole.HOST;
 
-        // 5. 권한 검증 
-        // Case 1: (!isSelf && !isHost) 
+        // 5. 권한 검증
+        // Case 1: 일반 멤버는 본인만 제거 가능 (타인 제거 시도 시 권한 없음)
         if (!isSelf && !isHost) {
             return forbidden({
                 message: "멤버를 제거할 권한이 없습니다.",
@@ -188,35 +187,27 @@ export class AzitMemberService {
             });
         }
 
-        // 6. 마지막 호스트 보호 (호스트 제거 시도 시)
-        // Case 2: (isSelf && isHost && hostCount <= 1) 
-        // Case 3: (!isSelf && isHost && targetIsHost && hostCount <= 1) 
-        if (targetIsHost) {
-            const hostCount = await this.azitUserRepository.countHostsByAzitId(azitId);
-            if (hostCount <= 1) {
-                return badRequest({
-                    message: "요청을 처리할 수 없습니다.",
-                    errorCode: "AZIT_LAST_HOST_CANNOT_REMOVE",
-                    errors: [
-                        {
-                            field: "member_id",
-                            value: Number(memberId),
-                            reason: "마지막 아지트장은 제거할 수 없습니다. 다른 멤버를 먼저 아지트장으로 승격해주세요.",
-                        },
-                    ],
-                });
-            }
+        // 6. 호스트 보호
+        // 호스트는 본인을 제거할 수 없음 (호스트는 항상 1명만 존재)
+        if (isSelf && isHost) {
+            return badRequest({
+                message: "요청을 처리할 수 없습니다.",
+                errorCode: "AZIT_LAST_HOST_CANNOT_REMOVE",
+                errors: [
+                    {
+                        field: "member_id",
+                        value: Number(memberId),
+                        reason: "아지트장은 제거할 수 없습니다.",
+                    },
+                ],
+            });
         }
 
-        // 7. 정상 케이스 (권한 통과)
-        // Case 4: (!isSelf && isHost) 
-        // Case 5: (isSelf && !isHost) 
-        // Case 6: (isSelf && isHost && hostCount > 1)
 
-        // 8. 멤버 제거
+        // 7. 멤버 제거
         await this.azitUserRepository.deleteAzitUser(memberId);
 
-        // 9. 제거 사유 결정
+        // 8. 제거 사유 결정
         const reason = isSelf ? "SELF_LEAVE" : "FORCE_REMOVE";
 
         const response: RemoveAzitMemberResDto = {
