@@ -4,6 +4,7 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   Route,
   Tags,
   SuccessResponse,
@@ -119,6 +120,31 @@ export class AzitScheduleController extends Controller {
       azitId,
       scheduleId,
       requestBody,
+    );
+
+    this.setStatus(result.statusCode);
+
+    return result;
+  }
+
+  @SuccessResponse('204', 'No Content')
+  @Response<ForbiddenError>(403, 'Forbidden')
+  @Response<NotFoundError>(404, 'Not Found')
+  @Security('jwt')
+  @Delete('/{schedule_id}')
+  public async deleteSchedule(
+    @Request() req: any,
+    @Path() azit_id: number,
+    @Path() schedule_id: number,
+  ): Promise<Result<null>> {
+    const userId = BigInt(req.user.id);
+    const azitId = BigInt(azit_id);
+    const scheduleId = BigInt(schedule_id);
+
+    const result = await this.azitScheduleService.deleteSchedule(
+      userId,
+      azitId,
+      scheduleId,
     );
 
     this.setStatus(result.statusCode);

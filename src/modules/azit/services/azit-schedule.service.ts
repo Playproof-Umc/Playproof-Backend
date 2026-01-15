@@ -142,6 +142,40 @@ export class AzitScheduleService {
     return null;
   }
 
+  /**
+   * 사용자가 일정 생성자인지 확인합니다.
+   * @param userId - 확인할 사용자 ID
+   * @param azitId - 확인할 아지트 ID
+   * @param scheduleId - 확인할 일정 ID
+   * @returns 생성자가 아니면 Result<never>, 생성자이면 null
+   */
+  private async validateScheduleCreator(
+    userId: bigint,
+    azitId: bigint,
+    scheduleId: bigint,
+  ): Promise<Result<never> | null> {
+    // 1. 일정 조회 (생성자 확인용)
+    const schedule = await this.azitScheduleRepository.findScheduleById(
+      scheduleId,
+    );
+    const azitUser =
+      await this.azitUserRepository.findAzitUserByUserIdAndAzitId(
+        userId,
+        azitId,
+      )!;
+
+    // 2. 사용자가 일정 생성자인지 확인
+    const isCreator = schedule.participations[0]?.memberId === azitUser!.id;
+    if (!isCreator) {
+      return forbidden({
+        message: '일정 생성자만 접근할 수 있습니다.',
+        errorCode: 'SCHEDULE_ACCESS_DENIED',
+      });
+    }
+
+    return null;
+  }
+
   // ----------------------------------------------------------------------------------------------------
 
   async createSchedule(
@@ -302,24 +336,20 @@ export class AzitScheduleService {
       return scheduleError;
     }
 
-    // 3. 일정 조회 (생성자 확인용)
+    // 3. 일정 생성자 확인
+    const creatorError = await this.validateScheduleCreator(
+      userId,
+      azitId,
+      scheduleId,
+    );
+    if (creatorError) {
+      return creatorError;
+    }
+
+    // 4. 일정 조회 (시간 유효성 검증용)
     const schedule = await this.azitScheduleRepository.findScheduleById(
       scheduleId,
     );
-    const azitUser =
-      await this.azitUserRepository.findAzitUserByUserIdAndAzitId(
-        userId,
-        azitId,
-      )!;
-
-    // 4. 사용자가 일정 생성자인지 확인
-    const isCreator = schedule.participations[0]!.memberId === azitUser!.id;
-    if (!isCreator) {
-      return forbidden({
-        message: '일정 생성자만 수정할 수 있습니다.',
-        errorCode: 'SCHEDULE_UPDATE_FORBIDDEN',
-      });
-    }
 
     // 5. 업데이트할 데이터 (undefined, null이면 기존 값 유지)
     const updateData: {
@@ -392,5 +422,41 @@ export class AzitScheduleService {
       game_end_at: this.formatDate(updatedSchedule.gameEndAt),
       recruitment_end_at: this.formatDate(updatedSchedule.recruitmentEndAt),
     });
+  }
+
+  async deleteSchedule(
+    userId: bigint,
+    azitId: bigint,
+    scheduleId: bigint,
+  ): Promise<Result<null>> {
+    // 1. 아지트 존재 확인 및 멤버 확인
+    const azitError = await this.validateAzitExistsAndMember(userId, azitId);
+    if (azitError) {
+      return azitError;
+    }
+
+    // 2. 일정 존재 확인 및 해당 아지트의 일정인지 확인
+    const scheduleError = await this.validateScheduleExistsAndBelongsToAzit(
+      scheduleId,
+      azitId,
+    );
+    if (scheduleError) {
+      return scheduleError;
+    }
+
+    // 3. 일정 생성자 확인
+    const creatorError = await this.validateScheduleCreator(
+      userId,
+      azitId,
+      scheduleId,
+    );
+    if (creatorError) {
+      return creatorError;
+    }
+
+    // 4. 일정 삭제
+    await this.azitScheduleRepository.deleteSchedule(scheduleId);
+
+    return noContent();
   }
 }

@@ -1621,7 +1621,7 @@
 					}
 				}
 			},
-			"Success_void_": {
+			"Success_null_": {
 				"properties": {
 					"error": {
 						"type": "number",
@@ -1630,7 +1630,13 @@
 						],
 						"nullable": true
 					},
-					"data": {},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
 					"statusCode": {
 						"type": "number",
 						"format": "double"
@@ -1642,10 +1648,10 @@
 				],
 				"type": "object"
 			},
-			"Result_void_": {
+			"Result_null_": {
 				"anyOf": [
 					{
-						"$ref": "#/components/schemas/Success_void_"
+						"$ref": "#/components/schemas/Success_null_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
@@ -3054,7 +3060,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_void_"
+									"$ref": "#/components/schemas/Result_null_"
 								}
 							}
 						}
@@ -3341,6 +3347,69 @@
 						}
 					}
 				}
+			},
+			"delete": {
+				"operationId": "DeleteSchedule",
+				"responses": {
+					"204": {
+						"description": "No Content",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_null_"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Azit Schedule"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "path",
+						"name": "schedule_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
 		"/auth/signup": {

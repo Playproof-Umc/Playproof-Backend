@@ -188,4 +188,12 @@ export class AzitScheduleRepository {
       data: updateData,
     });
   }
+
+  async deleteSchedule(scheduleId: bigint): Promise<AzitSchedule> {
+    return prisma.azitSchedule.delete({
+      where: {
+        id: scheduleId,
+      },
+    });
+  }
 }
