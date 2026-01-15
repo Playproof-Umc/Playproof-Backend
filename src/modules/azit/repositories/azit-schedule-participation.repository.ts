@@ -19,4 +19,40 @@ export class AzitScheduleParticipationRepository {
       },
     });
   }
+
+  async findParticipation(
+    memberId: bigint,
+    scheduleId: bigint,
+  ): Promise<AzitScheduleParticipation | null> {
+    return prisma.azitScheduleParticipation.findUnique({
+      where: {
+        memberId_scheduleId: {
+          memberId,
+          scheduleId,
+        },
+      },
+    });
+  }
+
+  async countParticipations(scheduleId: bigint): Promise<number> {
+    return prisma.azitScheduleParticipation.count({
+      where: {
+        scheduleId,
+      },
+    });
+  }
+
+  async deleteParticipation(
+    memberId: bigint,
+    scheduleId: bigint,
+  ): Promise<AzitScheduleParticipation> {
+    return prisma.azitScheduleParticipation.delete({
+      where: {
+        memberId_scheduleId: {
+          memberId,
+          scheduleId,
+        },
+      },
+    });
+  }
 }
