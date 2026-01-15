@@ -112,7 +112,7 @@ export class AzitController extends Controller {
   public async deleteAzit(
     @Request() req: any,
     @Path() azit_id: number,
-  ): Promise<Result<void>> {
+  ): Promise<Result<null>> {
     const userId = BigInt(req.user.id);
     const azitId = BigInt(azit_id);
 

@@ -8,6 +8,7 @@ import {
   Result,
   created,
   ok,
+  noContent,
   conflict,
   internalServerError,
   notFound,
@@ -183,7 +184,7 @@ export class AzitService {
     });
   }
 
-  async deleteAzit(userId: bigint, azitId: bigint): Promise<Result<void>> {
+  async deleteAzit(userId: bigint, azitId: bigint): Promise<Result<null>> {
     // 1. 아지트 존재 확인
     const azit = await this.azitRepository.findAzitById(azitId);
     if (!azit) {
@@ -219,6 +220,6 @@ export class AzitService {
       });
     }
 
-    return ok(undefined);
+    return noContent();
   }
 }
