@@ -1930,6 +1930,43 @@
 					}
 				]
 			},
+			"AzitScheduleUpdateReqDto": {
+				"properties": {
+					"title": {
+						"type": "string",
+						"nullable": true,
+						"description": "일정 제목",
+						"example": "증바람 4인큐"
+					},
+					"max_participants": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "최대 모집 인원",
+						"example": 4
+					},
+					"game_start_at": {
+						"type": "string",
+						"nullable": true,
+						"description": "게임 시작 시간",
+						"example": "2026-03-02T20:00:00"
+					},
+					"game_end_at": {
+						"type": "string",
+						"nullable": true,
+						"description": "게임 종료 시간",
+						"example": "2026-03-03T00:00:00"
+					},
+					"recruitment_end_at": {
+						"type": "string",
+						"nullable": true,
+						"description": "모집 마감 시간",
+						"example": "2026-03-01T13:00:00"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
 			"SignUpResDto": {
 				"properties": {
 					"id": {
@@ -3219,6 +3256,91 @@
 						}
 					}
 				]
+			}
+		},
+		"/azits/{azit_id}/schedules/{schedule_id}": {
+			"patch": {
+				"operationId": "UpdateSchedule",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_AzitScheduleCreateResDto_"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Azit Schedule"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "path",
+						"name": "schedule_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AzitScheduleUpdateReqDto"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/auth/signup": {

@@ -3,6 +3,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Route,
   Tags,
   SuccessResponse,
@@ -16,7 +17,10 @@ import {
 } from 'tsoa';
 import { injectable, inject } from 'tsyringe';
 import { AzitScheduleService } from '../services/azit-schedule.service';
-import { AzitScheduleCreateReqDto } from '../dtos/azit-schedule.req.dto';
+import {
+  AzitScheduleCreateReqDto,
+  AzitScheduleUpdateReqDto,
+} from '../dtos/azit-schedule.req.dto';
 import {
   AzitScheduleCreateResDto,
   AzitScheduleListResDto,
@@ -86,6 +90,35 @@ export class AzitScheduleController extends Controller {
       azitId,
       cursor,
       pageSize,
+    );
+
+    this.setStatus(result.statusCode);
+
+    return result;
+  }
+
+  @SuccessResponse('200', 'OK')
+  @Response<ForbiddenError>(403, 'Forbidden')
+  @Response<NotFoundError>(404, 'Not Found')
+  @Response<InternalServerError>(500, 'Internal Server Error')
+  @Security('jwt')
+  @Middlewares(validationMiddleware(AzitScheduleUpdateReqDto))
+  @Patch('/{schedule_id}')
+  public async updateSchedule(
+    @Request() req: any,
+    @Path() azit_id: number,
+    @Path() schedule_id: number,
+    @Body() requestBody: AzitScheduleUpdateReqDto,
+  ): Promise<Result<AzitScheduleCreateResDto>> {
+    const userId = BigInt(req.user.id);
+    const azitId = BigInt(azit_id);
+    const scheduleId = BigInt(schedule_id);
+
+    const result = await this.azitScheduleService.updateSchedule(
+      userId,
+      azitId,
+      scheduleId,
+      requestBody,
     );
 
     this.setStatus(result.statusCode);

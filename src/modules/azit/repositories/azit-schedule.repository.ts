@@ -132,4 +132,60 @@ export class AzitScheduleRepository {
       hasNext,
     };
   }
+
+  async findScheduleById(scheduleId: bigint): Promise<any> {
+    return prisma.azitSchedule.findUnique({
+      where: {
+        id: scheduleId,
+      },
+      include: {
+        participations: {
+          where: {
+            role: 'CREATOR',
+          },
+          select: {
+            memberId: true,
+            role: true,
+          },
+          take: 1,
+        },
+      },
+    });
+  }
+
+  async updateSchedule(
+    scheduleId: bigint,
+    data: {
+      title?: string;
+      maxParticipants?: number;
+      gameStartAt?: Date;
+      gameEndAt?: Date;
+      recruitmentEndAt?: Date;
+    },
+  ): Promise<AzitSchedule> {
+    const updateData: any = {};
+
+    if (data.title !== undefined) {
+      updateData.title = data.title;
+    }
+    if (data.maxParticipants !== undefined) {
+      updateData.maxParticipants = data.maxParticipants;
+    }
+    if (data.gameStartAt !== undefined) {
+      updateData.gameStartAt = data.gameStartAt;
+    }
+    if (data.gameEndAt !== undefined) {
+      updateData.gameEndAt = data.gameEndAt;
+    }
+    if (data.recruitmentEndAt !== undefined) {
+      updateData.recruitmentEndAt = data.recruitmentEndAt;
+    }
+
+    return prisma.azitSchedule.update({
+      where: {
+        id: scheduleId,
+      },
+      data: updateData,
+    });
+  }
 }
