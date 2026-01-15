@@ -1770,6 +1770,166 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"AzitScheduleParticipantResDto": {
+				"properties": {
+					"user_id": {
+						"type": "number",
+						"format": "double",
+						"description": "사용자 ID",
+						"example": 1
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"description": "닉네임",
+						"example": "홍길동"
+					},
+					"avatar_url": {
+						"type": "string",
+						"nullable": true,
+						"description": "아바타 URL",
+						"example": "https://example.com/avatar.png"
+					}
+				},
+				"required": [
+					"user_id",
+					"nickname",
+					"avatar_url"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AzitScheduleItemResDto": {
+				"properties": {
+					"schedule_id": {
+						"type": "number",
+						"format": "double",
+						"description": "일정 ID",
+						"example": 1
+					},
+					"title": {
+						"type": "string",
+						"description": "일정 제목",
+						"example": "증바람 5인큐"
+					},
+					"max_participants": {
+						"type": "number",
+						"format": "double",
+						"description": "최대 모집 인원",
+						"example": 5
+					},
+					"game_start_at": {
+						"type": "string",
+						"description": "게임 시작 시간",
+						"example": "2026-03-01T20:00:00"
+					},
+					"game_end_at": {
+						"type": "string",
+						"description": "게임 종료 시간",
+						"example": "2026-03-02T00:00:00"
+					},
+					"recruitment_end_at": {
+						"type": "string",
+						"description": "모집 마감 시간",
+						"example": "2026-02-28T13:00:00"
+					},
+					"current_participants": {
+						"type": "number",
+						"format": "double",
+						"description": "현재 참여 인원 수",
+						"example": 3
+					},
+					"is_participated": {
+						"type": "boolean",
+						"description": "현재 사용자의 참여 여부",
+						"example": true
+					},
+					"participants": {
+						"items": {
+							"$ref": "#/components/schemas/AzitScheduleParticipantResDto"
+						},
+						"type": "array",
+						"description": "참여자 목록",
+						"example": []
+					}
+				},
+				"required": [
+					"schedule_id",
+					"title",
+					"max_participants",
+					"game_start_at",
+					"game_end_at",
+					"recruitment_end_at",
+					"current_participants",
+					"is_participated",
+					"participants"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AzitScheduleListResDto": {
+				"properties": {
+					"schedules": {
+						"items": {
+							"$ref": "#/components/schemas/AzitScheduleItemResDto"
+						},
+						"type": "array",
+						"description": "일정 목록",
+						"example": []
+					},
+					"nextCursor": {
+						"type": "string",
+						"nullable": true,
+						"description": "형식: `${game_start_at}|${schedule_id}`\r\n마지막 페이지인 경우 null",
+						"example": "2026-03-01T20:00:00|1"
+					},
+					"hasNext": {
+						"type": "boolean",
+						"description": "다음 페이지 존재 여부",
+						"example": true
+					}
+				},
+				"required": [
+					"schedules",
+					"nextCursor",
+					"hasNext"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_AzitScheduleListResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/AzitScheduleListResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_AzitScheduleListResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_AzitScheduleListResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"SignUpResDto": {
 				"properties": {
 					"id": {
@@ -2988,6 +3148,77 @@
 						}
 					}
 				}
+			},
+			"get": {
+				"operationId": "GetSchedules",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_AzitScheduleListResDto_"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Azit Schedule"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "cursor",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
 		"/auth/signup": {

@@ -2,6 +2,7 @@
 import {
   Controller,
   Post,
+  Get,
   Route,
   Tags,
   SuccessResponse,
@@ -11,11 +12,15 @@ import {
   Middlewares,
   Path,
   Body,
+  Query,
 } from 'tsoa';
 import { injectable, inject } from 'tsyringe';
 import { AzitScheduleService } from '../services/azit-schedule.service';
 import { AzitScheduleCreateReqDto } from '../dtos/azit-schedule.req.dto';
-import { AzitScheduleCreateResDto } from '../dtos/azit-schedule.res.dto';
+import {
+  AzitScheduleCreateResDto,
+  AzitScheduleListResDto,
+} from '../dtos/azit-schedule.res.dto';
 import {
   Result,
   ForbiddenError,
@@ -54,6 +59,33 @@ export class AzitScheduleController extends Controller {
       userId,
       azitId,
       requestBody,
+    );
+
+    this.setStatus(result.statusCode);
+
+    return result;
+  }
+
+  @SuccessResponse('200', 'OK')
+  @Response<ForbiddenError>(403, 'Forbidden')
+  @Response<NotFoundError>(404, 'Not Found')
+  @Security('jwt')
+  @Get('/')
+  public async getSchedules(
+    @Request() req: any,
+    @Path() azit_id: number,
+    @Query() cursor?: string,
+    @Query() size?: number,
+  ): Promise<Result<AzitScheduleListResDto>> {
+    const userId = BigInt(req.user.id);
+    const azitId = BigInt(azit_id);
+    const pageSize = size || 10;
+
+    const result = await this.azitScheduleService.getSchedules(
+      userId,
+      azitId,
+      cursor,
+      pageSize,
     );
 
     this.setStatus(result.statusCode);

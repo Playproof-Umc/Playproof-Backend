@@ -5,10 +5,16 @@ import { AzitRepository } from '../repositories/azit.repository';
 import { AzitUserRepository } from '../repositories/azit-user.repository';
 import { AzitScheduleParticipationRepository } from '../repositories/azit-schedule-participation.repository';
 import { AzitScheduleCreateReqDto } from '../dtos/azit-schedule.req.dto';
-import { AzitScheduleCreateResDto } from '../dtos/azit-schedule.res.dto';
+import {
+  AzitScheduleCreateResDto,
+  AzitScheduleListResDto,
+  AzitScheduleItemResDto,
+  AzitScheduleParticipantResDto,
+} from '../dtos/azit-schedule.res.dto';
 import {
   Result,
   created,
+  ok,
   notFound,
   forbidden,
   internalServerError,
@@ -133,6 +139,85 @@ export class AzitScheduleService {
       game_start_at: this.formatDate(schedule.gameStartAt),
       game_end_at: this.formatDate(schedule.gameEndAt),
       recruitment_end_at: this.formatDate(schedule.recruitmentEndAt),
+    });
+  }
+
+  async getSchedules(
+    userId: bigint,
+    azitId: bigint,
+    cursor: string | undefined,
+    size: number = 10,
+  ): Promise<Result<AzitScheduleListResDto>> {
+    // 1. 아지트 존재 확인 및 멤버 확인
+    const error = await this.validateAzitExistsAndMember(userId, azitId);
+    if (error) {
+      return error;
+    }
+
+    // 2. 일정 목록 조회
+    const { schedules, hasNext } =
+      await this.azitScheduleRepository.findSchedulesByAzitId(
+        azitId,
+        cursor,
+        size,
+      );
+
+    // 3. 사용자의 AzitUser ID 조회 (참여 여부 확인용)
+    const azitUser =
+      await this.azitUserRepository.findAzitUserByUserIdAndAzitId(
+        userId,
+        azitId,
+      );
+    const azitUserId = azitUser!.id;
+
+    // 4. DTO 매핑
+    const mappedSchedules: AzitScheduleItemResDto[] = schedules.map(
+      (schedule: any) => {
+        // 참여자 정보 매핑
+        const participants: AzitScheduleParticipantResDto[] =
+          schedule.participations.map((participation: any) => {
+            const user = participation.member.user;
+            const avatarUrl = user.userAvatars[0]?.avatar?.avatarUrl || null;
+
+            return {
+              user_id: Number(user.id),
+              nickname: user.nickname,
+              avatar_url: avatarUrl,
+            };
+          });
+
+        // 사용자 참여 여부 확인
+        const isParticipated = schedule.participations.some(
+          (p: any) => p.member.id === azitUserId,
+        );
+
+        return {
+          schedule_id: Number(schedule.id),
+          title: schedule.title,
+          max_participants: schedule.maxParticipants,
+          game_start_at: this.formatDate(schedule.gameStartAt),
+          game_end_at: this.formatDate(schedule.gameEndAt),
+          recruitment_end_at: this.formatDate(schedule.recruitmentEndAt),
+          current_participants: schedule.participations.length,
+          is_participated: isParticipated,
+          participants,
+        };
+      },
+    );
+
+    // 5. 다음 커서 생성
+    let nextCursor: string | null = null;
+    if (hasNext && mappedSchedules.length > 0) {
+      const lastSchedule = schedules[mappedSchedules.length - 1];
+      nextCursor = `${this.formatDate(lastSchedule.gameStartAt)}|${
+        lastSchedule.id
+      }`;
+    }
+
+    return ok({
+      schedules: mappedSchedules,
+      nextCursor,
+      hasNext,
     });
   }
 }
