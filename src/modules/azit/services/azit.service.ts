@@ -3,7 +3,7 @@ import { injectable, inject } from 'tsyringe';
 import { AzitRepository } from '../repositories/azit.repository';
 import { AzitUserRepository } from '../repositories/azit-user.repository';
 import { AzitCreateReqDto, AzitUpdateReqDto } from '../dtos/azit.req.dto';
-import { AzitCreateResDto, AzitListResDto } from '../dtos/azit.res.dto';
+import { AzitResDto, AzitListResDto } from '../dtos/azit.res.dto';
 import {
   Result,
   created,
@@ -50,7 +50,7 @@ export class AzitService {
     userId: bigint,
     dto: AzitCreateReqDto,
     file?: Express.Multer.File,
-  ): Promise<Result<AzitCreateResDto>> {
+  ): Promise<Result<AzitResDto>> {
     // 1. 사용자가 소속된 아지트 중 같은 이름이 있는지 확인
     const existingAzitNames =
       await this.azitUserRepository.findAzitNamesByUserId(userId);
@@ -108,7 +108,7 @@ export class AzitService {
     azitId: bigint,
     dto: AzitUpdateReqDto,
     file?: Express.Multer.File,
-  ): Promise<Result<AzitCreateResDto>> {
+  ): Promise<Result<AzitResDto>> {
     // 1. 아지트 존재 확인
     const azit = await this.azitRepository.findAzitById(azitId);
     if (!azit) {

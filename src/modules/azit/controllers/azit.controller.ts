@@ -19,7 +19,7 @@ import {
 import { injectable, inject } from 'tsyringe';
 import { AzitService } from '../services/azit.service';
 import { AzitCreateReqDto, AzitUpdateReqDto } from '../dtos/azit.req.dto';
-import { AzitCreateResDto, AzitListResDto } from '../dtos/azit.res.dto';
+import { AzitResDto, AzitListResDto } from '../dtos/azit.res.dto';
 import {
   Result,
   ForbiddenError,
@@ -47,7 +47,7 @@ export class AzitController extends Controller {
     @Request() req: any,
     @FormField('azit_name') azit_name: string, // Swagger 문서화용 (사용 안 함)
     @UploadedFile('azit_icon') azit_icon?: Express.Multer.File,
-  ): Promise<Result<AzitCreateResDto>> {
+  ): Promise<Result<AzitResDto>> {
     const userId = BigInt(req.user.id);
     const result = await this.azitService.createAzit(
       userId,
@@ -87,7 +87,7 @@ export class AzitController extends Controller {
     @FormField('azit_name') azit_name?: string | null, // Swagger 문서화용 (사용 안 함)
     @FormField('is_delete_icon') is_delete_icon?: boolean, // Swagger 문서화용 (사용 안 함)
     @UploadedFile('azit_icon') azit_icon?: Express.Multer.File,
-  ): Promise<Result<AzitCreateResDto>> {
+  ): Promise<Result<AzitResDto>> {
     const userId = BigInt(req.user.id);
     const azitId = BigInt(azit_id);
 
