@@ -13,7 +13,7 @@ export class PartyService {
     @inject(PartyRepository) private partyRepository: PartyRepository,
   ) {}
 
-  // // 1. 파티 생성 (createParty)
+  // 1. 파티 생성 (createParty)
   async createParty(dto: PartyCreateReqDto, userId: number): Promise<Result<PartyCreateResDto>> {  
     // 1-1. 마스터 데이터 검증 (Validator 활용)
     const masterError = await PartyValidator.validateMasterData(this.partyRepository, dto);
@@ -45,7 +45,7 @@ export class PartyService {
       return internalServerError({ message: "파티 생성에 실패했습니다.", errorCode: PartyErrorCode.INTERNAL_SERVER_ERROR });
     }
 
-    // 1-4. PartyCreateResDto 형식으로 반환
+    // 1-4. 응답 DTO 반환
     return created({
       partyId: Number(result.party.id),
       userId: Number(result.party.userId),
@@ -63,17 +63,18 @@ export class PartyService {
     } as PartyCreateResDto);
   }
 
-  // // 2. 파티 수정 (updateParty)
+  // 2. 파티 수정 (updateParty)
   async updateParty(id: number, dto: PartyUpdateReqDto, userId: number): Promise<Result<PartyCreateResDto>> {
-    // 2-1. 존재 여부 및 방장 권한 검증
-    const { party, error } = await PartyValidator.checkPartyOwnership(this.partyRepository, id, userId);
-    if (error) return error;
+    // 2-1. 존재 여부 및 방장 권한 검증 (공통 메소드 활용)
+    const party = await this.partyRepository.findPartyPostByPostId(id);
+    if (!party) return notFound({ message: "파티를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND });
+    if (Number(party.userId) !== userId) return forbidden({ message: "수정 권한이 없습니다.", errorCode: PartyErrorCode.FORBIDDEN });
 
     // 2-2. 마스터 데이터 검증
     const masterError = await PartyValidator.validateMasterData(this.partyRepository, dto);
     if (masterError) return masterError;
 
-    // 2-3. 아지트 및 파티 정보 업데이트 (트랜잭션)
+    // 2-3. 아지트 및 파티 정보 업데이트
     await prisma.$transaction(async (tx) => {
       if (!dto.azitId && (dto.azitName || dto.azitIconUrl)) {
         await this.partyRepository.updateAzit(Number(party.azitId), dto.azitName, dto.azitIconUrl, tx);
@@ -81,9 +82,9 @@ export class PartyService {
       return await this.partyRepository.updateParty(id, dto, tx);
     });
 
-    // 2-4. 결과 조회 및 PartyCreateResDto 형식 반환
+    // 2-4. 결과 조회 및 반환
     const updated = await this.partyRepository.findById(id);
-    if (!updated) return notFound({ message: "파티를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND });
+    if (!updated) return notFound({ message: "업데이트 후 파티를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND });
 
     return ok({
       partyId: Number(updated.id),
@@ -102,11 +103,12 @@ export class PartyService {
     } as PartyCreateResDto);
   }
 
-  // // 3. 파티 삭제 (deleteParty)
+  // 3. 파티 삭제 (deleteParty)
   async deleteParty(id: number, userId: number): Promise<Result<PartyDeleteResDto>> {
-    // 3-1. 권한 검증
-    const { party, error } = await PartyValidator.checkPartyOwnership(this.partyRepository, id, userId);
-    if (error) return error;
+    // 3-1. 권한 검증 (공통 메소드 활용)
+    const party = await this.partyRepository.findPartyPostByPostId(id);
+    if (!party) return notFound({ message: "파티를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND });
+    if (Number(party.userId) !== userId) return forbidden({ message: "삭제 권한이 없습니다.", errorCode: PartyErrorCode.FORBIDDEN });
 
     // 3-2. 파티 삭제 및 아지트 정리
     await prisma.$transaction(async (tx) => {
@@ -122,7 +124,7 @@ export class PartyService {
     } as PartyDeleteResDto);
   }
 
-  // // 4. 파티 단건 조회 (getParty)
+  // 4. 파티 단건 조회 (getParty)
   async getParty(id: number): Promise<Result<PartyGetResDto>> {
     const party = await this.partyRepository.findById(id);
     if (!party) return notFound({ message: "파티를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND });
@@ -130,7 +132,7 @@ export class PartyService {
     return ok(this.mapToGetResDto(party));
   }
 
-  // // 5. 파티 목록 조회 (getParties)
+  // 5. 파티 목록 조회 (getParties)
   async getParties(dto: PartyListReqDto): Promise<Result<PartyListResDto>> {
     const { page, size, sort } = dto;
     const [parties, totalCount] = await Promise.all([
@@ -146,7 +148,7 @@ export class PartyService {
     } as PartyListResDto);
   }
 
-  // // 6. 응답 데이터 매핑 (조회 전용)
+  // 6. 응답 데이터 매핑 (Private)
   private mapToGetResDto(party: any): PartyGetResDto {
     return {
       partyId: Number(party.id),
