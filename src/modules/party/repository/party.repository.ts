@@ -1,11 +1,11 @@
 import { prisma } from "../../../common/config/database";
 import { singleton } from "tsyringe";
-import { Application, UserPostLike, PartyPost } from "@prisma/client";
+import { PartyPost } from "@prisma/client";
 
 @singleton()
 export class PartyRepository {
-  // 1. 파티 게시글 상세 조회 기본
-  async findPartyPostById(postId: number): Promise<PartyPost | null> {
+  // 1. 파티 게시글 ID(PostId)로 존재 여부 확인
+  async findPartyPostByPostId(postId: number): Promise<PartyPost | null> {
     return prisma.partyPost.findUnique({
       where: { id: BigInt(postId) },
     });
@@ -29,7 +29,7 @@ export class PartyRepository {
     });
   }
 
-  // 3. 파티 상세 조회 인클루드 포함
+  // 3. 파티 상세 조회 (인클루드 포함)
   async findById(id: number) {
     return prisma.partyPost.findUnique({
       where: { id: BigInt(id) },
@@ -54,7 +54,6 @@ export class PartyRepository {
   async updateParty(id: number, data: any, tx?: any) {
     const client = tx || prisma;
     const { positionIds, gameId, tierId, azitId, ...rest } = data;
-
     return client.partyPost.update({
       where: { id: BigInt(id) },
       data: {
@@ -115,7 +114,7 @@ export class PartyRepository {
     return client.partyPost.count({ where: { azitId: BigInt(azitId) } });
   }
 
-  // 8. 기타 유틸리티
+  // 8. 목록 조회 및 유틸리티
   async countAll() { 
     return prisma.partyPost.count(); 
   }
