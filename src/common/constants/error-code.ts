@@ -31,6 +31,10 @@ export const PartyErrorCode = {
   ALREADY_LIKED: "PARTY_ALREADY_LIKED",   // 이미 좋아요를 누른 상태
   LIKE_NOT_FOUND: "PARTY_LIKE_NOT_FOUND",   // 좋아요를 누른 적이 없음
 
+  // 댓글(Comment) 관련 추가
+  COMMENT_NOT_FOUND: "PARTY_COMMENT_NOT_FOUND", // 댓글을 찾을 수 없음
+  COMMENT_FORBIDDEN: "PARTY_COMMENT_FORBIDDEN", // 댓글에 대한 권한이 없음
+
   // 서버 오류
   INTERNAL_SERVER_ERROR: "SERVER_500",
 } as const;
