@@ -1,10 +1,10 @@
 // src/modules/azit/dtos/azit-schedule.res.dto.ts
 import {
+  IsArray,
   IsBoolean,
   IsNumber,
-  IsString,
   IsObject,
-  IsArray,
+  IsString,
 } from 'class-validator';
 
 export class AzitScheduleCreateResDto {

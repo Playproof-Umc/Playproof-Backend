@@ -1,5 +1,5 @@
 // src/modules/azit/dtos/azit.req.dto.ts
-import { IsString, MinLength, IsOptional, IsBoolean } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class AzitCreateReqDto {
   /**

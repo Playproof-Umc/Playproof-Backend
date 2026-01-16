@@ -1,7 +1,7 @@
 // src/modules/azit/repositories/azit-schedule.repository.ts
 import { singleton } from 'tsyringe';
-
 import { AzitSchedule } from '@prisma/client';
+
 import { prisma } from '../../../common/config/database';
 
 @singleton()

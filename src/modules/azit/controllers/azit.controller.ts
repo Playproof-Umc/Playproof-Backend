@@ -1,33 +1,34 @@
 // src/modules/azit/controllers/azit.controller.ts
+import { injectable, inject } from 'tsyringe';
 import {
   Controller,
-  Post,
-  Get,
-  Patch,
   Delete,
-  Route,
-  Tags,
-  SuccessResponse,
-  Response,
-  Request,
-  Security,
-  Middlewares,
-  UploadedFile,
   FormField,
+  Get,
+  Middlewares,
+  Patch,
   Path,
+  Post,
+  Request,
+  Response,
+  Route,
+  Security,
+  SuccessResponse,
+  Tags,
+  UploadedFile,
 } from 'tsoa';
-import { injectable, inject } from 'tsyringe';
-import { AzitService } from '../services/azit.service';
+
 import { AzitCreateReqDto, AzitUpdateReqDto } from '../dtos/azit.req.dto';
-import { AzitResDto, AzitListResDto } from '../dtos/azit.res.dto';
-import {
-  Result,
-  ForbiddenError,
-  NotFoundError,
-  ConflictError,
-  InternalServerError,
-} from '../../../common/types/result.type';
+import { AzitListResDto, AzitResDto } from '../dtos/azit.res.dto';
+import { AzitService } from '../services/azit.service';
 import { validationMiddleware } from '../../../common/middlewares/validation';
+import {
+  ConflictError,
+  ForbiddenError,
+  InternalServerError,
+  NotFoundError,
+  Result,
+} from '../../../common/types/result.type';
 
 @Route('azits')
 @Tags('Azit')

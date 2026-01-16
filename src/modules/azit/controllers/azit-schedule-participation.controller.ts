@@ -1,25 +1,26 @@
 // src/modules/azit/controllers/azit-schedule-participation.controller.ts
+import { injectable, inject } from 'tsyringe';
 import {
   Controller,
-  Post,
   Delete,
-  Route,
-  Tags,
-  SuccessResponse,
-  Response,
-  Request,
-  Security,
   Path,
+  Post,
+  Request,
+  Response,
+  Route,
+  Security,
+  SuccessResponse,
+  Tags,
 } from 'tsoa';
-import { injectable, inject } from 'tsyringe';
-import { AzitScheduleParticipationService } from '../services/azit-schedule-participation.service';
+
 import { AzitScheduleParticipationResDto } from '../dtos/azit-schedule-participation.res.dto';
+import { AzitScheduleParticipationService } from '../services/azit-schedule-participation.service';
 import {
-  Result,
-  ForbiddenError,
-  NotFoundError,
   BadRequestError,
   ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  Result,
 } from '../../../common/types/result.type';
 
 @Route('azits/{azit_id}/schedules/{schedule_id}/participants')

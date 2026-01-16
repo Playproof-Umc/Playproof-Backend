@@ -1,15 +1,16 @@
 // src/modules/azit/utils/azit.validator.ts
-import { AzitUserRepository } from '../repositories/azit-user.repository';
+import { Azit, AzitUserRole } from '@prisma/client';
+
 import { AzitRepository } from '../repositories/azit.repository';
-import { AzitUserRole, Azit } from '@prisma/client';
+import { AzitUserRepository } from '../repositories/azit-user.repository';
+import { AzitErrorCode } from '../../../common/constants/error-code';
 import {
-  Result,
   conflict,
   forbidden,
   notFound,
   ok,
+  Result,
 } from '../../../common/types/result.type';
-import { AzitErrorCode } from '../../../common/constants/error-code';
 
 const ERROR_CODE_MAP: Record<string, string> = {
   update: AzitErrorCode.DENIED.UPDATE_DENIED,

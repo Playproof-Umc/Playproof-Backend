@@ -1,7 +1,10 @@
 // src/modules/azit/repositories/azit-schedule-participation.repository.ts
 import { singleton } from 'tsyringe';
+import {
+  AzitScheduleParticipation,
+  AzitScheduleRole,
+} from '@prisma/client';
 
-import { AzitScheduleParticipation, AzitScheduleRole } from '@prisma/client';
 import { prisma } from '../../../common/config/database';
 
 @singleton()

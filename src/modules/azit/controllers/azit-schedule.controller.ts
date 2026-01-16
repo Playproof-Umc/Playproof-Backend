@@ -1,23 +1,23 @@
 // src/modules/azit/controllers/azit-schedule.controller.ts
-import {
-  Controller,
-  Post,
-  Get,
-  Patch,
-  Delete,
-  Route,
-  Tags,
-  SuccessResponse,
-  Response,
-  Request,
-  Security,
-  Middlewares,
-  Path,
-  Body,
-  Query,
-} from 'tsoa';
 import { injectable, inject } from 'tsyringe';
-import { AzitScheduleService } from '../services/azit-schedule.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Middlewares,
+  Patch,
+  Path,
+  Post,
+  Query,
+  Request,
+  Response,
+  Route,
+  Security,
+  SuccessResponse,
+  Tags,
+} from 'tsoa';
+
 import {
   AzitScheduleCreateReqDto,
   AzitScheduleUpdateReqDto,
@@ -26,13 +26,14 @@ import {
   AzitScheduleCreateResDto,
   AzitScheduleListResDto,
 } from '../dtos/azit-schedule.res.dto';
-import {
-  Result,
-  ForbiddenError,
-  NotFoundError,
-  InternalServerError,
-} from '../../../common/types/result.type';
+import { AzitScheduleService } from '../services/azit-schedule.service';
 import { validationMiddleware } from '../../../common/middlewares/validation';
+import {
+  ForbiddenError,
+  InternalServerError,
+  NotFoundError,
+  Result,
+} from '../../../common/types/result.type';
 
 @Route('azits/{azit_id}/schedules')
 @Tags('Azit Schedule')

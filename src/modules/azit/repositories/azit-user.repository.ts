@@ -1,7 +1,7 @@
 // src/modules/azit/repositories/azit-user.repository.ts
 import { singleton } from 'tsyringe';
-
 import { Azit, AzitUser, AzitUserRole } from '@prisma/client';
+
 import { prisma } from '../../../common/config/database';
 
 @singleton()
