@@ -17,11 +17,14 @@ import { AzitScheduleParticipationRepository } from '../repositories/azit-schedu
 import { AzitScheduleRepository } from '../repositories/azit-schedule.repository';
 import { AzitUserRepository } from '../repositories/azit-user.repository';
 import {
+  checkAzitAndMember,
+  checkScheduleAndInAzit,
+  checkScheduleAndInAzitAndCreator,
+  validateScheduleTimes,
+} from '../utils/azit.validator';
+import {
   created,
-  forbidden,
-  internalServerError,
   noContent,
-  notFound,
   ok,
   Result,
 } from '../../../common/types/result.type';
@@ -47,136 +50,6 @@ export class AzitScheduleService {
     return kstDate.toISOString().substring(0, 19);
   }
 
-  /**
-   * 일정 시간 유효성 검증
-   * @param gameStartAt - 게임 시작 시간
-   * @param gameEndAt - 게임 종료 시간
-   * @param recruitmentEndAt - 모집 마감 시간
-   * @returns 유효하지 않으면 Result<never>, 유효하면 null
-   */
-  private validateScheduleTimes(
-    gameStartAt: Date,
-    gameEndAt: Date,
-    recruitmentEndAt: Date,
-  ): Result<never> | null {
-    if (gameStartAt >= gameEndAt) {
-      return internalServerError({
-        message: '게임 시작 시간은 종료 시간보다 이전이어야 합니다.',
-        errorCode: 'INVALID_SCHEDULE_TIME',
-      });
-    }
-
-    if (recruitmentEndAt >= gameStartAt) {
-      return internalServerError({
-        message: '모집 마감 시간은 게임 시작 시간보다 이전이어야 합니다.',
-        errorCode: 'INVALID_RECRUITMENT_TIME',
-      });
-    }
-
-    return null;
-  }
-
-  /**
-   * 아지트 존재 여부와 사용자의 멤버 여부를 확인합니다.
-   * @param userId - 확인할 사용자 ID
-   * @param azitId - 확인할 아지트 ID
-   * @returns 아지트가 없거나 멤버가 아니면 Result<never>, 모두 통과하면 null
-   */
-  private async validateAzitExistsAndMember(
-    userId: bigint,
-    azitId: bigint,
-  ): Promise<Result<never> | null> {
-    // 1. 아지트 존재 확인
-    const azit = await this.azitRepository.findAzitById(azitId);
-    if (!azit) {
-      return notFound({
-        message: '아지트를 찾을 수 없습니다.',
-        errorCode: 'AZIT_NOT_FOUND',
-      });
-    }
-
-    // 2. 사용자가 해당 아지트의 멤버인지 확인
-    const isMember =
-      await this.azitUserRepository.existsAzitUserByUserIdAndAzitId(
-        userId,
-        azitId,
-      );
-    if (!isMember) {
-      return forbidden({
-        message: '아지트 멤버만 접근할 수 있습니다.',
-        errorCode: 'AZIT_ACCESS_FORBIDDEN',
-      });
-    }
-
-    return null;
-  }
-
-  /**
-   * 일정 존재 여부와 해당 아지트의 일정인지 확인합니다.
-   * @param scheduleId - 확인할 일정 ID
-   * @param azitId - 확인할 아지트 ID
-   * @returns 일정이 없거나 해당 아지트의 일정이 아니면 Result<never>, 모두 통과하면 null
-   */
-  private async validateScheduleExistsAndBelongsToAzit(
-    scheduleId: bigint,
-    azitId: bigint,
-  ): Promise<Result<never> | null> {
-    // 1. 일정 존재 확인
-    const schedule = await this.azitScheduleRepository.findScheduleById(
-      scheduleId,
-    );
-    if (!schedule) {
-      return notFound({
-        message: '일정을 찾을 수 없습니다.',
-        errorCode: 'SCHEDULE_NOT_FOUND',
-      });
-    }
-
-    // 2. 일정이 해당 아지트의 일정인지 확인
-    if (schedule.azitId !== azitId) {
-      return forbidden({
-        message: '해당 아지트의 일정이 아닙니다.',
-        errorCode: 'SCHEDULE_ACCESS_FORBIDDEN',
-      });
-    }
-
-    return null;
-  }
-
-  /**
-   * 사용자가 일정 생성자인지 확인합니다.
-   * @param userId - 확인할 사용자 ID
-   * @param azitId - 확인할 아지트 ID
-   * @param scheduleId - 확인할 일정 ID
-   * @returns 생성자가 아니면 Result<never>, 생성자이면 null
-   */
-  private async validateScheduleCreator(
-    userId: bigint,
-    azitId: bigint,
-    scheduleId: bigint,
-  ): Promise<Result<never> | null> {
-    // 1. 일정 조회 (생성자 확인용)
-    const schedule = await this.azitScheduleRepository.findScheduleById(
-      scheduleId,
-    );
-    const azitUser =
-      await this.azitUserRepository.findAzitUserByUserIdAndAzitId(
-        userId,
-        azitId,
-      )!;
-
-    // 2. 사용자가 일정 생성자인지 확인
-    const isCreator = schedule.participations[0]?.memberId === azitUser!.id;
-    if (!isCreator) {
-      return forbidden({
-        message: '일정 생성자만 접근할 수 있습니다.',
-        errorCode: 'SCHEDULE_ACCESS_DENIED',
-      });
-    }
-
-    return null;
-  }
-
   // ----------------------------------------------------------------------------------------------------
 
   async createSchedule(
@@ -184,10 +57,15 @@ export class AzitScheduleService {
     azitId: bigint,
     dto: AzitScheduleCreateReqDto,
   ): Promise<Result<AzitScheduleCreateResDto>> {
-    // 1. 아지트 존재 확인 및 멤버 확인
-    const error = await this.validateAzitExistsAndMember(userId, azitId);
-    if (error) {
-      return error;
+    // 1. 아지트 존재, 멤버 존재 확인
+    const memberCheckResult = await checkAzitAndMember(
+      this.azitRepository,
+      this.azitUserRepository,
+      userId,
+      azitId,
+    );
+    if (memberCheckResult.error) {
+      return memberCheckResult;
     }
 
     // 2. 시간 유효성 검증
@@ -195,7 +73,7 @@ export class AzitScheduleService {
     const gameEndAt = new Date(dto.game_end_at);
     const recruitmentEndAt = new Date(dto.recruitment_end_at);
 
-    const timeError = this.validateScheduleTimes(
+    const timeError = validateScheduleTimes(
       gameStartAt,
       gameEndAt,
       recruitmentEndAt,
@@ -215,14 +93,8 @@ export class AzitScheduleService {
     );
 
     // 4. 생성자를 CREATOR로 참여 추가
-    const azitUser =
-      (await this.azitUserRepository.findAzitUserByUserIdAndAzitId(
-        userId,
-        azitId,
-      ))!;
-
     await this.azitScheduleParticipationRepository.createParticipation(
-      azitUser.id,
+      memberCheckResult.data.id,
       schedule.id,
       AzitScheduleRole.CREATOR,
     );
@@ -243,10 +115,15 @@ export class AzitScheduleService {
     cursor: string | undefined,
     size: number = 10,
   ): Promise<Result<AzitScheduleListResDto>> {
-    // 1. 아지트 존재 확인 및 멤버 확인
-    const error = await this.validateAzitExistsAndMember(userId, azitId);
-    if (error) {
-      return error;
+    // 1. 아지트 존재, 멤버 존재 확인
+    const memberCheckResult = await checkAzitAndMember(
+      this.azitRepository,
+      this.azitUserRepository,
+      userId,
+      azitId,
+    );
+    if (memberCheckResult.error) {
+      return memberCheckResult;
     }
 
     // 2. 일정 목록 조회
@@ -258,12 +135,7 @@ export class AzitScheduleService {
       );
 
     // 3. 사용자의 AzitUser ID 조회 (참여 여부 확인용)
-    const azitUser =
-      await this.azitUserRepository.findAzitUserByUserIdAndAzitId(
-        userId,
-        azitId,
-      );
-    const azitUserId = azitUser!.id;
+    const azitUserId = memberCheckResult.data.id;
 
     // 4. DTO 매핑
     const mappedSchedules: AzitScheduleItemResDto[] = schedules.map(
@@ -322,35 +194,20 @@ export class AzitScheduleService {
     scheduleId: bigint,
     dto: AzitScheduleUpdateReqDto,
   ): Promise<Result<AzitScheduleCreateResDto>> {
-    // 1. 아지트 존재 확인 및 멤버 확인
-    const azitError = await this.validateAzitExistsAndMember(userId, azitId);
-    if (azitError) {
-      return azitError;
-    }
-
-    // 2. 일정 존재 확인 및 해당 아지트의 일정인지 확인
-    const scheduleError = await this.validateScheduleExistsAndBelongsToAzit(
-      scheduleId,
-      azitId,
-    );
-    if (scheduleError) {
-      return scheduleError;
-    }
-
-    // 3. 일정 생성자 확인
-    const creatorError = await this.validateScheduleCreator(
+    // 1. 일정 존재, 해당 아지트의 일정, 생성자 권한 확인
+    const scheduleCheckResult = await checkScheduleAndInAzitAndCreator(
+      this.azitUserRepository,
+      this.azitScheduleRepository,
+      this.azitScheduleParticipationRepository,
       userId,
       azitId,
       scheduleId,
+      'update',
     );
-    if (creatorError) {
-      return creatorError;
+    if (scheduleCheckResult.error) {
+      return scheduleCheckResult;
     }
-
-    // 4. 일정 조회 (시간 유효성 검증용)
-    const schedule = await this.azitScheduleRepository.findScheduleById(
-      scheduleId,
-    );
+    const schedule = scheduleCheckResult.data;
 
     // 5. 업데이트할 데이터 (undefined, null이면 기존 값 유지)
     const updateData: {
@@ -399,7 +256,7 @@ export class AzitScheduleService {
           ? updateData.recruitmentEndAt
           : schedule.recruitmentEndAt;
 
-      const timeError = this.validateScheduleTimes(
+      const timeError = validateScheduleTimes(
         gameStartAt,
         gameEndAt,
         recruitmentEndAt,
@@ -430,32 +287,21 @@ export class AzitScheduleService {
     azitId: bigint,
     scheduleId: bigint,
   ): Promise<Result<null>> {
-    // 1. 아지트 존재 확인 및 멤버 확인
-    const azitError = await this.validateAzitExistsAndMember(userId, azitId);
-    if (azitError) {
-      return azitError;
-    }
-
-    // 2. 일정 존재 확인 및 해당 아지트의 일정인지 확인
-    const scheduleError = await this.validateScheduleExistsAndBelongsToAzit(
-      scheduleId,
-      azitId,
-    );
-    if (scheduleError) {
-      return scheduleError;
-    }
-
-    // 3. 일정 생성자 확인
-    const creatorError = await this.validateScheduleCreator(
+    // 1. 일정 존재, 해당 아지트의 일정, 생성자 권한 확인
+    const scheduleCheckResult = await checkScheduleAndInAzitAndCreator(
+      this.azitUserRepository,
+      this.azitScheduleRepository,
+      this.azitScheduleParticipationRepository,
       userId,
       azitId,
       scheduleId,
+      'delete',
     );
-    if (creatorError) {
-      return creatorError;
+    if (scheduleCheckResult.error) {
+      return scheduleCheckResult;
     }
 
-    // 4. 일정 삭제
+    // 2. 일정 삭제
     await this.azitScheduleRepository.deleteSchedule(scheduleId);
 
     return noContent();

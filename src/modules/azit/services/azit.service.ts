@@ -8,7 +8,7 @@ import { AzitCreateReqDto, AzitUpdateReqDto } from '../dtos/azit.req.dto';
 import { AzitResDto, AzitListResDto } from '../dtos/azit.res.dto';
 import {
   checkAzitNameDuplicate,
-  checkAzitExistsAndHost,
+  checkAzitAndMemberAndHost,
 } from '../utils/azit.validator';
 import { prisma } from '../../../common/config/database';
 import {
@@ -89,8 +89,8 @@ export class AzitService {
     dto: AzitUpdateReqDto,
     file?: Express.Multer.File,
   ): Promise<Result<AzitResDto>> {
-    // 1. 아지트 존재 확인 및 멤버장 권한 확인
-    const result = await checkAzitExistsAndHost(
+    // 1. 아지트 존재, 멤버 존재, 멤버장 권한 확인
+    const result = await checkAzitAndMemberAndHost(
       this.azitRepository,
       this.azitUserRepository,
       userId,
@@ -151,7 +151,7 @@ export class AzitService {
 
   async deleteAzit(userId: bigint, azitId: bigint): Promise<Result<null>> {
     // 1. 아지트 존재 확인 및 멤버장 권한 확인
-    const result = await checkAzitExistsAndHost(
+    const result = await checkAzitAndMemberAndHost(
       this.azitRepository,
       this.azitUserRepository,
       userId,

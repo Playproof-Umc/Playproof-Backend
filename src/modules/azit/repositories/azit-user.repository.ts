@@ -76,35 +76,32 @@ export class AzitUserRepository {
     });
   }
 
-  async findAzitUserRoleByUserIdAndAzitId(
-    userId: bigint,
-    azitId: bigint,
-  ): Promise<AzitUserRole | null> {
-    const azitUser = await prisma.azitUser.findFirst({
-      where: {
-        userId,
-        azitId,
-      },
-      select: {
-        role: true,
-      },
-    });
-
-    return azitUser?.role ?? null;
-  }
-
   // ----------------------------------------------------------------------------------------------------
   // 존재 여부 확인
   // ----------------------------------------------------------------------------------------------------
 
-  async existsAzitUserByUserIdAndAzitId(
-    userId: bigint,
-    azitId: bigint,
-  ): Promise<boolean> {
+  async existsAzitUserByMemberId(memberId: bigint): Promise<boolean> {
     const azitUser = await prisma.azitUser.findFirst({
       where: {
-        userId,
-        azitId,
+        id: memberId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return azitUser !== null;
+  }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 역할 확인
+  // ----------------------------------------------------------------------------------------------------
+
+  async isHost(memberId: bigint): Promise<boolean> {
+    const azitUser = await prisma.azitUser.findFirst({
+      where: {
+        id: memberId,
+        role: AzitUserRole.HOST,
       },
       select: {
         id: true,
