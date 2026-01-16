@@ -1,9 +1,16 @@
 // src/modules/azit/services/azit.service.ts
 import { injectable, inject } from 'tsyringe';
+import { AzitUserRole } from '@prisma/client';
+
 import { AzitRepository } from '../repositories/azit.repository';
 import { AzitUserRepository } from '../repositories/azit-user.repository';
 import { AzitCreateReqDto, AzitUpdateReqDto } from '../dtos/azit.req.dto';
 import { AzitResDto, AzitListResDto } from '../dtos/azit.res.dto';
+import {
+  checkAzitNameDuplicate,
+  checkAzitExistsAndHost,
+} from '../utils/azit.validator';
+import { prisma } from '../../../common/config/database';
 import {
   Result,
   created,
@@ -14,11 +21,6 @@ import {
   uploadFileToS3,
   deleteFileFromS3,
 } from '../../../common/utils/file-util';
-import { AzitUserRole } from '@prisma/client';
-import {
-  checkAzitNameDuplicate,
-  checkAzitExistsAndHost,
-} from '../utils/azit.validator';
 
 @injectable()
 export class AzitService {
@@ -51,15 +53,24 @@ export class AzitService {
       imageUrl = uploadResult.data;
     }
 
-    // 2. 아지트 생성
-    const azit = await this.azitRepository.createAzit(dto.azit_name, imageUrl);
+    // 2. 아지트 생성 및 멤버 추가 (트랜잭션)
+    const azit = await prisma.$transaction(async (tx) => {
+      const createdAzit = await this.azitRepository.createAzit(
+        dto.azit_name,
+        imageUrl,
+        tx,
+      );
 
-    // 3. 생성자를 방장(HOST)으로 멤버 추가
-    await this.azitUserRepository.createAzitUser(
-      userId,
-      azit.id,
-      AzitUserRole.HOST,
-    );
+      // 생성자를 방장(HOST)으로 멤버 추가
+      await this.azitUserRepository.createAzitUser(
+        userId,
+        createdAzit.id,
+        AzitUserRole.HOST,
+        tx,
+      );
+
+      return createdAzit;
+    });
 
     return created(AzitResDto.from(azit));
   }

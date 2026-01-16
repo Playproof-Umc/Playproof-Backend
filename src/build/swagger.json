@@ -1393,7 +1393,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"AzitCreateResDto": {
+			"AzitResDto": {
 				"properties": {
 					"azit_id": {
 						"type": "number",
@@ -1418,7 +1418,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Success_AzitCreateResDto_": {
+			"Success_AzitResDto_": {
 				"properties": {
 					"error": {
 						"type": "number",
@@ -1428,7 +1428,7 @@
 						"nullable": true
 					},
 					"data": {
-						"$ref": "#/components/schemas/AzitCreateResDto"
+						"$ref": "#/components/schemas/AzitResDto"
 					},
 					"statusCode": {
 						"type": "number",
@@ -1441,10 +1441,10 @@
 				],
 				"type": "object"
 			},
-			"Result_AzitCreateResDto_": {
+			"Result_AzitResDto_": {
 				"anyOf": [
 					{
-						"$ref": "#/components/schemas/Success_AzitCreateResDto_"
+						"$ref": "#/components/schemas/Success_AzitResDto_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
@@ -1455,7 +1455,7 @@
 				"properties": {
 					"azits": {
 						"items": {
-							"$ref": "#/components/schemas/AzitCreateResDto"
+							"$ref": "#/components/schemas/AzitResDto"
 						},
 						"type": "array",
 						"example": [
@@ -2908,7 +2908,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_AzitCreateResDto_"
+									"$ref": "#/components/schemas/Result_AzitResDto_"
 								}
 							}
 						}
@@ -3010,7 +3010,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_AzitCreateResDto_"
+									"$ref": "#/components/schemas/Result_AzitResDto_"
 								}
 							}
 						}

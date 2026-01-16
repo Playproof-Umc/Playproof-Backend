@@ -14,8 +14,10 @@ export class AzitUserRepository {
     userId: bigint,
     azitId: bigint,
     role: AzitUserRole = AzitUserRole.MEMBER,
+    tx?: any,
   ): Promise<AzitUser> {
-    return prisma.azitUser.create({
+    const client = tx || prisma;
+    return client.azitUser.create({
       data: {
         userId,
         azitId,

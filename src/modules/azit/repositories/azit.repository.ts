@@ -10,8 +10,13 @@ export class AzitRepository {
   // 생성
   // ----------------------------------------------------------------------------------------------------
 
-  async createAzit(azitName: string, imageUrl: string | null): Promise<Azit> {
-    return prisma.azit.create({
+  async createAzit(
+    azitName: string,
+    imageUrl: string | null,
+    tx?: any,
+  ): Promise<Azit> {
+    const client = tx || prisma;
+    return client.azit.create({
       data: {
         azitName: azitName,
         imageUrl: imageUrl,
