@@ -6,6 +6,10 @@ import { prisma } from '../../../common/config/database';
 
 @singleton()
 export class AzitUserRepository {
+  // ----------------------------------------------------------------------------------------------------
+  // 생성
+  // ----------------------------------------------------------------------------------------------------
+
   async createAzitUser(
     userId: bigint,
     azitId: bigint,
@@ -18,6 +22,23 @@ export class AzitUserRepository {
         role,
       },
     });
+  }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 조회: userId
+  // ----------------------------------------------------------------------------------------------------
+
+  async findAzitsByUserId(userId: bigint): Promise<Azit[]> {
+    const azitUsers = await prisma.azitUser.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        azit: true,
+      },
+    });
+
+    return azitUsers.map((azitUser) => azitUser.azit);
   }
 
   async findAzitNamesByUserId(userId: bigint): Promise<string[]> {
@@ -37,26 +58,9 @@ export class AzitUserRepository {
     return azitUsers.map((azitUser) => azitUser.azit.azitName);
   }
 
-  async findAzitsByUserId(
-    userId: bigint,
-  ): Promise<Array<Pick<Azit, 'id' | 'azitName' | 'imageUrl'>>> {
-    const azitUsers = await prisma.azitUser.findMany({
-      where: {
-        userId,
-      },
-      select: {
-        azit: {
-          select: {
-            id: true,
-            azitName: true,
-            imageUrl: true,
-          },
-        },
-      },
-    });
-
-    return azitUsers.map((azitUser) => azitUser.azit);
-  }
+  // ----------------------------------------------------------------------------------------------------
+  // 조회: userId와 azitId
+  // ----------------------------------------------------------------------------------------------------
 
   async findAzitUserByUserIdAndAzitId(
     userId: bigint,
@@ -86,6 +90,10 @@ export class AzitUserRepository {
 
     return azitUser?.role ?? null;
   }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 존재 여부 확인
+  // ----------------------------------------------------------------------------------------------------
 
   async existsAzitUserByUserIdAndAzitId(
     userId: bigint,
