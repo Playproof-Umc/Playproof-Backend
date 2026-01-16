@@ -12,10 +12,17 @@ export async function uploadFileToS3(
   file: Express.Multer.File,
   folder: string
 ): Promise<string> {
-  // 고유한 파일명 생성: 타임스탬프_랜덤숫자_원본파일명
+  // 고유한 파일명 생성: 타임스탬프-랜덤숫자-확장자
   const timestamp = Date.now();
   const random = Math.round(Math.random() * 1E9);
-  const fileName = `${timestamp}-${random}-${file.originalname}`;
+  
+  // 한글 파일명 제거거
+  const originalName = file.originalname || 'file';
+  const lastDotIndex = originalName.lastIndexOf('.');
+  const extension = lastDotIndex !== -1 ? originalName.substring(lastDotIndex).toLowerCase() : '';
+  
+  const fileName = `${timestamp}-${random}${extension}`;
+  
   const key = `${folder}/${fileName}`;
 
   // S3에 업로드
@@ -26,7 +33,6 @@ export async function uploadFileToS3(
     ContentType: file.mimetype,
   }));
 
-  // S3 URL 반환
   const region = process.env.AWS_REGION || 'ap-northeast-2';
   return `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`;
 }
@@ -40,11 +46,10 @@ export async function deleteFileFromS3(fileUrl: string): Promise<void> {
   const url = new URL(fileUrl);
   let key = url.pathname.substring(1);
   
-  // URL 디코딩 (한글 등 특수문자 처리)
+  // URL 디코딩 
   try {
     key = decodeURIComponent(key);
   } catch (error) {
-    // 디코딩 실패 시 원본 key 사용
     console.warn('Failed to decode URL, using original key:', key);
   }
 
