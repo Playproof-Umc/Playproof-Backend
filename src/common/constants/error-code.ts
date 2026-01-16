@@ -49,6 +49,7 @@ export const AuthErrorCode = {
 // 파일 업로드 관련 에러 코드
 export const FileUploadErrorCode = {
   S3_UPLOAD_FAILED: 'S3_UPLOAD_FAILED', // S3 파일 업로드 실패
+  S3_DELETE_FAILED: 'S3_DELETE_FAILED', // S3 파일 삭제 실패
 } as const;
 
 // 아지트 관련 에러 코드
