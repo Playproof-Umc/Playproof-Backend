@@ -502,6 +502,56 @@ const models: TsoaRoute.Models = {
         "enums": ["PUBLIC","PRIVATE"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "HighlightListItemResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "highlight_id": {"dataType":"double","required":true},
+            "user_id": {"dataType":"double","required":true},
+            "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "content": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "visibility": {"dataType":"string","required":true},
+            "media_count": {"dataType":"double","required":true},
+            "medias": {"dataType":"array","array":{"dataType":"refObject","ref":"HighlightMediaResDto"},"required":true},
+            "like_count": {"dataType":"double","required":true},
+            "comment_count": {"dataType":"double","required":true},
+            "is_liked": {"dataType":"boolean","required":true},
+            "created_at": {"dataType":"datetime","required":true},
+            "updated_at": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "HighlightListPaginationResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "has_next": {"dataType":"boolean","required":true},
+            "next_cursor": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "limit": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "GetHighlightListResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "azit_id": {"dataType":"double","required":true},
+            "azit_name": {"dataType":"string","required":true},
+            "highlights": {"dataType":"array","array":{"dataType":"refObject","ref":"HighlightListItemResDto"},"required":true},
+            "pagination": {"ref":"HighlightListPaginationResDto","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_GetHighlightListResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"GetHighlightListResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_GetHighlightListResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_GetHighlightListResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AzitCreateResDto": {
         "dataType": "refObject",
         "properties": {
@@ -1236,6 +1286,47 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 next,
                 validatedArgs,
                 successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsHighlightCreateController_getHighlightList: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                azit_id: {"in":"path","name":"azit_id","required":true,"dataType":"double"},
+                cursor: {"in":"query","name":"cursor","dataType":"double"},
+                limit: {"in":"query","name":"limit","dataType":"double"},
+                sort: {"in":"query","name":"sort","dataType":"string"},
+                order: {"in":"query","name":"order","dataType":"string"},
+        };
+        app.get('/azits/:azit_id/highlights',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(HighlightCreateController)),
+            ...(fetchMiddlewares<RequestHandler>(HighlightCreateController.prototype.getHighlightList)),
+
+            async function HighlightCreateController_getHighlightList(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsHighlightCreateController_getHighlightList, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<HighlightCreateController>(HighlightCreateController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getHighlightList',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
               });
             } catch (err) {
                 return next(err);
