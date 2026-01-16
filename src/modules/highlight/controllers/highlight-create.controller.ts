@@ -3,6 +3,7 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   Route,
   Tags,
   SuccessResponse,
@@ -18,7 +19,8 @@ import {
 import { injectable, inject } from "tsyringe";
 import { HighlightCreateService } from "../services/highlight-create.service";
 import { HighlightListService } from "../services/highlight-list.service";
-import { HighlightCreateReqDto, HighlightVisibility, GetHighlightListReqDto } from "../dtos/highlight.req.dto";
+import { HighlightUpdateService } from "../services/highlight-update.service";
+import { HighlightCreateReqDto, HighlightVisibility, GetHighlightListReqDto, HighlightUpdateReqDto } from "../dtos/highlight.req.dto";
 import { HighlightCreateResDto, GetHighlightListResDto, GetHighlightDetailResDto } from "../dtos/highlight.res.dto";
 import {
   Result,
@@ -37,6 +39,7 @@ export class HighlightCreateController extends Controller {
   constructor(
     @inject(HighlightCreateService) private highlightCreateService: HighlightCreateService,
     @inject(HighlightListService) private highlightListService: HighlightListService,
+    @inject(HighlightUpdateService) private highlightUpdateService: HighlightUpdateService,
   ) {
     super();
   }
@@ -144,6 +147,49 @@ export class HighlightCreateController extends Controller {
       userId,
       azitId,
       highlightId,
+    );
+
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  /**
+   * 하이라이트 수정
+   * 특정 하이라이트의 정보를 수정합니다. (업로더만 가능)
+   */
+  @SuccessResponse("200", "OK")
+  @Response<BadRequestError>(400, "Bad Request")
+  @Response<UnauthorizedError>(401, "Unauthorized")
+  @Response<ForbiddenError>(403, "Forbidden")
+  @Response<NotFoundError>(404, "Not Found")
+  @Response<InternalServerError>(500, "Internal Server Error")
+  @Security("jwt")
+  @Middlewares(validationMiddleware(HighlightUpdateReqDto))
+  @Put("{azit_id}/highlights/{highlight_id}")
+  public async updateHighlight(
+    @Request() req: any,
+    @Path() azit_id: number,
+    @Path() highlight_id: number,
+    @FormField() content?: string,
+    @FormField() visibility?: HighlightVisibility,
+    @UploadedFiles() medias?: Express.Multer.File[],
+  ): Promise<Result<GetHighlightDetailResDto>> {
+    const userId = BigInt(req.user.id);
+    const azitId = BigInt(azit_id);
+    const highlightId = BigInt(highlight_id);
+
+    // DTO 검증을 위해 req.body 사용
+    const dto: HighlightUpdateReqDto = {
+      content: req.body.content,
+      visibility: req.body.visibility,
+    };
+
+    const result = await this.highlightUpdateService.updateHighlight(
+      userId,
+      azitId,
+      highlightId,
+      dto,
+      medias,
     );
 
     this.setStatus(result.statusCode);

@@ -1399,7 +1399,7 @@
 						"type": "number",
 						"format": "double",
 						"description": "하이라이트 미디어 ID",
-						"example": 1001
+						"example": 1
 					},
 					"media_url": {
 						"type": "string",
@@ -1737,7 +1737,7 @@
 						"type": "number",
 						"format": "double",
 						"description": "하이라이트 ID",
-						"example": 5001
+						"example": 1
 					},
 					"user_id": {
 						"type": "number",
@@ -1924,7 +1924,7 @@
 						"type": "number",
 						"format": "double",
 						"description": "하이라이트 ID",
-						"example": 5001
+						"example": 1
 					},
 					"azit_id": {
 						"type": "number",
@@ -3408,6 +3408,125 @@
 						}
 					}
 				]
+			},
+			"put": {
+				"operationId": "UpdateHighlight",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_GetHighlightDetailResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"description": "하이라이트 수정\r\n특정 하이라이트의 정보를 수정합니다. (업로더만 가능)",
+				"tags": [
+					"Highlight"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "path",
+						"name": "highlight_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"content": {
+										"type": "string"
+									},
+									"visibility": {
+										"$ref": "#/components/schemas/HighlightVisibility"
+									},
+									"medias": {
+										"items": {
+											"type": "string",
+											"format": "binary"
+										},
+										"type": "array"
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		},
 		"/azits/{azit_id}": {

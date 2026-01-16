@@ -47,6 +47,27 @@ export class HighlightRepository {
   }
 
   /**
+   * 하이라이트 수정
+   */
+  async updateHighlight(
+    highlightId: bigint,
+    data: {
+      content?: string | null;
+      isPublic?: boolean;
+    },
+  ): Promise<Highlight> {
+    return prisma.highlight.update({
+      where: {
+        id: highlightId,
+      },
+      data: {
+        ...(data.content !== undefined && { content: data.content || null }),
+        ...(data.isPublic !== undefined && { isPublic: data.isPublic }),
+      },
+    });
+  }
+
+  /**
    * 하이라이트의 좋아요 수 조회
    */
   async countLikesByHighlightId(highlightId: bigint): Promise<number> {

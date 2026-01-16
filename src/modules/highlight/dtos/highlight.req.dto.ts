@@ -76,3 +76,22 @@ export class GetHighlightListReqDto {
   @IsEnum(SortOrder, { message: "order는 ASC 또는 DESC여야 합니다." })
   order?: SortOrder = SortOrder.DESC;
 }
+
+export class HighlightUpdateReqDto {
+  /**
+   * 하이라이트 설명
+   * @example "수정된 킬 장면입니다"
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(500, { message: "content는 500글자를 초과할 수 없습니다." })
+  content?: string;
+
+  /**
+   * 공개 범위 (PUBLIC: 커뮤니티 공개, PRIVATE: 아지트 내부만)
+   * @example "PRIVATE"
+   */
+  @IsOptional()
+  @IsEnum(HighlightVisibility, { message: "visibility는 PUBLIC 또는 PRIVATE만 가능합니다." })
+  visibility?: HighlightVisibility;
+}

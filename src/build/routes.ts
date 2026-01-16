@@ -1402,6 +1402,52 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsHighlightCreateController_updateHighlight: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                azit_id: {"in":"path","name":"azit_id","required":true,"dataType":"double"},
+                highlight_id: {"in":"path","name":"highlight_id","required":true,"dataType":"double"},
+                content: {"in":"formData","name":"content","dataType":"string"},
+                visibility: {"in":"formData","name":"visibility","ref":"HighlightVisibility"},
+                medias: {"in":"formData","name":"medias","dataType":"array","array":{"dataType":"file"}},
+        };
+        app.put('/azits/:azit_id/highlights/:highlight_id',
+            authenticateMiddleware([{"jwt":[]}]),
+            upload.fields([
+                {
+                    name: "medias",
+                }
+            ]),
+            ...(fetchMiddlewares<RequestHandler>(HighlightCreateController)),
+            ...(fetchMiddlewares<RequestHandler>(HighlightCreateController.prototype.updateHighlight)),
+
+            async function HighlightCreateController_updateHighlight(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsHighlightCreateController_updateHighlight, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<HighlightCreateController>(HighlightCreateController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'updateHighlight',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsAzitUpdateController_updateAzit: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 azit_id: {"in":"path","name":"azit_id","required":true,"dataType":"double"},
