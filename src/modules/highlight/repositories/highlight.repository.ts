@@ -228,4 +228,15 @@ export class HighlightRepository {
       },
     });
   }
+
+  /**
+   * 하이라이트 삭제
+   */
+  async deleteHighlight(highlightId: bigint): Promise<Highlight> {
+    return prisma.highlight.delete({
+      where: {
+        id: highlightId,
+      },
+    });
+  }
 }

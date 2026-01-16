@@ -4,6 +4,7 @@ import {
   Post,
   Get,
   Put,
+  Delete,
   Route,
   Tags,
   SuccessResponse,
@@ -20,8 +21,9 @@ import { injectable, inject } from "tsyringe";
 import { HighlightCreateService } from "../services/highlight-create.service";
 import { HighlightListService } from "../services/highlight-list.service";
 import { HighlightUpdateService } from "../services/highlight-update.service";
+import { HighlightDeleteService } from "../services/highlight-delete.service";
 import { HighlightCreateReqDto, HighlightVisibility, GetHighlightListReqDto, HighlightUpdateReqDto } from "../dtos/highlight.req.dto";
-import { HighlightCreateResDto, GetHighlightListResDto, GetHighlightDetailResDto } from "../dtos/highlight.res.dto";
+import { HighlightCreateResDto, GetHighlightListResDto, GetHighlightDetailResDto, HighlightDeleteResDto } from "../dtos/highlight.res.dto";
 import {
   Result,
   BadRequestError,
@@ -40,6 +42,7 @@ export class HighlightCreateController extends Controller {
     @inject(HighlightCreateService) private highlightCreateService: HighlightCreateService,
     @inject(HighlightListService) private highlightListService: HighlightListService,
     @inject(HighlightUpdateService) private highlightUpdateService: HighlightUpdateService,
+    @inject(HighlightDeleteService) private highlightDeleteService: HighlightDeleteService,
   ) {
     super();
   }
@@ -190,6 +193,37 @@ export class HighlightCreateController extends Controller {
       highlightId,
       dto,
       medias,
+    );
+
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  /**
+   * 하이라이트 삭제
+   * 특정 하이라이트를 삭제합니다. (업로더만 가능)
+   */
+  @SuccessResponse("200", "OK")
+  @Response<BadRequestError>(400, "Bad Request")
+  @Response<UnauthorizedError>(401, "Unauthorized")
+  @Response<ForbiddenError>(403, "Forbidden")
+  @Response<NotFoundError>(404, "Not Found")
+  @Response<InternalServerError>(500, "Internal Server Error")
+  @Security("jwt")
+  @Delete("{azit_id}/highlights/{highlight_id}")
+  public async deleteHighlight(
+    @Request() req: any,
+    @Path() azit_id: number,
+    @Path() highlight_id: number,
+  ): Promise<Result<HighlightDeleteResDto>> {
+    const userId = BigInt(req.user.id);
+    const azitId = BigInt(azit_id);
+    const highlightId = BigInt(highlight_id);
+
+    const result = await this.highlightDeleteService.deleteHighlight(
+      userId,
+      azitId,
+      highlightId,
     );
 
     this.setStatus(result.statusCode);

@@ -92,7 +92,6 @@ export class HighlightUpdateService {
 
     // 6. 신규 미디어 파일 검증 (있는 경우)
     if (files && files.length > 0) {
-      // 6-1. 기존 + 신규 합계가 10개를 초과하는지 확인
       const totalMediaCount = existingMediaCount + files.length;
       if (totalMediaCount > 10) {
         return badRequest({
@@ -162,7 +161,6 @@ export class HighlightUpdateService {
 
       // 8. 신규 미디어 파일 업로드 및 저장 (있는 경우)
       if (files && files.length > 0) {
-        // 8-1. S3에 파일 업로드
         const mediaUrls: string[] = [];
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
@@ -170,12 +168,10 @@ export class HighlightUpdateService {
           mediaUrls.push(mediaUrl);
         }
 
-        // 8-2. 기존 미디어의 최대 order 값 찾기
         const maxOrder = existingMedias.length > 0
           ? Math.max(...existingMedias.map((m) => m.order))
           : -1;
 
-        // 8-3. 신규 미디어 일괄 생성 (order는 기존 최대값 + 1부터 시작)
         const mediaData = mediaUrls.map((url, index) => ({
           mediaUrl: url,
           order: maxOrder + 1 + index,

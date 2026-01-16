@@ -50,7 +50,17 @@ export const AuthErrorCode = {
 export const HighlightErrorCode = {
   CREATE_FORBIDDEN: "HIGHLIGHT_CREATE_FORBIDDEN", // 하이라이트 생성 권한 없음
   CREATE_FAILED: "HIGHLIGHT_CREATE_FAILED", // 하이라이트 생성 실패
+  LIST_FORBIDDEN: "HIGHLIGHT_LIST_FORBIDDEN", // 하이라이트 목록 조회 권한 없음
+  UPDATE_FORBIDDEN: "HIGHLIGHT_FORBIDDEN_UPDATE", // 하이라이트 수정 권한 없음
+  UPDATE_FAILED: "HIGHLIGHT_UPDATE_FAILED", // 하이라이트 수정 실패
+  DELETE_FORBIDDEN: "HIGHLIGHT_FORBIDDEN_DELETE", // 하이라이트 삭제 권한 없음
+  DELETE_FAILED: "HIGHLIGHT_DELETE_FAILED", // 하이라이트 삭제 실패
   NOT_FOUND: "HIGHLIGHT_NOT_FOUND", // 하이라이트를 찾을 수 없음
+} as const;
+
+// 공통 에러 코드
+export const CommonErrorCode = {
+  RESOURCE_NOT_FOUND: "COMMON_RESOURCE_NOT_FOUND", // 리소스를 찾을 수 없음
 } as const;
 
 // 나중에 다른 도메인이 생기면 추가

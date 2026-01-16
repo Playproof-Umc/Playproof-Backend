@@ -53,4 +53,17 @@ export class CommunityMediaRepository {
       },
     });
   }
+
+  /**
+   * 하이라이트 ID로 미디어 일괄 삭제
+   */
+  async deleteMediasByHighlightId(highlightId: bigint): Promise<number> {
+    const result = await prisma.communityMedia.deleteMany({
+      where: {
+        highlightId,
+      },
+    });
+
+    return result.count;
+  }
 }

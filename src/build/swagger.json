@@ -2055,6 +2055,96 @@
 					}
 				]
 			},
+			"HighlightDeleteResDto": {
+				"properties": {
+					"highlight_id": {
+						"type": "number",
+						"format": "double",
+						"description": "하이라이트 ID",
+						"example": 5001
+					},
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"description": "아지트 ID",
+						"example": 1
+					},
+					"user_id": {
+						"type": "number",
+						"format": "double",
+						"description": "사용자 ID",
+						"example": 1001
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"description": "닉네임",
+						"example": "채나"
+					},
+					"content": {
+						"type": "string",
+						"nullable": true,
+						"description": "하이라이트 설명",
+						"example": "멋진 킬 장면입니다"
+					},
+					"deleted_at": {
+						"type": "string",
+						"format": "date-time",
+						"description": "삭제 일시",
+						"example": "2025-01-09T16:30:00Z"
+					},
+					"media_count": {
+						"type": "number",
+						"format": "double",
+						"description": "미디어 개수",
+						"example": 2
+					}
+				},
+				"required": [
+					"highlight_id",
+					"azit_id",
+					"user_id",
+					"nickname",
+					"content",
+					"deleted_at",
+					"media_count"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_HighlightDeleteResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/HighlightDeleteResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_HighlightDeleteResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_HighlightDeleteResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"AzitCreateResDto": {
 				"properties": {
 					"azit_id": {
@@ -3148,7 +3238,7 @@
 						}
 					}
 				},
-				"description": "하이라이트 클립 생성\r\n새로운 하이라이트 클립을 생성합니다. (아지트 내부 또는 커뮤니티 공개)",
+				"description": "하이라이트 클립 생성\n새로운 하이라이트 클립을 생성합니다. (아지트 내부 또는 커뮤니티 공개)",
 				"tags": [
 					"Highlight"
 				],
@@ -3258,7 +3348,7 @@
 						}
 					}
 				},
-				"description": "하이라이트 목록 조회\r\n특정 아지트에 존재하는 모든 하이라이트 목록을 조회합니다.",
+				"description": "하이라이트 목록 조회\n특정 아지트에 존재하는 모든 하이라이트 목록을 조회합니다.",
 				"tags": [
 					"Highlight"
 				],
@@ -3379,7 +3469,7 @@
 						}
 					}
 				},
-				"description": "하이라이트 세부 조회\r\n특정 하이라이트의 세부 정보를 조회합니다.",
+				"description": "하이라이트 세부 조회\n특정 하이라이트의 세부 정보를 조회합니다.",
 				"tags": [
 					"Highlight"
 				],
@@ -3473,7 +3563,7 @@
 						}
 					}
 				},
-				"description": "하이라이트 수정\r\n특정 하이라이트의 정보를 수정합니다. (업로더만 가능)",
+				"description": "하이라이트 수정\n특정 하이라이트의 정보를 수정합니다. (업로더만 가능)",
 				"tags": [
 					"Highlight"
 				],
@@ -3527,6 +3617,100 @@
 						}
 					}
 				}
+			},
+			"delete": {
+				"operationId": "DeleteHighlight",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_HighlightDeleteResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"description": "하이라이트 삭제\n특정 하이라이트를 삭제합니다. (업로더만 가능)",
+				"tags": [
+					"Highlight"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "path",
+						"name": "highlight_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
 		"/azits/{azit_id}": {

@@ -306,3 +306,47 @@ export class GetHighlightDetailResDto {
    */
   updated_at!: Date;
 }
+
+export class HighlightDeleteResDto {
+  /**
+   * 하이라이트 ID
+   * @example 5001
+   */
+  highlight_id!: number;
+
+  /**
+   * 아지트 ID
+   * @example 1
+   */
+  azit_id!: number;
+
+  /**
+   * 사용자 ID
+   * @example 1001
+   */
+  user_id!: number;
+
+  /**
+   * 닉네임
+   * @example "채나"
+   */
+  nickname!: string | null;
+
+  /**
+   * 하이라이트 설명
+   * @example "멋진 킬 장면입니다"
+   */
+  content!: string | null;
+
+  /**
+   * 삭제 일시
+   * @example "2025-01-09T16:30:00Z"
+   */
+  deleted_at!: Date;
+
+  /**
+   * 미디어 개수
+   * @example 2
+   */
+  media_count!: number;
+}
