@@ -57,7 +57,7 @@
 				"type": "object"
 			},
 			"ApiErrorDetail": {
-				"description": "* ------------------------------------------------------------------\nApiErrorDetail Interface\n------------------------------------------------------------------",
+				"description": "* ------------------------------------------------------------------\r\nApiErrorDetail Interface\r\n------------------------------------------------------------------",
 				"properties": {
 					"field": {
 						"type": "string"
@@ -116,7 +116,7 @@
 					"statusCode"
 				],
 				"type": "object",
-				"description": "------------------------------------------------------------------\nBase Result Types\n------------------------------------------------------------------"
+				"description": "------------------------------------------------------------------\r\nBase Result Types\r\n------------------------------------------------------------------"
 			},
 			"Result_UserGetResDto_": {
 				"anyOf": [
@@ -129,7 +129,7 @@
 				]
 			},
 			"BadRequestError": {
-				"description": "* ------------------------------------------------------------------\nInterfaces for Swagger Documentation\n------------------------------------------------------------------",
+				"description": "* ------------------------------------------------------------------\r\nInterfaces for Swagger Documentation\r\n------------------------------------------------------------------",
 				"properties": {
 					"error": {
 						"properties": {
@@ -862,63 +862,51 @@
 					}
 				]
 			},
-			"Success_void_": {
+			"ApplyPartyResDto": {
 				"properties": {
-					"error": {
-						"type": "number",
-						"enum": [
-							null
-						],
-						"nullable": true
-					},
-					"data": {},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"data",
-					"statusCode"
-				],
-				"type": "object"
-			},
-			"Result_void_": {
-				"anyOf": [
-					{
-						"$ref": "#/components/schemas/Success_void_"
-					},
-					{
-						"$ref": "#/components/schemas/Failed"
-					}
-				]
-			},
-			"AzitCreateResDto": {
-				"properties": {
-					"azit_id": {
+					"applicationId": {
 						"type": "number",
 						"format": "double",
+						"description": "생성된 신청 ID",
 						"example": 1
 					},
-					"azit_name": {
-						"type": "string",
-						"example": "즐거운 롤토체스 팟"
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"description": "파티 게시글 ID",
+						"example": 10
 					},
-					"azit_icon_url": {
+					"status": {
 						"type": "string",
-						"nullable": true,
-						"example": "https://s3.ap-northeast-2.amazonaws.com/bucket/example.png"
+						"enum": [
+							"PENDING"
+						],
+						"nullable": false,
+						"description": "신청 상태",
+						"example": "PENDING"
+					},
+					"createdAt": {
+						"type": "string",
+						"description": "신청 일시",
+						"example": "2026-01-10 01:21:00"
+					},
+					"message": {
+						"type": "string",
+						"description": "결과 메시지",
+						"example": "신청이 완료되었습니다."
 					}
 				},
 				"required": [
-					"azit_id",
-					"azit_name",
-					"azit_icon_url"
+					"applicationId",
+					"partyId",
+					"status",
+					"createdAt",
+					"message"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Success_AzitCreateResDto_": {
+			"Success_ApplyPartyResDto_": {
 				"properties": {
 					"error": {
 						"type": "number",
@@ -928,7 +916,7 @@
 						"nullable": true
 					},
 					"data": {
-						"$ref": "#/components/schemas/AzitCreateResDto"
+						"$ref": "#/components/schemas/ApplyPartyResDto"
 					},
 					"statusCode": {
 						"type": "number",
@@ -941,15 +929,690 @@
 				],
 				"type": "object"
 			},
-			"Result_AzitCreateResDto_": {
+			"Result_ApplyPartyResDto_": {
 				"anyOf": [
 					{
-						"$ref": "#/components/schemas/Success_AzitCreateResDto_"
+						"$ref": "#/components/schemas/Success_ApplyPartyResDto_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
 					}
 				]
+			},
+			"HandleApplicationResDto": {
+				"properties": {
+					"applicationId": {
+						"type": "number",
+						"format": "double",
+						"description": "신청 ID",
+						"example": 1
+					},
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"description": "파티 게시글 ID",
+						"example": 10
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"APPROVED",
+							"REJECTED"
+						],
+						"description": "처리 결과 상태",
+						"example": "APPROVED"
+					},
+					"updatedAt": {
+						"type": "string",
+						"description": "수정 일시",
+						"example": "2026-01-10 14:20:00"
+					},
+					"message": {
+						"type": "string",
+						"description": "결과 메시지",
+						"example": "신청이 수락되었습니다."
+					}
+				},
+				"required": [
+					"applicationId",
+					"partyId",
+					"status",
+					"updatedAt",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_HandleApplicationResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/HandleApplicationResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_HandleApplicationResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_HandleApplicationResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"HandleApplicationReqDto": {
+				"properties": {
+					"isAccepted": {
+						"type": "boolean",
+						"description": "승낙 여부 (true: 승낙, false: 거절)",
+						"example": true
+					}
+				},
+				"required": [
+					"isAccepted"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ToggleLikeResDto": {
+				"properties": {
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"description": "파티 게시글 ID",
+						"example": 10
+					},
+					"isLiked": {
+						"type": "boolean",
+						"description": "좋아요 여부",
+						"example": true
+					},
+					"message": {
+						"type": "string",
+						"description": "결과 메시지",
+						"example": "좋아요 성공"
+					}
+				},
+				"required": [
+					"partyId",
+					"isLiked",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_ToggleLikeResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/ToggleLikeResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_ToggleLikeResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_ToggleLikeResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"InteractionMessageResDto": {
+				"properties": {
+					"message": {
+						"type": "string",
+						"description": "결과 메시지",
+						"example": "가입 신청이 성공적으로 취소되었습니다."
+					},
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"description": "취소된 파티 ID",
+						"example": 10
+					},
+					"updatedAt": {
+						"type": "string",
+						"description": "취소 처리 일시",
+						"example": "2026-01-05 14:05:00"
+					}
+				},
+				"required": [
+					"message",
+					"partyId",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_InteractionMessageResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/InteractionMessageResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_InteractionMessageResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_InteractionMessageResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"CommentItemDto": {
+				"properties": {
+					"commentId": {
+						"type": "number",
+						"format": "double",
+						"description": "댓글 ID",
+						"example": 101
+					},
+					"userId": {
+						"type": "number",
+						"format": "double",
+						"description": "작성자 유저 ID",
+						"example": 50
+					},
+					"nickname": {
+						"type": "string",
+						"description": "작성자 닉네임",
+						"example": "유시영"
+					},
+					"content": {
+						"type": "string",
+						"description": "댓글 내용",
+						"example": "이 파티 아직 모집 중인가요?"
+					},
+					"createdAt": {
+						"type": "string",
+						"description": "생성 일시",
+						"example": "2026-01-05 15:00:00"
+					},
+					"parentId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "부모 댓글 ID (대댓글인 경우)",
+						"example": null
+					},
+					"replies": {
+						"items": {
+							"$ref": "#/components/schemas/CommentItemDto"
+						},
+						"type": "array",
+						"description": "답글 목록 (대댓글)"
+					}
+				},
+				"required": [
+					"commentId",
+					"userId",
+					"nickname",
+					"content",
+					"createdAt",
+					"parentId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CommentListResDto": {
+				"properties": {
+					"comments": {
+						"items": {
+							"$ref": "#/components/schemas/CommentItemDto"
+						},
+						"type": "array",
+						"description": "댓글 목록"
+					},
+					"meta": {
+						"properties": {
+							"limit": {
+								"type": "number",
+								"format": "double",
+								"example": 10
+							},
+							"totalComments": {
+								"type": "number",
+								"format": "double",
+								"example": 48
+							},
+							"totalPages": {
+								"type": "number",
+								"format": "double",
+								"example": 5
+							},
+							"currentPage": {
+								"type": "number",
+								"format": "double",
+								"example": 1
+							}
+						},
+						"required": [
+							"limit",
+							"totalComments",
+							"totalPages",
+							"currentPage"
+						],
+						"type": "object",
+						"description": "페이징 정보"
+					}
+				},
+				"required": [
+					"comments",
+					"meta"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_CommentListResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/CommentListResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_CommentListResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_CommentListResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"CommentActionResDto": {
+				"properties": {
+					"commentId": {
+						"type": "number",
+						"format": "double",
+						"description": "대상 댓글 ID",
+						"example": 105
+					},
+					"partyId": {
+						"type": "number",
+						"format": "double",
+						"description": "파티 ID",
+						"example": 10
+					},
+					"userId": {
+						"type": "number",
+						"format": "double",
+						"description": "작성자 유저 ID",
+						"example": 50
+					},
+					"content": {
+						"type": "string",
+						"description": "댓글 내용",
+						"example": "저도 참여하고 싶어요!"
+					},
+					"createdAt": {
+						"type": "string",
+						"description": "생성 일시",
+						"example": "2026-01-05 15:20:00"
+					},
+					"updatedAt": {
+						"type": "string",
+						"description": "수정 일시",
+						"example": "2026-01-05 15:25:00"
+					},
+					"message": {
+						"type": "string",
+						"description": "결과 메시지",
+						"example": "댓글이 삭제되었습니다."
+					},
+					"deletedAt": {
+						"type": "string",
+						"description": "삭제 일시",
+						"example": "2026-01-05 15:30:00"
+					}
+				},
+				"required": [
+					"commentId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_CommentActionResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/CommentActionResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_CommentActionResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_CommentActionResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"CreateCommentReqDto": {
+				"properties": {
+					"content": {
+						"type": "string",
+						"description": "댓글 내용",
+						"example": "저도 참여하고 싶어요!"
+					},
+					"parentId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "부모 댓글 ID (답글 작성 시)",
+						"example": 101
+					}
+				},
+				"required": [
+					"content"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"HighlightMediaResDto": {
+				"properties": {
+					"highlight_media_id": {
+						"type": "number",
+						"format": "double",
+						"description": "하이라이트 미디어 ID",
+						"example": 1001
+					},
+					"media_url": {
+						"type": "string",
+						"description": "미디어 URL",
+						"example": "https://example.com/highlights/video1.mp4"
+					},
+					"order": {
+						"type": "number",
+						"format": "double",
+						"description": "순서",
+						"example": 0
+					},
+					"upload_at": {
+						"type": "string",
+						"format": "date-time",
+						"description": "업로드 일시",
+						"example": "2025-01-09T14:30:00Z"
+					}
+				},
+				"required": [
+					"highlight_media_id",
+					"media_url",
+					"order",
+					"upload_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"HighlightCreateResDto": {
+				"properties": {
+					"highlight_id": {
+						"type": "number",
+						"format": "double",
+						"description": "하이라이트 ID",
+						"example": 5001
+					},
+					"user_id": {
+						"type": "number",
+						"format": "double",
+						"description": "사용자 ID",
+						"example": 1001
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"description": "닉네임",
+						"example": "채나"
+					},
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"description": "아지트 ID",
+						"example": 1
+					},
+					"azit_name": {
+						"type": "string",
+						"description": "아지트 이름",
+						"example": "Playproof 공식 클랜"
+					},
+					"content": {
+						"type": "string",
+						"nullable": true,
+						"description": "하이라이트 설명",
+						"example": "멋진 킬 장면입니다"
+					},
+					"visibility": {
+						"type": "string",
+						"description": "공개 범위",
+						"example": "PUBLIC"
+					},
+					"media_count": {
+						"type": "number",
+						"format": "double",
+						"description": "미디어 개수",
+						"example": 2
+					},
+					"medias": {
+						"items": {
+							"$ref": "#/components/schemas/HighlightMediaResDto"
+						},
+						"type": "array",
+						"description": "미디어 목록"
+					},
+					"like_count": {
+						"type": "number",
+						"format": "double",
+						"description": "좋아요 수",
+						"example": 0
+					},
+					"comment_count": {
+						"type": "number",
+						"format": "double",
+						"description": "댓글 수",
+						"example": 0
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"description": "생성 일시",
+						"example": "2025-01-09T14:30:00Z"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"description": "수정 일시",
+						"example": "2025-01-09T14:30:00Z"
+					}
+				},
+				"required": [
+					"highlight_id",
+					"user_id",
+					"nickname",
+					"azit_id",
+					"azit_name",
+					"content",
+					"visibility",
+					"media_count",
+					"medias",
+					"like_count",
+					"comment_count",
+					"created_at",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_HighlightCreateResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/HighlightCreateResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_HighlightCreateResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_HighlightCreateResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"UnauthorizedError": {
+				"description": "401 에러 (Unauthorized)",
+				"properties": {
+					"error": {
+						"properties": {
+							"errors": {
+								"items": {
+									"$ref": "#/components/schemas/ApiErrorDetail"
+								},
+								"type": "array"
+							},
+							"message": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"code"
+						],
+						"type": "object"
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"statusCode": {
+						"type": "number",
+						"enum": [
+							401
+						],
+						"nullable": false
+					}
+				},
+				"required": [
+					"error",
+					"data",
+					"statusCode"
+				],
+				"type": "object",
+				"additionalProperties": false,
+				"example": {
+					"statusCode": 401,
+					"data": null,
+					"error": {
+						"code": "AUTH_UNAUTHORIZED",
+						"message": "인증이 필요합니다."
+					}
+				}
 			},
 			"ForbiddenError": {
 				"description": "403 에러 (Forbidden)",
@@ -1061,6 +1724,71 @@
 					}
 				}
 			},
+			"HighlightVisibility": {
+				"enum": [
+					"PUBLIC",
+					"PRIVATE"
+				],
+				"type": "string"
+			},
+			"AzitCreateResDto": {
+				"properties": {
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"example": 1
+					},
+					"azit_name": {
+						"type": "string",
+						"example": "즐거운 롤토체스 팟"
+					},
+					"azit_icon_url": {
+						"type": "string",
+						"nullable": true,
+						"example": "https://s3.ap-northeast-2.amazonaws.com/bucket/example.png"
+					}
+				},
+				"required": [
+					"azit_id",
+					"azit_name",
+					"azit_icon_url"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_AzitCreateResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/AzitCreateResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_AzitCreateResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_AzitCreateResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"AzitListResDto": {
 				"properties": {
 					"azits": {
@@ -1115,6 +1843,37 @@
 				"anyOf": [
 					{
 						"$ref": "#/components/schemas/Success_AzitListResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"Success_void_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_void_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_void_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
@@ -1263,6 +2022,129 @@
 				"required": [
 					"phone",
 					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SendCertificationResDto": {
+				"properties": {
+					"status": {
+						"type": "string",
+						"example": "OK"
+					}
+				},
+				"required": [
+					"status"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_SendCertificationResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/SendCertificationResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_SendCertificationResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_SendCertificationResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"SendCertificationReqDto": {
+				"properties": {
+					"phone": {
+						"type": "string",
+						"example": "010-1234-5678"
+					}
+				},
+				"required": [
+					"phone"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"VerifyCertificationResDto": {
+				"properties": {
+					"status": {
+						"type": "string",
+						"example": "VERIFIED"
+					}
+				},
+				"required": [
+					"status"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_VerifyCertificationResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/VerifyCertificationResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_VerifyCertificationResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_VerifyCertificationResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"VerifyCertificationReqDto": {
+				"properties": {
+					"phone": {
+						"type": "string",
+						"example": "010-1234-5678"
+					},
+					"code": {
+						"type": "string",
+						"example": "123456"
+					}
+				},
+				"required": [
+					"phone",
+					"code"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1541,23 +2423,23 @@
 				]
 			}
 		},
-		"/parties/{id}/like": {
+		"/parties/{postId}/applications": {
 			"post": {
-				"operationId": "LikeParty",
+				"operationId": "ApplyParty",
 				"responses": {
 					"200": {
-						"description": "OK",
+						"description": "Ok",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_void_"
+									"$ref": "#/components/schemas/Result_ApplyPartyResDto_"
 								}
 							}
 						}
 					}
 				},
 				"tags": [
-					"Party"
+					"Party Interaction"
 				],
 				"security": [
 					{
@@ -1567,7 +2449,7 @@
 				"parameters": [
 					{
 						"in": "path",
-						"name": "id",
+						"name": "postId",
 						"required": true,
 						"schema": {
 							"format": "double",
@@ -1577,23 +2459,23 @@
 				]
 			}
 		},
-		"/parties/{id}/comments": {
-			"post": {
-				"operationId": "AddComment",
+		"/parties/applications/{applicationId}": {
+			"patch": {
+				"operationId": "HandleApplication",
 				"responses": {
-					"201": {
-						"description": "Created",
+					"200": {
+						"description": "Ok",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_void_"
+									"$ref": "#/components/schemas/Result_HandleApplicationResDto_"
 								}
 							}
 						}
 					}
 				},
 				"tags": [
-					"Party"
+					"Party Interaction"
 				],
 				"security": [
 					{
@@ -1603,7 +2485,219 @@
 				"parameters": [
 					{
 						"in": "path",
-						"name": "id",
+						"name": "applicationId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/HandleApplicationReqDto"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "CancelApplication",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_InteractionMessageResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Interaction"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "applicationId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/parties/{postId}/likes": {
+			"post": {
+				"operationId": "ToggleLike",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_ToggleLikeResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Interaction"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/parties/{partyId}/comments": {
+			"get": {
+				"operationId": "GetComments",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommentListResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Comment"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "partyId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 1,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateComment",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommentActionResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Comment"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "partyId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateCommentReqDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/comments/{commentId}": {
+			"patch": {
+				"operationId": "UpdateComment",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommentActionResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Comment"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "commentId",
 						"required": true,
 						"schema": {
 							"format": "double",
@@ -1625,6 +2719,152 @@
 									"content"
 								],
 								"type": "object"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteComment",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommentActionResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Party Comment"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "commentId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/azits/{azit_id}/highlights": {
+			"post": {
+				"operationId": "CreateHighlight",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_HighlightCreateResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"description": "하이라이트 클립 생성\r\n새로운 하이라이트 클립을 생성합니다. (아지트 내부 또는 커뮤니티 공개)",
+				"tags": [
+					"Highlight"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"content": {
+										"type": "string"
+									},
+									"visibility": {
+										"$ref": "#/components/schemas/HighlightVisibility"
+									},
+									"medias": {
+										"items": {
+											"type": "string",
+											"format": "binary"
+										},
+										"type": "array"
+									}
+								}
 							}
 						}
 					}
@@ -2004,6 +3244,120 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/LoginReqDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/phone/send-certification": {
+			"post": {
+				"operationId": "SendCertification",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_SendCertificationResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "Conflict",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SendCertificationReqDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/phone/validate": {
+			"post": {
+				"operationId": "VerifyCertification",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_VerifyCertificationResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/VerifyCertificationReqDto"
 							}
 						}
 					}

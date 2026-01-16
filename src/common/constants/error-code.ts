@@ -46,5 +46,12 @@ export const AuthErrorCode = {
   COMPARE_ERROR: "PASSWORD_COMPARE_ERROR", // 비밀번호 일치 검사 실패 
 }
 
+// 하이라이트 관련 에러 코드
+export const HighlightErrorCode = {
+  CREATE_FORBIDDEN: "HIGHLIGHT_CREATE_FORBIDDEN", // 하이라이트 생성 권한 없음
+  CREATE_FAILED: "HIGHLIGHT_CREATE_FAILED", // 하이라이트 생성 실패
+  NOT_FOUND: "HIGHLIGHT_NOT_FOUND", // 하이라이트를 찾을 수 없음
+} as const;
+
 // 나중에 다른 도메인이 생기면 추가
 // export const OrderErrorCode = { ... } as const;
