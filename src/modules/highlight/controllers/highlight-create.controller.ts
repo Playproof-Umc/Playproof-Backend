@@ -19,7 +19,7 @@ import { injectable, inject } from "tsyringe";
 import { HighlightCreateService } from "../services/highlight-create.service";
 import { HighlightListService } from "../services/highlight-list.service";
 import { HighlightCreateReqDto, HighlightVisibility, GetHighlightListReqDto } from "../dtos/highlight.req.dto";
-import { HighlightCreateResDto, GetHighlightListResDto } from "../dtos/highlight.res.dto";
+import { HighlightCreateResDto, GetHighlightListResDto, GetHighlightDetailResDto } from "../dtos/highlight.res.dto";
 import {
   Result,
   BadRequestError,
@@ -114,6 +114,37 @@ export class HighlightCreateController extends Controller {
     };
 
     const result = await this.highlightListService.getHighlightList(userId, azitId, dto);
+
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  /**
+   * 하이라이트 세부 조회
+   * 특정 하이라이트의 세부 정보를 조회합니다.
+   */
+  @SuccessResponse("200", "OK")
+  @Response<BadRequestError>(400, "Bad Request")
+  @Response<UnauthorizedError>(401, "Unauthorized")
+  @Response<ForbiddenError>(403, "Forbidden")
+  @Response<NotFoundError>(404, "Not Found")
+  @Response<InternalServerError>(500, "Internal Server Error")
+  @Security("jwt")
+  @Get("{azit_id}/highlights/{highlight_id}")
+  public async getHighlightDetail(
+    @Request() req: any,
+    @Path() azit_id: number,
+    @Path() highlight_id: number,
+  ): Promise<Result<GetHighlightDetailResDto>> {
+    const userId = BigInt(req.user.id);
+    const azitId = BigInt(azit_id);
+    const highlightId = BigInt(highlight_id);
+
+    const result = await this.highlightListService.getHighlightDetail(
+      userId,
+      azitId,
+      highlightId,
+    );
 
     this.setStatus(result.statusCode);
     return result;

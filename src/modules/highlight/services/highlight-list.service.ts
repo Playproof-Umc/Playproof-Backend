@@ -9,6 +9,7 @@ import {
   HighlightListItemResDto,
   HighlightMediaResDto,
   HighlightListPaginationResDto,
+  GetHighlightDetailResDto,
 } from "../dtos/highlight.res.dto";
 import {
   Result,
@@ -134,6 +135,104 @@ export class HighlightListService {
       azit_name: azit.azitName,
       highlights,
       pagination,
+    };
+
+    return ok(response);
+  }
+
+  async getHighlightDetail(
+    userId: bigint,
+    azitId: bigint,
+    highlightId: bigint,
+  ): Promise<Result<GetHighlightDetailResDto>> {
+    // 1. 아지트 존재 여부 확인
+    const azit = await this.azitRepository.findAzitById(azitId);
+    if (!azit) {
+      return notFound({
+        message: "아지트를 찾을 수 없습니다.",
+        errorCode: PartyErrorCode.NOT_FOUND_AZIT,
+      });
+    }
+
+    // 2. 사용자가 아지트 멤버인지 확인
+    const azitUserRole = await this.azitUserRepository.findAzitUserRoleByUserIdAndAzitId(userId, azitId);
+    if (!azitUserRole) {
+      return forbidden({
+        message: "권한이 없습니다.",
+        errorCode: "AZIT_NOT_MEMBER",
+        errors: [
+          {
+            field: "azit_id",
+            value: Number(azitId),
+            reason: "해당 아지트의 멤버만 하이라이트를 조회할 수 있습니다.",
+          },
+        ],
+      });
+    }
+
+    // 3. 하이라이트 존재 여부 및 아지트 소속 확인
+    const highlight = await this.highlightRepository.findHighlightById(highlightId);
+    if (!highlight) {
+      return notFound({
+        message: "요청한 리소스를 찾을 수 없습니다.",
+        errorCode: "COMMON_RESOURCE_NOT_FOUND",
+        errors: [
+          {
+            field: "highlight_id",
+            value: Number(highlightId),
+            reason: "존재하지 않는 하이라이트입니다.",
+          },
+        ],
+      });
+    }
+
+    // 4. 하이라이트가 해당 아지트에 속하는지 확인
+    if (highlight.azitId !== azitId) {
+      return notFound({
+        message: "요청한 리소스를 찾을 수 없습니다.",
+        errorCode: "COMMON_RESOURCE_NOT_FOUND",
+        errors: [
+          {
+            field: "highlight_id",
+            value: Number(highlightId),
+            reason: "해당 아지트에 속하지 않는 하이라이트입니다.",
+          },
+        ],
+      });
+    }
+
+    // 5. 사용자 좋아요 여부 확인
+    const userLike = await this.highlightRepository.findUserLikeByHighlightId(userId, highlightId);
+    const isLiked = !!userLike;
+
+    // 6. 좋아요 수, 댓글 수 계산
+    const likeCount = highlight.likes.length;
+    const commentCount = highlight.comments.length;
+
+    // 7. 미디어 DTO 변환
+    const mediaDtos: HighlightMediaResDto[] = highlight.medias.map((media) => ({
+      highlight_media_id: Number(media.id),
+      media_url: media.mediaUrl,
+      order: media.order,
+      upload_at: media.uploadAt,
+    }));
+
+    // 8. 응답 DTO 변환
+    const response: GetHighlightDetailResDto = {
+      highlight_id: Number(highlight.id),
+      azit_id: Number(azit.id),
+      azit_name: azit.azitName,
+      user_id: Number(highlight.userId),
+      nickname: highlight.user.nickname,
+      content: highlight.content,
+      visibility: highlight.isPublic ? 'PUBLIC' : 'PRIVATE',
+      media_count: highlight.medias.length,
+      medias: mediaDtos,
+      like_count: likeCount,
+      comment_count: commentCount,
+      is_liked: isLiked,
+      created_at: highlight.createdAt,
+      updated_at: highlight.updatedAt,
     };
 
     return ok(response);

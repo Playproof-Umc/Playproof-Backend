@@ -3,7 +3,7 @@
 export class HighlightMediaResDto {
   /**
    * 하이라이트 미디어 ID
-   * @example 1001
+   * @example 1
    */
   highlight_media_id!: number;
 
@@ -108,7 +108,7 @@ export class HighlightCreateResDto {
 export class HighlightListItemResDto {
   /**
    * 하이라이트 ID
-   * @example 5001
+   * @example 1
    */
   highlight_id!: number;
 
@@ -220,4 +220,89 @@ export class GetHighlightListResDto {
    * 페이지네이션 정보
    */
   pagination!: HighlightListPaginationResDto;
+}
+
+export class GetHighlightDetailResDto {
+  /**
+   * 하이라이트 ID
+   * @example 1
+   */
+  highlight_id!: number;
+
+  /**
+   * 아지트 ID
+   * @example 1
+   */
+  azit_id!: number;
+
+  /**
+   * 아지트 이름
+   * @example "Playproof 공식 클랜"
+   */
+  azit_name!: string;
+
+  /**
+   * 사용자 ID
+   * @example 1001
+   */
+  user_id!: number;
+
+  /**
+   * 닉네임
+   * @example "채나"
+   */
+  nickname!: string | null;
+
+  /**
+   * 하이라이트 설명
+   * @example "멋진 킬 장면입니다"
+   */
+  content!: string | null;
+
+  /**
+   * 공개 범위
+   * @example "PRIVATE"
+   */
+  visibility!: string;
+
+  /**
+   * 미디어 개수
+   * @example 2
+   */
+  media_count!: number;
+
+  /**
+   * 미디어 목록
+   */
+  medias!: HighlightMediaResDto[];
+
+  /**
+   * 좋아요 수
+   * @example 5
+   */
+  like_count!: number;
+
+  /**
+   * 댓글 수
+   * @example 2
+   */
+  comment_count!: number;
+
+  /**
+   * 현재 사용자가 좋아요를 눌렀는지 여부
+   * @example false
+   */
+  is_liked!: boolean;
+
+  /**
+   * 생성 일시
+   * @example "2025-01-09T14:30:00Z"
+   */
+  created_at!: Date;
+
+  /**
+   * 수정 일시
+   * @example "2025-01-09T14:30:00Z"
+   */
+  updated_at!: Date;
 }

@@ -1918,6 +1918,143 @@
 					}
 				]
 			},
+			"GetHighlightDetailResDto": {
+				"properties": {
+					"highlight_id": {
+						"type": "number",
+						"format": "double",
+						"description": "하이라이트 ID",
+						"example": 5001
+					},
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"description": "아지트 ID",
+						"example": 1
+					},
+					"azit_name": {
+						"type": "string",
+						"description": "아지트 이름",
+						"example": "Playproof 공식 클랜"
+					},
+					"user_id": {
+						"type": "number",
+						"format": "double",
+						"description": "사용자 ID",
+						"example": 1001
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"description": "닉네임",
+						"example": "채나"
+					},
+					"content": {
+						"type": "string",
+						"nullable": true,
+						"description": "하이라이트 설명",
+						"example": "멋진 킬 장면입니다"
+					},
+					"visibility": {
+						"type": "string",
+						"description": "공개 범위",
+						"example": "PRIVATE"
+					},
+					"media_count": {
+						"type": "number",
+						"format": "double",
+						"description": "미디어 개수",
+						"example": 2
+					},
+					"medias": {
+						"items": {
+							"$ref": "#/components/schemas/HighlightMediaResDto"
+						},
+						"type": "array",
+						"description": "미디어 목록"
+					},
+					"like_count": {
+						"type": "number",
+						"format": "double",
+						"description": "좋아요 수",
+						"example": 5
+					},
+					"comment_count": {
+						"type": "number",
+						"format": "double",
+						"description": "댓글 수",
+						"example": 2
+					},
+					"is_liked": {
+						"type": "boolean",
+						"description": "현재 사용자가 좋아요를 눌렀는지 여부",
+						"example": false
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"description": "생성 일시",
+						"example": "2025-01-09T14:30:00Z"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"description": "수정 일시",
+						"example": "2025-01-09T14:30:00Z"
+					}
+				},
+				"required": [
+					"highlight_id",
+					"azit_id",
+					"azit_name",
+					"user_id",
+					"nickname",
+					"content",
+					"visibility",
+					"media_count",
+					"medias",
+					"like_count",
+					"comment_count",
+					"is_liked",
+					"created_at",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_GetHighlightDetailResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/GetHighlightDetailResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_GetHighlightDetailResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_GetHighlightDetailResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"AzitCreateResDto": {
 				"properties": {
 					"azit_id": {
@@ -3172,6 +3309,102 @@
 						"required": false,
 						"schema": {
 							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/azits/{azit_id}/highlights/{highlight_id}": {
+			"get": {
+				"operationId": "GetHighlightDetail",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_GetHighlightDetailResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"description": "하이라이트 세부 조회\r\n특정 하이라이트의 세부 정보를 조회합니다.",
+				"tags": [
+					"Highlight"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "path",
+						"name": "highlight_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
 						}
 					}
 				]
