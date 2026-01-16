@@ -18,10 +18,10 @@ import { AzitScheduleRepository } from '../repositories/azit-schedule.repository
 import { AzitUserRepository } from '../repositories/azit-user.repository';
 import {
   checkAzitAndMember,
-  checkScheduleAndInAzit,
   checkScheduleAndInAzitAndCreator,
   validateScheduleTimes,
 } from '../utils/azit.validator';
+import { formatDate } from '../utils/azit.util';
 import {
   created,
   noContent,
@@ -39,18 +39,6 @@ export class AzitScheduleService {
     @inject(AzitScheduleParticipationRepository)
     private azitScheduleParticipationRepository: AzitScheduleParticipationRepository,
   ) {}
-
-  /**
-   * 날짜 포맷팅 유틸리티 (한국 시간으로 변환)
-   * @param date - 포맷팅할 날짜
-   * @returns "YYYY-MM-DDTHH:mm:ss" 형식의 문자열
-   */
-  private formatDate(date: Date): string {
-    const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-    return kstDate.toISOString().substring(0, 19);
-  }
-
-  // ----------------------------------------------------------------------------------------------------
 
   async createSchedule(
     userId: bigint,
@@ -103,9 +91,9 @@ export class AzitScheduleService {
       schedule_id: Number(schedule.id),
       title: schedule.title,
       max_participants: schedule.maxParticipants,
-      game_start_at: this.formatDate(schedule.gameStartAt),
-      game_end_at: this.formatDate(schedule.gameEndAt),
-      recruitment_end_at: this.formatDate(schedule.recruitmentEndAt),
+      game_start_at: formatDate(schedule.gameStartAt),
+      game_end_at: formatDate(schedule.gameEndAt),
+      recruitment_end_at: formatDate(schedule.recruitmentEndAt),
     });
   }
 
@@ -162,9 +150,9 @@ export class AzitScheduleService {
           schedule_id: Number(schedule.id),
           title: schedule.title,
           max_participants: schedule.maxParticipants,
-          game_start_at: this.formatDate(schedule.gameStartAt),
-          game_end_at: this.formatDate(schedule.gameEndAt),
-          recruitment_end_at: this.formatDate(schedule.recruitmentEndAt),
+          game_start_at: formatDate(schedule.gameStartAt),
+          game_end_at: formatDate(schedule.gameEndAt),
+          recruitment_end_at: formatDate(schedule.recruitmentEndAt),
           current_participants: schedule.participations.length,
           is_participated: isParticipated,
           participants,
@@ -176,9 +164,7 @@ export class AzitScheduleService {
     let nextCursor: string | null = null;
     if (hasNext && mappedSchedules.length > 0) {
       const lastSchedule = schedules[mappedSchedules.length - 1];
-      nextCursor = `${this.formatDate(lastSchedule.gameStartAt)}|${
-        lastSchedule.id
-      }`;
+      nextCursor = `${formatDate(lastSchedule.gameStartAt)}|${lastSchedule.id}`;
     }
 
     return ok({
@@ -276,9 +262,9 @@ export class AzitScheduleService {
       schedule_id: Number(updatedSchedule.id),
       title: updatedSchedule.title,
       max_participants: updatedSchedule.maxParticipants,
-      game_start_at: this.formatDate(updatedSchedule.gameStartAt),
-      game_end_at: this.formatDate(updatedSchedule.gameEndAt),
-      recruitment_end_at: this.formatDate(updatedSchedule.recruitmentEndAt),
+      game_start_at: formatDate(updatedSchedule.gameStartAt),
+      game_end_at: formatDate(updatedSchedule.gameEndAt),
+      recruitment_end_at: formatDate(updatedSchedule.recruitmentEndAt),
     });
   }
 
