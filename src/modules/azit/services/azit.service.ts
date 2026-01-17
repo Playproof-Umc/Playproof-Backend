@@ -2,10 +2,10 @@
 import { injectable, inject } from 'tsyringe';
 import { AzitUserRole } from '@prisma/client';
 
-import { AzitRepository } from '../repositories/azit.repository';
-import { AzitUserRepository } from '../repositories/azit-user.repository';
 import { AzitCreateReqDto, AzitUpdateReqDto } from '../dtos/azit.req.dto';
 import { AzitResDto, AzitListResDto } from '../dtos/azit.res.dto';
+import { AzitRepository } from '../repositories/azit.repository';
+import { AzitUserRepository } from '../repositories/azit-user.repository';
 import {
   checkAzitNameDuplicate,
   checkAzitAndMemberAndHost,
@@ -104,7 +104,7 @@ export class AzitService {
 
     // 2. 제목 변경 확인 (null이면 유지, 값이 있으면 변경)
     let azitName = azit.azitName;
-    if (dto.azit_name !== null && dto.azit_name !== undefined) {
+    if (dto.azit_name != null) {
       const nameCheckResult = await checkAzitNameDuplicate(
         this.azitUserRepository,
         userId,

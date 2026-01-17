@@ -93,7 +93,7 @@ export class AzitScheduleService {
   async getSchedules(
     userId: bigint,
     azitId: bigint,
-    cursor: string | undefined,
+    cursor?: string,
     size: number = 10,
   ): Promise<Result<AzitScheduleListResDto>> {
     // 1. 아지트 존재, 멤버 존재 확인
@@ -173,52 +173,33 @@ export class AzitScheduleService {
     }
     const schedule = scheduleCheckResult.data;
 
-    // 5. 업데이트할 데이터 (undefined, null이면 기존 값 유지)
-    const updateData: {
-      title?: string;
-      maxParticipants?: number;
-      gameStartAt?: Date;
-      gameEndAt?: Date;
-      recruitmentEndAt?: Date;
-    } = {};
+    // 2. 업데이트할 데이터 (undefined, null이면 기존 값 유지)
+    const updateData = {
+      ...(dto.title != null && { title: dto.title }),
+      ...(dto.max_participants != null && {
+        maxParticipants: dto.max_participants,
+      }),
+      ...(dto.game_start_at != null && {
+        gameStartAt: new Date(dto.game_start_at),
+      }),
+      ...(dto.game_end_at != null && {
+        gameEndAt: new Date(dto.game_end_at),
+      }),
+      ...(dto.recruitment_end_at != null && {
+        recruitmentEndAt: new Date(dto.recruitment_end_at),
+      }),
+    };
 
-    if (dto.title !== undefined && dto.title !== null) {
-      updateData.title = dto.title;
-    }
-    if (dto.max_participants !== undefined && dto.max_participants !== null) {
-      updateData.maxParticipants = dto.max_participants;
-    }
-    if (dto.game_start_at !== undefined && dto.game_start_at !== null) {
-      updateData.gameStartAt = new Date(dto.game_start_at);
-    }
-    if (dto.game_end_at !== undefined && dto.game_end_at !== null) {
-      updateData.gameEndAt = new Date(dto.game_end_at);
-    }
-    if (
-      dto.recruitment_end_at !== undefined &&
-      dto.recruitment_end_at !== null
-    ) {
-      updateData.recruitmentEndAt = new Date(dto.recruitment_end_at);
-    }
-
-    // 6. 시간 유효성 검증 (하나라도 값이 있으면 검사)
+    // 3. 시간 유효성 검증 (하나라도 값이 있으면 검사)
     if (
       updateData.gameStartAt !== undefined ||
       updateData.gameEndAt !== undefined ||
       updateData.recruitmentEndAt !== undefined
     ) {
-      const gameStartAt =
-        updateData.gameStartAt !== undefined
-          ? updateData.gameStartAt
-          : schedule.gameStartAt;
-      const gameEndAt =
-        updateData.gameEndAt !== undefined
-          ? updateData.gameEndAt
-          : schedule.gameEndAt;
+      const gameStartAt = updateData.gameStartAt ?? schedule.gameStartAt;
+      const gameEndAt = updateData.gameEndAt ?? schedule.gameEndAt;
       const recruitmentEndAt =
-        updateData.recruitmentEndAt !== undefined
-          ? updateData.recruitmentEndAt
-          : schedule.recruitmentEndAt;
+        updateData.recruitmentEndAt ?? schedule.recruitmentEndAt;
 
       const timeError = validateScheduleTimes(
         gameStartAt,
@@ -230,7 +211,7 @@ export class AzitScheduleService {
       }
     }
 
-    // 7. 일정 수정
+    // 4. 일정 수정
     const updatedSchedule = await this.azitScheduleRepository.updateSchedule(
       scheduleId,
       updateData,
