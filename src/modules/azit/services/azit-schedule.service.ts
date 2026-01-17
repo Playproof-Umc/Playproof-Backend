@@ -111,8 +111,8 @@ export class AzitScheduleService {
     const { schedules, hasNext } =
       await this.azitScheduleRepository.findSchedulesByAzitId(
         azitId,
-        cursor,
         size,
+        cursor,
       );
 
     // 3. 사용자의 AzitUser ID 조회 (참여 여부 확인용)
