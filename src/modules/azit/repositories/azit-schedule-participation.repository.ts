@@ -37,21 +37,25 @@ export class AzitScheduleParticipationRepository {
   }
 
   // ----------------------------------------------------------------------------------------------------
-  // 조회: memberId와 scheduleId
+  // 존재 여부 확인
   // ----------------------------------------------------------------------------------------------------
 
-  async findParticipation(
+  async existsParticipation(
     memberId: bigint,
     scheduleId: bigint,
-  ): Promise<AzitScheduleParticipation | null> {
-    return prisma.azitScheduleParticipation.findUnique({
+  ): Promise<boolean> {
+    const participation = await prisma.azitScheduleParticipation.findUnique({
       where: {
         memberId_scheduleId: {
           memberId,
           scheduleId,
         },
       },
+      select: {
+        memberId: true,
+      },
     });
+    return participation !== null;
   }
 
   // ----------------------------------------------------------------------------------------------------

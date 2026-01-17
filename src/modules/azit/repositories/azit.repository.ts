@@ -28,7 +28,7 @@ export class AzitRepository {
   // 조회: azitId
   // ----------------------------------------------------------------------------------------------------
 
-  async findAzitById(azitId: bigint): Promise<Azit> {
+  async findAzitById(azitId: bigint): Promise<Azit | null> {
     return prisma.azit.findUnique({
       where: {
         id: azitId,

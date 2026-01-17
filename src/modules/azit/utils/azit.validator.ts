@@ -72,7 +72,7 @@ async function checkAzitMemberExists(
 async function checkScheduleExists(
   azitScheduleRepository: AzitScheduleRepository,
   scheduleId: bigint,
-): Promise<Result<any>> {
+): Promise<Result<AzitSchedule>> {
   const schedule = await azitScheduleRepository.findScheduleById(scheduleId);
   if (!schedule) {
     return notFound({
@@ -361,4 +361,78 @@ export async function checkScheduleAndInAzitAndCreator(
   }
 
   return scheduleCheckResult;
+}
+
+/**
+ * 참여 존재 여부 확인
+ * @param memberId - 멤버 ID
+ * @param scheduleId - 일정 ID
+ * @param azitScheduleParticipationRepository - AzitScheduleParticipationRepository 인스턴스
+ * @returns 참여가 있으면 null, 없으면 Result<never>
+ */
+export async function checkParticipationExists(
+  memberId: bigint,
+  scheduleId: bigint,
+  azitScheduleParticipationRepository: AzitScheduleParticipationRepository,
+): Promise<Result<never> | null> {
+  const isParticipated =
+    await azitScheduleParticipationRepository.existsParticipation(
+      memberId,
+      scheduleId,
+    );
+  if (!isParticipated) {
+    return notFound({
+      message: '참여하지 않은 일정입니다.',
+      errorCode: AzitErrorCode.NOT_FOUND.PARTICIPATION_NOT_FOUND,
+    });
+  }
+
+  return null;
+}
+
+/**
+ * 일정 참여 가능 여부 검증
+ * @param memberId - 멤버 ID
+ * @param schedule - 일정 정보
+ * @param azitScheduleParticipationRepository - AzitScheduleParticipationRepository 인스턴스
+ * @returns 성공 시 null, 실패 시 Result<never>
+ */
+export async function validateParticipation(
+  memberId: bigint,
+  schedule: AzitSchedule,
+  azitScheduleParticipationRepository: AzitScheduleParticipationRepository,
+): Promise<Result<never> | null> {
+  // 모집 마감 시간 확인
+  const now = new Date();
+  if (schedule.recruitmentEndAt < now) {
+    return badRequest({
+      message: '모집 마감 시간이 지났습니다.',
+      errorCode: AzitErrorCode.BAD_REQUEST.PARTICIPATION_RECRUITMENT_ENDED,
+    });
+  }
+
+  // 최대 인원 확인
+  const currentParticipants =
+    await azitScheduleParticipationRepository.countParticipations(schedule.id);
+  if (currentParticipants >= schedule.maxParticipants) {
+    return conflict({
+      message: '최대 참여 인원을 초과했습니다.',
+      errorCode: AzitErrorCode.CONFLICT.PARTICIPATION_MAX_PARTICIPANTS_EXCEEDED,
+    });
+  }
+
+  // 이미 참여했는지 확인
+  const participationCheckResult = await checkParticipationExists(
+    memberId,
+    schedule.id,
+    azitScheduleParticipationRepository,
+  );
+  if (participationCheckResult === null) {
+    return conflict({
+      message: '이미 참여한 일정입니다.',
+      errorCode: AzitErrorCode.CONFLICT.PARTICIPATION_ALREADY_PARTICIPATED,
+    });
+  }
+
+  return null;
 }

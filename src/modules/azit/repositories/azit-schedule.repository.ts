@@ -3,9 +3,14 @@ import { singleton } from 'tsyringe';
 import { AzitSchedule } from '@prisma/client';
 
 import { prisma } from '../../../common/config/database';
+import { parseScheduleCursor } from '../utils/azit.util';
 
 @singleton()
 export class AzitScheduleRepository {
+  // ----------------------------------------------------------------------------------------------------
+  // 생성
+  // ----------------------------------------------------------------------------------------------------
+
   async createSchedule(
     azitId: bigint,
     title: string,
@@ -26,6 +31,10 @@ export class AzitScheduleRepository {
     });
   }
 
+  // ----------------------------------------------------------------------------------------------------
+  // 조회: azitId
+  // ----------------------------------------------------------------------------------------------------
+
   /**
    * 커서 기반 페이지네이션으로 일정 목록 조회
    * @param azitId - 아지트 ID
@@ -35,30 +44,21 @@ export class AzitScheduleRepository {
    */
   async findSchedulesByAzitId(
     azitId: bigint,
-    cursor: string | undefined,
     size: number,
+    cursor?: string,
   ): Promise<{
     schedules: any[];
     hasNext: boolean;
   }> {
-    // 커서 파싱
-    let cursorGameStartAt: Date | undefined = undefined;
-    let cursorScheduleId: bigint | undefined = undefined;
-
-    if (cursor) {
-      const [gameStartAtStr, scheduleIdStr] = cursor.split('|');
-      if (gameStartAtStr && scheduleIdStr) {
-        cursorGameStartAt = new Date(gameStartAtStr);
-        cursorScheduleId = BigInt(scheduleIdStr);
-      }
-    }
-
     // WHERE 조건 구성
     const where: any = {
       azitId,
     };
 
-    if (cursorGameStartAt && cursorScheduleId) {
+    // 커서 존재할 때
+    if (cursor) {
+      const { gameStartAt: cursorGameStartAt, scheduleId: cursorScheduleId } =
+        parseScheduleCursor(cursor);
       where.OR = [
         {
           gameStartAt: {
@@ -136,25 +136,21 @@ export class AzitScheduleRepository {
     };
   }
 
-  async findScheduleById(scheduleId: bigint): Promise<any> {
+  // ----------------------------------------------------------------------------------------------------
+  // 조회: scheduleId
+  // ----------------------------------------------------------------------------------------------------
+
+  async findScheduleById(scheduleId: bigint): Promise<AzitSchedule | null> {
     return prisma.azitSchedule.findUnique({
       where: {
         id: scheduleId,
       },
-      include: {
-        participations: {
-          where: {
-            role: 'CREATOR',
-          },
-          select: {
-            memberId: true,
-            role: true,
-          },
-          take: 1,
-        },
-      },
     });
   }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 수정
+  // ----------------------------------------------------------------------------------------------------
 
   async updateSchedule(
     scheduleId: bigint,
@@ -166,31 +162,19 @@ export class AzitScheduleRepository {
       recruitmentEndAt?: Date;
     },
   ): Promise<AzitSchedule> {
-    const updateData: any = {};
-
-    if (data.title !== undefined) {
-      updateData.title = data.title;
-    }
-    if (data.maxParticipants !== undefined) {
-      updateData.maxParticipants = data.maxParticipants;
-    }
-    if (data.gameStartAt !== undefined) {
-      updateData.gameStartAt = data.gameStartAt;
-    }
-    if (data.gameEndAt !== undefined) {
-      updateData.gameEndAt = data.gameEndAt;
-    }
-    if (data.recruitmentEndAt !== undefined) {
-      updateData.recruitmentEndAt = data.recruitmentEndAt;
-    }
-
     return prisma.azitSchedule.update({
       where: {
         id: scheduleId,
       },
-      data: updateData,
+      data: {
+        ...data,
+      },
     });
   }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 삭제
+  // ----------------------------------------------------------------------------------------------------
 
   async deleteSchedule(scheduleId: bigint): Promise<AzitSchedule> {
     return prisma.azitSchedule.delete({
