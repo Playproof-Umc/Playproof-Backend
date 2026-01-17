@@ -94,9 +94,12 @@ export class AzitScheduleRepository {
       ],
       include: {
         participations: {
-          include: {
+          select: {
+            memberId: true,
             member: {
-              include: {
+              select: {
+                id: true,
+                userId: true,
                 user: {
                   select: {
                     id: true,
@@ -105,14 +108,14 @@ export class AzitScheduleRepository {
                       where: {
                         isEquipped: true,
                       },
-                      include: {
+                      take: 1,
+                      select: {
                         avatar: {
                           select: {
                             avatarUrl: true,
                           },
                         },
                       },
-                      take: 1,
                     },
                   },
                 },

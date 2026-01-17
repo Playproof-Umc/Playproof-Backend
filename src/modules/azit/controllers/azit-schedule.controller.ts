@@ -23,7 +23,7 @@ import {
   AzitScheduleUpdateReqDto,
 } from '../dtos/azit-schedule.req.dto';
 import {
-  AzitScheduleCreateResDto,
+  AzitScheduleResDto,
   AzitScheduleListResDto,
 } from '../dtos/azit-schedule.res.dto';
 import { AzitScheduleService } from '../services/azit-schedule.service';
@@ -57,7 +57,7 @@ export class AzitScheduleController extends Controller {
     @Request() req: any,
     @Path() azit_id: number,
     @Body() requestBody: AzitScheduleCreateReqDto,
-  ): Promise<Result<AzitScheduleCreateResDto>> {
+  ): Promise<Result<AzitScheduleResDto>> {
     const userId = BigInt(req.user.id);
     const azitId = BigInt(azit_id);
 
@@ -111,7 +111,7 @@ export class AzitScheduleController extends Controller {
     @Path() azit_id: number,
     @Path() schedule_id: number,
     @Body() requestBody: AzitScheduleUpdateReqDto,
-  ): Promise<Result<AzitScheduleCreateResDto>> {
+  ): Promise<Result<AzitScheduleResDto>> {
     const userId = BigInt(req.user.id);
     const azitId = BigInt(azit_id);
     const scheduleId = BigInt(schedule_id);

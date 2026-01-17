@@ -7,8 +7,8 @@ import {
   AzitScheduleUpdateReqDto,
 } from '../dtos/azit-schedule.req.dto';
 import {
-  AzitScheduleCreateResDto,
-  AzitScheduleItemResDto,
+  AzitScheduleResDto,
+  AzitScheduleDetailResDto,
   AzitScheduleListResDto,
   AzitScheduleParticipantResDto,
 } from '../dtos/azit-schedule.res.dto';
@@ -44,7 +44,7 @@ export class AzitScheduleService {
     userId: bigint,
     azitId: bigint,
     dto: AzitScheduleCreateReqDto,
-  ): Promise<Result<AzitScheduleCreateResDto>> {
+  ): Promise<Result<AzitScheduleResDto>> {
     // 1. 아지트 존재, 멤버 존재 확인
     const memberCheckResult = await checkAzitAndMember(
       this.azitRepository,
@@ -87,14 +87,7 @@ export class AzitScheduleService {
       AzitScheduleRole.CREATOR,
     );
 
-    return created({
-      schedule_id: Number(schedule.id),
-      title: schedule.title,
-      max_participants: schedule.maxParticipants,
-      game_start_at: formatDate(schedule.gameStartAt),
-      game_end_at: formatDate(schedule.gameEndAt),
-      recruitment_end_at: formatDate(schedule.recruitmentEndAt),
-    });
+    return created(AzitScheduleResDto.from(schedule));
   }
 
   async getSchedules(
@@ -126,37 +119,24 @@ export class AzitScheduleService {
     const azitUserId = memberCheckResult.data.id;
 
     // 4. DTO 매핑
-    const mappedSchedules: AzitScheduleItemResDto[] = schedules.map(
+    const mappedSchedules: AzitScheduleDetailResDto[] = schedules.map(
       (schedule: any) => {
         // 참여자 정보 매핑
         const participants: AzitScheduleParticipantResDto[] =
-          schedule.participations.map((participation: any) => {
-            const user = participation.member.user;
-            const avatarUrl = user.userAvatars[0]?.avatar?.avatarUrl || null;
-
-            return {
-              user_id: Number(user.id),
-              nickname: user.nickname,
-              avatar_url: avatarUrl,
-            };
-          });
+          schedule.participations.map((participation: any) =>
+            AzitScheduleParticipantResDto.from(participation),
+          );
 
         // 사용자 참여 여부 확인
         const isParticipated = schedule.participations.some(
-          (p: any) => p.member.id === azitUserId,
+          (p: any) => p.memberId === azitUserId,
         );
 
-        return {
-          schedule_id: Number(schedule.id),
-          title: schedule.title,
-          max_participants: schedule.maxParticipants,
-          game_start_at: formatDate(schedule.gameStartAt),
-          game_end_at: formatDate(schedule.gameEndAt),
-          recruitment_end_at: formatDate(schedule.recruitmentEndAt),
-          current_participants: schedule.participations.length,
-          is_participated: isParticipated,
+        return AzitScheduleDetailResDto.fromDetail(
+          schedule,
+          isParticipated,
           participants,
-        };
+        );
       },
     );
 
@@ -167,11 +147,9 @@ export class AzitScheduleService {
       nextCursor = `${formatDate(lastSchedule.gameStartAt)}|${lastSchedule.id}`;
     }
 
-    return ok({
-      schedules: mappedSchedules,
-      nextCursor,
-      hasNext,
-    });
+    return ok(
+      AzitScheduleListResDto.from(mappedSchedules, nextCursor, hasNext),
+    );
   }
 
   async updateSchedule(
@@ -179,7 +157,7 @@ export class AzitScheduleService {
     azitId: bigint,
     scheduleId: bigint,
     dto: AzitScheduleUpdateReqDto,
-  ): Promise<Result<AzitScheduleCreateResDto>> {
+  ): Promise<Result<AzitScheduleResDto>> {
     // 1. 일정 존재, 해당 아지트의 일정, 생성자 권한 확인
     const scheduleCheckResult = await checkScheduleAndInAzitAndCreator(
       this.azitUserRepository,
@@ -258,14 +236,7 @@ export class AzitScheduleService {
       updateData,
     );
 
-    return ok({
-      schedule_id: Number(updatedSchedule.id),
-      title: updatedSchedule.title,
-      max_participants: updatedSchedule.maxParticipants,
-      game_start_at: formatDate(updatedSchedule.gameStartAt),
-      game_end_at: formatDate(updatedSchedule.gameEndAt),
-      recruitment_end_at: formatDate(updatedSchedule.recruitmentEndAt),
-    });
+    return ok(AzitScheduleResDto.from(updatedSchedule));
   }
 
   async deleteSchedule(
