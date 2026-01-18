@@ -7,7 +7,7 @@ describe('CommunityPostService', () => {
   let communityPostRepository: jest.Mocked<CommunityPostRepository>;
 
   beforeEach(() => {
-    // 1. 레포지토리 및 내부 Prisma 속성 Mocking
+    // 1. 레포지토리 Mock 설정
     communityPostRepository = {
       findByGameId: jest.fn(),
       findBestPosts: jest.fn(),
@@ -16,31 +16,30 @@ describe('CommunityPostService', () => {
       update: jest.fn(),
       delete: jest.fn(),
       countByGameId: jest.fn(),
-      communityPost: {
-        findFirst: jest.fn(),
-      },
+      findGameById: jest.fn(),
     } as any;
 
     communityPostService = new CommunityPostService(communityPostRepository);
     jest.clearAllMocks();
   });
 
-  // 2. 게시물 등록 테스트 (createPost)
+  // 2. 게시글 등록 테스트
   describe('createPost (게시글 등록)', () => {
     const userId = 1;
     const dto = { game_id: 1, title: '테스트', content: '내용' };
 
-    it('실패: 유효하지 않은 게임 카테고리인 경우 404를 반환한다', async () => {
-      (communityPostRepository.communityPost.findFirst as jest.Mock).mockResolvedValue(null);
+    it('실패: 존재하지 않는 게임 카테고리인 경우 404를 반환한다', async () => {
+      communityPostRepository.findGameById.mockResolvedValue(null);
       const result = await communityPostService.createPost(userId, dto as any);
       expect(result.statusCode).toBe(404);
     });
 
-    it('성공: 게임이 유효하면 게시글을 등록하고 201을 반환한다', async () => {
-      (communityPostRepository.communityPost.findFirst as jest.Mock).mockResolvedValue({ id: BigInt(1) });
+    it('성공: 게임이 존재하면 게시글을 등록하고 201을 반환한다', async () => {
+      communityPostRepository.findGameById.mockResolvedValue({ id: BigInt(1) } as any);
       communityPostRepository.save.mockResolvedValue({
-        id: BigInt(100), userId: BigInt(1), gameId: BigInt(1), title: '테스트', content: '내용',
-        user: { nickname: '시영' }, medias: [], _count: { comments: 0, likes: 0 },
+        id: BigInt(100), userId: BigInt(1), gameId: BigInt(1),
+        title: '테스트', content: '내용', user: { nickname: '시영' },
+        medias: [], _count: { comments: 0, likes: 0 },
         createdAt: new Date(), updatedAt: new Date()
       } as any);
       const result = await communityPostService.createPost(userId, dto as any);
@@ -48,21 +47,19 @@ describe('CommunityPostService', () => {
     });
   });
 
-  // 3. 게임별 목록 조회 테스트 (getPostList)
-  describe('getPostList (게임별 목록 조회)', () => {
+  // 3. 게임별 목록 조회 테스트
+  describe('getPostList (목록 조회)', () => {
     it('성공: 게시글 목록과 페이징 정보를 반환한다', async () => {
       communityPostRepository.findByGameId.mockResolvedValue([]);
-      communityPostRepository.countByGameId.mockResolvedValue(10);
+      communityPostRepository.countByGameId.mockResolvedValue(5);
       const result = await communityPostService.getPostList(1, 1, 10);
       expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.meta.total_count).toBe(10);
-      }
+      if (isSuccess(result)) expect(result.data.meta.total_count).toBe(5);
     });
   });
 
-  // 4. 베스트 목록 조회 테스트 (getBestPostList)
-  describe('getBestPostList (베스트 목록 조회)', () => {
+  // 4. 베스트 목록 조회 테스트
+  describe('getBestPostList (베스트 조회)', () => {
     it('성공: 베스트 게시글 목록을 반환한다', async () => {
       communityPostRepository.findBestPosts.mockResolvedValue([]);
       const result = await communityPostService.getBestPostList(1);
@@ -71,19 +68,19 @@ describe('CommunityPostService', () => {
     });
   });
 
-  // 5. 상세 조회 테스트 (getPostDetail)
+  // 5. 상세 조회 테스트
   describe('getPostDetail (상세 조회)', () => {
-    it('실패: 게시글이 없으면 404를 반환한다', async () => {
+    it('실패: 게시글이 존재하지 않으면 404를 반환한다', async () => {
       communityPostRepository.findById.mockResolvedValue(null);
       const result = await communityPostService.getPostDetail(999);
       expect(result.statusCode).toBe(404);
     });
 
-    it('성공: 게시글 정보를 DTO 규격에 맞춰 반환한다', async () => {
+    it('성공: 게시글 정보를 반환한다', async () => {
       communityPostRepository.findById.mockResolvedValue({
         id: BigInt(1), userId: BigInt(1), user: { nickname: '시영' },
         gameId: BigInt(1), title: '제목', content: '내용',
-        medias: [], _count: { comments: 5, likes: 10 },
+        medias: [], _count: { comments: 0, likes: 0 },
         createdAt: new Date(), updatedAt: new Date()
       } as any);
       const result = await communityPostService.getPostDetail(1);
@@ -91,10 +88,10 @@ describe('CommunityPostService', () => {
     });
   });
 
-  // 6. 수정 테스트 (updatePost)
+  // 6. 수정 테스트
   describe('updatePost (게시글 수정)', () => {
     const userId = 1;
-    it('실패: 작성자가 아니면 403(Forbidden) 에러를 반환한다', async () => {
+    it('실패: 작성자가 아니면 403을 반환한다', async () => {
       communityPostRepository.findById.mockResolvedValue({ userId: BigInt(99) } as any);
       const result = await communityPostService.updatePost(userId, 100, { title: '수정' });
       expect(result.statusCode).toBe(403);
@@ -113,9 +110,15 @@ describe('CommunityPostService', () => {
     });
   });
 
-  // 7. 삭제 테스트 (deletePost)
+  // 7. 삭제 테스트
   describe('deletePost (게시글 삭제)', () => {
-    it('성공: 본인 확인 후 게시글을 삭제한다', async () => {
+    it('실패: 게시글이 없으면 404를 반환한다', async () => {
+      communityPostRepository.findById.mockResolvedValue(null);
+      const result = await communityPostService.deletePost(1, 999);
+      expect(result.statusCode).toBe(404);
+    });
+
+    it('성공: 본인 글을 삭제한다', async () => {
       const userId = 1;
       communityPostRepository.findById.mockResolvedValue({ userId: BigInt(userId) } as any);
       const result = await communityPostService.deletePost(userId, 100);
