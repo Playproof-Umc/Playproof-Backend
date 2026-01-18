@@ -11,6 +11,7 @@
     "dev": "concurrently \"nodemon src/server.ts\" \"npx tsoa spec-and-routes --watch\"",
     "start": "node build/src/server.js",
     "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
     "tsoa": "tsoa spec",
     "tsoa:gen": "tsoa spec && tsoa routes"
   },
@@ -65,5 +66,8 @@
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }
