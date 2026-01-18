@@ -2,9 +2,9 @@ import http from "http";
 import { Server, Socket } from "socket.io";
 import * as jose from "jose";
 import { container } from "tsyringe";
-import { authConfig } from "../common/config/auth";
-import { ChatService } from "../modules/chat/service/chat.service";
-import { isSuccess } from "../common/types/result.type";
+import { authConfig } from "./common/config/auth";
+import { ChatService } from "./modules/chat/service/chat.service";
+import { isSuccess } from "./common/types/result.type";
 
 type SocketAuthData = {
   userId: number;

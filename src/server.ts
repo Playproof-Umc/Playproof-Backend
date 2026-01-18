@@ -3,7 +3,7 @@ import "dotenv/config";
 import http from "http";
 import { app } from "./app";
 import { redisClient } from "./common/config/database";
-import { initSocketServer } from "./realtime/socket";
+import { initSocketServer } from "./socket";
 
 const PORT = process.env.PORT || 3000;
 
