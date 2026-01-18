@@ -22,6 +22,7 @@ import {
   validateScheduleTimes,
 } from '../utils/azit.validator';
 import { formatDate } from '../utils/azit.util';
+import { prisma } from '../../../common/config/database';
 import {
   created,
   noContent,
@@ -70,22 +71,29 @@ export class AzitScheduleService {
       return timeError;
     }
 
-    // 3. 일정 생성
-    const schedule = await this.azitScheduleRepository.createSchedule(
-      azitId,
-      dto.title,
-      dto.max_participants,
-      gameStartAt,
-      gameEndAt,
-      recruitmentEndAt,
-    );
+    // 3. 일정 생성 및 참여 추가 (트랜잭션)
+    const schedule = await prisma.$transaction(async (tx) => {
+      // 일정 생성
+      const createdSchedule = await this.azitScheduleRepository.createSchedule(
+        azitId,
+        dto.title,
+        dto.max_participants,
+        gameStartAt,
+        gameEndAt,
+        recruitmentEndAt,
+        tx,
+      );
 
-    // 4. 생성자를 CREATOR로 참여 추가
-    await this.azitScheduleParticipationRepository.createParticipation(
-      memberCheckResult.data.id,
-      schedule.id,
-      AzitScheduleRole.CREATOR,
-    );
+      // 생성자를 CREATOR로 참여 추가
+      await this.azitScheduleParticipationRepository.createParticipation(
+        memberCheckResult.data.id,
+        createdSchedule.id,
+        AzitScheduleRole.CREATOR,
+        tx,
+      );
+
+      return createdSchedule;
+    });
 
     return created(AzitScheduleResDto.from(schedule));
   }

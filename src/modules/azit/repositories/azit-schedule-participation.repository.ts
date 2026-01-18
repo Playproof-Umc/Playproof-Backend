@@ -14,8 +14,10 @@ export class AzitScheduleParticipationRepository {
     memberId: bigint,
     scheduleId: bigint,
     role: AzitScheduleRole = AzitScheduleRole.PARTICIPANT,
+    tx?: any,
   ): Promise<AzitScheduleParticipation> {
-    return prisma.azitScheduleParticipation.create({
+    const client = tx || prisma;
+    return client.azitScheduleParticipation.create({
       data: {
         memberId,
         scheduleId,

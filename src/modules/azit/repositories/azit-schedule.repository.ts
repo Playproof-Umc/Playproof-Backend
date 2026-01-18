@@ -18,8 +18,10 @@ export class AzitScheduleRepository {
     gameStartAt: Date,
     gameEndAt: Date,
     recruitmentEndAt: Date,
+    tx?: any,
   ): Promise<AzitSchedule> {
-    return prisma.azitSchedule.create({
+    const client = tx || prisma;
+    return client.azitSchedule.create({
       data: {
         azitId,
         title,
