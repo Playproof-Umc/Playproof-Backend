@@ -24,6 +24,7 @@ export class AzitUpdateReqDto {
    * @example true
    * @example false
    */
+  @IsOptional()
   @IsBoolean()
-  is_delete_icon: boolean = false;
+  is_delete_icon?: boolean;
 }

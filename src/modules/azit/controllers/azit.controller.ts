@@ -46,8 +46,8 @@ export class AzitController extends Controller {
   @Post('/')
   public async createAzit(
     @Request() req: any,
-    @FormField('azit_name') azit_name: string, // Swagger 문서화용 (사용 안 함)
-    @UploadedFile('azit_icon') azit_icon?: Express.Multer.File,
+    @FormField() azit_name?: string,
+    @UploadedFile() azit_icon?: Express.Multer.File,
   ): Promise<Result<AzitResDto>> {
     const userId = BigInt(req.user.id);
     const result = await this.azitService.createAzit(
@@ -85,9 +85,9 @@ export class AzitController extends Controller {
   public async updateAzit(
     @Request() req: any,
     @Path() azit_id: number,
-    @FormField('azit_name') azit_name?: string | null, // Swagger 문서화용 (사용 안 함)
-    @FormField('is_delete_icon') is_delete_icon?: boolean, // Swagger 문서화용 (사용 안 함)
-    @UploadedFile('azit_icon') azit_icon?: Express.Multer.File,
+    @FormField() azit_name?: string | null,
+    @FormField() is_delete_icon?: boolean,
+    @UploadedFile() azit_icon?: Express.Multer.File,
   ): Promise<Result<AzitResDto>> {
     const userId = BigInt(req.user.id);
     const azitId = BigInt(azit_id);
