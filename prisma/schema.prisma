@@ -579,7 +579,7 @@ model CommunityComment {
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
   user        User     @relation(fields: [userId], references: [id])
   highlight   Highlight?  @relation(fields: [highlightId], references: [id])
-  post        CommunityPost? @relation(fields: [postId], references: [id])
+  post        CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
   parent      CommunityComment? @relation("CommunityCommentReplies", fields: [parentId], references: [id])
   replies     CommunityComment[] @relation("CommunityCommentReplies")
 
@@ -594,7 +594,7 @@ model CommunityLike {
   likedAt     DateTime @default(now()) @map("liked_at")
   user        User     @relation(fields: [userId], references: [id])
   highlight   Highlight?  @relation(fields: [highlightId], references: [id])
-  post        CommunityPost? @relation(fields: [postId], references: [id])
+  post        CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("community_likes")
 }
@@ -606,7 +606,7 @@ model CommunityMedia {
   mediaUrl    String   @map("media_url")
   order       Int
   uploadAt    DateTime @default(now()) @map("upload_at")
-  post        CommunityPost? @relation(fields: [postId], references: [id])
+  post        CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
   highlight   Highlight?     @relation(fields: [highlightId], references: [id])
 
   @@map("community_medias")
