@@ -8,7 +8,7 @@ import { Result, forbidden, internalServerError, isSuccess, notFound, ok } from 
 export class ChatService {
   constructor(@inject(ChatRepository) private chatRepository: ChatRepository) {}
 
-  private async getRoomAndMember(roomId: number, userId: number) {
+  public async getRoomAndMember(roomId: number, userId: number) {
     const room = await this.chatRepository.findChatRoomById(roomId);
     if (!room) {
       return notFound({
