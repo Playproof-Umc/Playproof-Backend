@@ -1,41 +1,62 @@
 import { CommunityPostRepository } from "../repositories/community-post.repository";
-import { Result, notFound, forbidden } from "../../../common/types/result.type";
+import { notFound, forbidden, Result } from "../../../common/types/result.type";
+import { CommunityErrorCode } from "../../../common/constants/error-code";
 
-// 1. 게임 카테고리 존재 검증 🏁
-export async function validateGameExists<T>(
-  repository: CommunityPostRepository,
-  gameId: number
-): Promise<Result<T> | null> {
-  const game = await repository.findGameById(gameId);
-
-  if (!game) {
-    return notFound({
-      message: "존재하지 않는 게임 카테고리입니다."
-    });
+export class CommunityPostValidator {
+  // 1. 게시글 존재 여부 검증
+  static async validatePost(
+    repository: CommunityPostRepository, 
+    postId: number
+  ): Promise<{ post?: any; error?: Result<any> }> {
+    const post = await repository.findById(postId);
+    
+    if (!post) {
+      return { 
+        error: notFound({ 
+          message: "게시글을 찾을 수 없습니다.", 
+          errorCode: CommunityErrorCode.POST_NOT_FOUND 
+        }) 
+      };
+    }
+    
+    return { post };
   }
 
-  return null;
-}
+  // 2. 게시글 권한 검증
+  static async checkPostOwnership(
+    repository: CommunityPostRepository, 
+    postId: number, 
+    userId: number
+  ): Promise<{ post?: any; error?: Result<any> }> {
+    const { post, error } = await this.validatePost(repository, postId);
+    if (error) return { error };
 
-// 2. 게시글 존재 및 권한 검증
-export async function validatePostOwnership<T>(
-  repository: CommunityPostRepository,
-  postId: number,
-  userId: number
-): Promise<Result<T> | { post: any }> {
-  const post = await repository.findById(postId);
-
-  if (!post) {
-    return notFound({
-      message: "게시글을 찾을 수 없습니다."
-    });
+    if (Number(post.userId) !== userId) {
+      return { 
+        error: forbidden({ 
+          message: "해당 권한이 없습니다.", 
+          errorCode: CommunityErrorCode.FORBIDDEN 
+        }) 
+      };
+    }
+    
+    return { post };
   }
 
-  if (Number(post.userId) !== userId) {
-    return forbidden({
-      message: "해당 권한이 없습니다."
-    });
+  // 3. 마스터 데이터(게임) 검증
+  static async validateMasterData(
+    repository: CommunityPostRepository,
+    gameId: number
+  ): Promise<Result<any> | null> {
+    const game = await repository.findGameById(gameId);
+    
+    if (!game) {
+      return notFound({ 
+        message: "존재하지 않는 게임 카테고리입니다.", 
+        errorCode: CommunityErrorCode.GAME_NOT_FOUND 
+      });
+    }
+    
+    return null;
   }
-
-  return { post };
 }
