@@ -37,3 +37,138 @@ export class AzitListResDto {
    */
   azits!: AzitResDto[];
 }
+
+export class AzitMemberResDto {
+  /**
+   * 멤버 ID (AzitUser의 id)
+   * @example 101
+   */
+  member_id!: number;
+
+  /**
+   * 닉네임
+   * @example "채나"
+   */
+  nickname!: string | null;
+
+  /**
+   * 아바타 URL
+   * @example "https://example.com/avatar/1.png"
+   */
+  avatar_url!: string | null;
+
+  /**
+   * 역할 (HOST 또는 MEMBER)
+   * @example "HOST"
+   */
+  role!: string;
+}
+
+export class CursorPaginationResDto {
+  /**
+   * 다음 커서 (더 이상 데이터가 없으면 null)
+   * @example 125
+   */
+  next_cursor!: number | null;
+
+  /**
+   * 다음 페이지 존재 여부
+   * @example true
+   */
+  has_next!: boolean;
+}
+
+export class GetAzitMembersResDto {
+  /**
+   * 아지트 ID
+   * @example 1
+   */
+  azit_id!: number;
+
+  /**
+   * 아지트 이름
+   * @example "Playproof 공식 클랜"
+   */
+  azit_name!: string;
+
+  /**
+   * 멤버 목록
+   */
+  members!: AzitMemberResDto[];
+
+  /**
+   * 다음 커서 (마지막 멤버의 닉네임, 더 이상 데이터가 없으면 null)
+   * @example "채나"
+   */
+  next_cursor!: string | null;
+
+  /**
+   * 다음 페이지 존재 여부
+   * @example true
+   */
+  has_next!: boolean;
+}
+
+export class AddAzitMemberResDto {
+  /**
+   * 멤버 ID (AzitUser의 id)
+   * @example 104
+   */
+  member_id!: number;
+
+  /**
+   * 아지트 ID
+   * @example 1
+   */
+  azit_id!: number;
+
+  /**
+   * 닉네임
+   * @example "채나"
+   */
+  nickname!: string | null;
+
+  /**
+   * 아바타 URL
+   * @example "https://example.com/avatar/2.png"
+   */
+  avatar_url!: string | null;
+
+  /**
+   * 역할 (HOST 또는 MEMBER)
+   * @example "MEMBER"
+   */
+  role!: string;
+}
+
+export class RemoveAzitMemberResDto {
+  /**
+   * 멤버 ID (AzitUser의 id)
+   * @example 104
+   */
+  member_id!: number;
+
+  /**
+   * 아지트 ID
+   * @example 1
+   */
+  azit_id!: number;
+
+  /**
+   * 닉네임
+   * @example "채나"
+   */
+  nickname!: string | null;
+
+  /**
+   * 제거 일시
+   * @example "2025-01-09T11:45:00Z"
+   */
+  removed_at!: Date;
+
+  /**
+   * 제거 사유 (FORCE_REMOVE: 강제 제거, SELF_LEAVE: 자진 탈퇴)
+   * @example "FORCE_REMOVE"
+   */
+  reason!: string;
+}
