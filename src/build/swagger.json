@@ -2020,6 +2020,336 @@
 					}
 				]
 			},
+			"AzitMemberResDto": {
+				"properties": {
+					"member_id": {
+						"type": "number",
+						"format": "double",
+						"description": "멤버 ID (AzitUser의 id)",
+						"example": 101
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"description": "닉네임",
+						"example": "채나"
+					},
+					"avatar_url": {
+						"type": "string",
+						"nullable": true,
+						"description": "아바타 URL",
+						"example": "https://example.com/avatar/1.png"
+					},
+					"role": {
+						"type": "string",
+						"description": "역할 (HOST 또는 MEMBER)",
+						"example": "HOST"
+					}
+				},
+				"required": [
+					"member_id",
+					"nickname",
+					"avatar_url",
+					"role"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GetAzitMembersResDto": {
+				"properties": {
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"description": "아지트 ID",
+						"example": 1
+					},
+					"azit_name": {
+						"type": "string",
+						"description": "아지트 이름",
+						"example": "Playproof 공식 클랜"
+					},
+					"members": {
+						"items": {
+							"$ref": "#/components/schemas/AzitMemberResDto"
+						},
+						"type": "array",
+						"description": "멤버 목록"
+					},
+					"next_cursor": {
+						"type": "string",
+						"nullable": true,
+						"description": "다음 커서 (마지막 멤버의 닉네임, 더 이상 데이터가 없으면 null)",
+						"example": "채나"
+					},
+					"has_next": {
+						"type": "boolean",
+						"description": "다음 페이지 존재 여부",
+						"example": true
+					}
+				},
+				"required": [
+					"azit_id",
+					"azit_name",
+					"members",
+					"next_cursor",
+					"has_next"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_GetAzitMembersResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/GetAzitMembersResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_GetAzitMembersResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_GetAzitMembersResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"UnauthorizedError": {
+				"description": "401 에러 (Unauthorized)",
+				"properties": {
+					"error": {
+						"properties": {
+							"errors": {
+								"items": {
+									"$ref": "#/components/schemas/ApiErrorDetail"
+								},
+								"type": "array"
+							},
+							"message": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"code"
+						],
+						"type": "object"
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"statusCode": {
+						"type": "number",
+						"enum": [
+							401
+						],
+						"nullable": false
+					}
+				},
+				"required": [
+					"error",
+					"data",
+					"statusCode"
+				],
+				"type": "object",
+				"additionalProperties": false,
+				"example": {
+					"statusCode": 401,
+					"data": null,
+					"error": {
+						"code": "AUTH_UNAUTHORIZED",
+						"message": "인증이 필요합니다."
+					}
+				}
+			},
+			"AddAzitMemberResDto": {
+				"properties": {
+					"member_id": {
+						"type": "number",
+						"format": "double",
+						"description": "멤버 ID (AzitUser의 id)",
+						"example": 104
+					},
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"description": "아지트 ID",
+						"example": 1
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"description": "닉네임",
+						"example": "채나"
+					},
+					"avatar_url": {
+						"type": "string",
+						"nullable": true,
+						"description": "아바타 URL",
+						"example": "https://example.com/avatar/2.png"
+					},
+					"role": {
+						"type": "string",
+						"description": "역할 (HOST 또는 MEMBER)",
+						"example": "MEMBER"
+					}
+				},
+				"required": [
+					"member_id",
+					"azit_id",
+					"nickname",
+					"avatar_url",
+					"role"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_AddAzitMemberResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/AddAzitMemberResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_AddAzitMemberResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_AddAzitMemberResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"AddAzitMemberReqDto": {
+				"properties": {
+					"user_id": {
+						"type": "number",
+						"format": "double",
+						"description": "추가할 사용자 ID",
+						"example": 1
+					}
+				},
+				"required": [
+					"user_id"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RemoveAzitMemberResDto": {
+				"properties": {
+					"member_id": {
+						"type": "number",
+						"format": "double",
+						"description": "멤버 ID (AzitUser의 id)",
+						"example": 104
+					},
+					"azit_id": {
+						"type": "number",
+						"format": "double",
+						"description": "아지트 ID",
+						"example": 1
+					},
+					"nickname": {
+						"type": "string",
+						"nullable": true,
+						"description": "닉네임",
+						"example": "채나"
+					},
+					"removed_at": {
+						"type": "string",
+						"format": "date-time",
+						"description": "제거 일시",
+						"example": "2025-01-09T11:45:00Z"
+					},
+					"reason": {
+						"type": "string",
+						"description": "제거 사유 (FORCE_REMOVE: 강제 제거, SELF_LEAVE: 자진 탈퇴)",
+						"example": "FORCE_REMOVE"
+					}
+				},
+				"required": [
+					"member_id",
+					"azit_id",
+					"nickname",
+					"removed_at",
+					"reason"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_RemoveAzitMemberResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/RemoveAzitMemberResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_RemoveAzitMemberResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_RemoveAzitMemberResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"SignUpResDto": {
 				"properties": {
 					"id": {
@@ -3598,6 +3928,303 @@
 					{
 						"in": "path",
 						"name": "schedule_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/azits/{azitId}/members": {
+			"get": {
+				"operationId": "GetAzitMembers",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_GetAzitMembersResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"description": "아지트 멤버 조회\r\n특정 아지트에 속한 모든 멤버 정보를 조회합니다.",
+				"tags": [
+					"Azit"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azitId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "cursor",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/azits/{azit_id}/members": {
+			"post": {
+				"operationId": "AddAzitMember",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_AddAzitMemberResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "Conflict",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ConflictError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"description": "아지트 멤버 추가\r\n특정 아지트에 새로운 멤버를 추가합니다. (아지트장만 가능)",
+				"tags": [
+					"Azit"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddAzitMemberReqDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/azits/{azit_id}/members/{member_id}": {
+			"delete": {
+				"operationId": "RemoveAzitMember",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_RemoveAzitMemberResDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BadRequestError"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ForbiddenError"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotFoundError"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalServerError"
+								}
+							}
+						}
+					}
+				},
+				"description": "아지트 멤버 제거\r\n특정 아지트에서 멤버를 제거합니다. (아지트장만 가능 또는 본인이 탈퇴)",
+				"tags": [
+					"Azit"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "azit_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "path",
+						"name": "member_id",
 						"required": true,
 						"schema": {
 							"format": "double",

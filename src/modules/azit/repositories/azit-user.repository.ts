@@ -103,4 +103,120 @@ export class AzitUserRepository {
 
     return azitUser !== null;
   }
+
+  async countMembersByAzitId(azitId: bigint): Promise<number> {
+    return prisma.azitUser.count({
+      where: {
+        azitId,
+      },
+    });
+  }
+
+  async findMembersByAzitIdWithCursor(
+    azitId: bigint,
+    cursor: string | null,
+    size: number,
+  ) {
+    const whereCondition: any = {
+      azitId,
+    };
+
+    // 커서가 있으면 닉네임이 커서보다 큰 멤버만 조회
+    if (cursor) {
+      whereCondition.user = {
+        nickname: {
+          gt: cursor,
+        },
+      };
+    }
+
+    const members = await prisma.azitUser.findMany({
+      where: whereCondition,
+      include: {
+        user: {
+          include: {
+            userAvatars: {
+              where: {
+                isEquipped: true,
+              },
+              include: {
+                avatar: true,
+              },
+              take: 1,
+            },
+          },
+        },
+      },
+      orderBy: {
+        user: {
+          nickname: 'asc', // 닉네임 오름차순 정렬
+        },
+      },
+      take: size + 1, // 하나 더 가져와서 has_next 판단
+    });
+
+    return members;
+  }
+
+  async createAzitUserWithDetails(
+    userId: bigint,
+    azitId: bigint,
+    role: AzitUserRole = AzitUserRole.MEMBER,
+  ) {
+    return prisma.azitUser.create({
+      data: {
+        userId,
+        azitId,
+        role,
+      },
+      include: {
+        user: {
+          include: {
+            userAvatars: {
+              where: {
+                isEquipped: true,
+              },
+              include: {
+                avatar: true,
+              },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findAzitUserById(memberId: bigint) {
+    return prisma.azitUser.findUnique({
+      where: {
+        id: memberId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+      },
+    });
+  }
+
+  async countHostsByAzitId(azitId: bigint): Promise<number> {
+    return prisma.azitUser.count({
+      where: {
+        azitId,
+        role: AzitUserRole.HOST,
+      },
+    });
+  }
+
+  async deleteAzitUser(memberId: bigint) {
+    return prisma.azitUser.delete({
+      where: {
+        id: memberId,
+      },
+    });
+  }
 }
