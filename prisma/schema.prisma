@@ -469,6 +469,7 @@ model AzitSchedule {
   gameStartAt       DateTime                              @map("game_start_at")
   gameEndAt         DateTime                              @map("game_end_at")
   recruitmentEndAt  DateTime                              @map("recruitment_end_at")
+  maxParticipants   Int                                   @map("max_participants")
   createdAt         DateTime @default(now())              @map("created_at")
   updatedAt         DateTime @updatedAt @default(now())   @map("updated_at")
 
