@@ -11,20 +11,14 @@ export class PartyCommentRepository {
     });
   }
 
-  // 2. 댓글 목록 조회 (대댓글 포함)
+  // 2. 댓글 목록 조회 (페이징 및 대댓글 포함)
   async findCommentsByPartyId(postId: number, page: number, limit: number) {
     const skip = (page - 1) * limit;
-    
     const [comments, total] = await Promise.all([
       prisma.postComment.findMany({
-        where: { 
-          postId: BigInt(postId),
-          parentId: null 
-        },
+        where: { postId: BigInt(postId), parentId: null },
         include: { 
-          replies: {
-            include: { user: true }
-          },
+          replies: { include: { user: true } },
           user: true
         },
         skip,
@@ -32,13 +26,9 @@ export class PartyCommentRepository {
         orderBy: { createdAt: 'asc' }
       }),
       prisma.postComment.count({ 
-        where: { 
-          postId: BigInt(postId),
-          parentId: null 
-        } 
+        where: { postId: BigInt(postId), parentId: null } 
       })
     ]);
-
     return { comments, total };
   }
 
