@@ -105,5 +105,31 @@ export const CommunityErrorCode = {
   LIKE_NOT_FOUND: "COMMUNITY_LIKE_NOT_FOUND",       // 좋아요 기록 없음
 } as const;
 
+// 피드백 관련 에러 코드
+export const FeedbackErrorCode = {
+  // 400 Bad Request
+  BAD_REQUEST: {
+    SELF_FEEDBACK_NOT_ALLOWED: 'SELF_FEEDBACK_NOT_ALLOWED', // 자기 자신에게 피드백 불가
+    SCHEDULE_NOT_COMPLETED: 'SCHEDULE_NOT_COMPLETED', // 아직 종료되지 않은 일정
+  },
+
+  // 403 Forbidden
+  FORBIDDEN: {
+    NOT_PARTICIPATED_TOGETHER: 'NOT_PARTICIPATED_TOGETHER', // 같은 일정에 참여하지 않음
+  },
+
+  // 404 Not Found
+  NOT_FOUND: {
+    WRITER_USER_NOT_FOUND: 'WRITER_USER_NOT_FOUND', // 피드백 작성자를 찾을 수 없음
+    TARGET_USER_NOT_FOUND: 'TARGET_USER_NOT_FOUND', // 피드백 대상 사용자를 찾을 수 없음
+    SCHEDULE_NOT_FOUND: 'SCHEDULE_NOT_FOUND', // 일정을 찾을 수 없음
+  },
+
+  // 409 Conflict
+  CONFLICT: {
+    FEEDBACK_ALREADY_EXISTS: 'FEEDBACK_ALREADY_EXISTS', // 이미 피드백이 존재함
+  },
+} as const;
+
 // 나중에 다른 도메인이 생기면 추가
 // export const OrderErrorCode = { ... } as const;
