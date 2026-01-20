@@ -3,14 +3,14 @@ import { prisma } from "../../../common/config/database";
 
 @singleton()
 export class PartyInteractionRepository {
-  // 1. 특정 유저가 특정 파티에 신청했는지 조회
+  // 1. 특정 유저의 신청 내역 조회
   async findApplication(userId: number, postId: number) {
     return prisma.application.findFirst({
       where: { userId: BigInt(userId), postId: BigInt(postId) }
     });
   }
 
-  // 2. 신청 상세 정보 조회 (권한 확인을 위한 파티 정보 포함)
+  // 2. 신청 상세 정보 조회 (파티 정보 포함)
   async findApplicationWithPost(applicationId: number) {
     return prisma.application.findUnique({
       where: { id: BigInt(applicationId) },
@@ -25,7 +25,7 @@ export class PartyInteractionRepository {
     });
   }
 
-  // 4. 신청 상태 업데이트 (수락/거절)
+  // 4. 신청 상태 업데이트
   async updateApplicationStatus(applicationId: number, isAccepted: boolean) {
     return prisma.application.update({
       where: { id: BigInt(applicationId) },
@@ -33,14 +33,14 @@ export class PartyInteractionRepository {
     });
   }
 
-  // 5. 신청 데이터 삭제 (취소)
+  // 5. 신청 데이터 삭제
   async deleteApplication(applicationId: number) {
     return prisma.application.delete({
       where: { id: BigInt(applicationId) }
     });
   }
 
-  // 6. 좋아요 기록 확인 (복합 키 사용)
+  // 6. 좋아요 기록 확인
   async findLike(userId: number, postId: number) {
     return prisma.userPostLike.findUnique({
       where: { userId_postId: { userId: BigInt(userId), postId: BigInt(postId) } }
