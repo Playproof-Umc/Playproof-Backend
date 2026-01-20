@@ -1,23 +1,46 @@
 // src/modules/azit/repositories/azit-user.repository.ts
 import { singleton } from 'tsyringe';
-
 import { Azit, AzitUser, AzitUserRole } from '@prisma/client';
+
 import { prisma } from '../../../common/config/database';
 
 @singleton()
 export class AzitUserRepository {
+  // ----------------------------------------------------------------------------------------------------
+  // 생성
+  // ----------------------------------------------------------------------------------------------------
+
   async createAzitUser(
     userId: bigint,
     azitId: bigint,
     role: AzitUserRole = AzitUserRole.MEMBER,
+    tx?: any,
   ): Promise<AzitUser> {
-    return prisma.azitUser.create({
+    const client = tx || prisma;
+    return client.azitUser.create({
       data: {
         userId,
         azitId,
         role,
       },
     });
+  }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 조회: userId
+  // ----------------------------------------------------------------------------------------------------
+
+  async findAzitsByUserId(userId: bigint): Promise<Azit[]> {
+    const azitUsers = await prisma.azitUser.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        azit: true,
+      },
+    });
+
+    return azitUsers.map((azitUser) => azitUser.azit);
   }
 
   async findAzitNamesByUserId(userId: bigint): Promise<string[]> {
@@ -37,26 +60,9 @@ export class AzitUserRepository {
     return azitUsers.map((azitUser) => azitUser.azit.azitName);
   }
 
-  async findAzitsByUserId(
-    userId: bigint,
-  ): Promise<Array<Pick<Azit, 'id' | 'azitName' | 'imageUrl'>>> {
-    const azitUsers = await prisma.azitUser.findMany({
-      where: {
-        userId,
-      },
-      select: {
-        azit: {
-          select: {
-            id: true,
-            azitName: true,
-            imageUrl: true,
-          },
-        },
-      },
-    });
-
-    return azitUsers.map((azitUser) => azitUser.azit);
-  }
+  // ----------------------------------------------------------------------------------------------------
+  // 조회: userId와 azitId
+  // ----------------------------------------------------------------------------------------------------
 
   async findAzitUserByUserIdAndAzitId(
     userId: bigint,
@@ -70,31 +76,32 @@ export class AzitUserRepository {
     });
   }
 
-  async findAzitUserRoleByUserIdAndAzitId(
-    userId: bigint,
-    azitId: bigint,
-  ): Promise<AzitUserRole | null> {
+  // ----------------------------------------------------------------------------------------------------
+  // 존재 여부 확인
+  // ----------------------------------------------------------------------------------------------------
+
+  async existsAzitUserByMemberId(memberId: bigint): Promise<boolean> {
     const azitUser = await prisma.azitUser.findFirst({
       where: {
-        userId,
-        azitId,
+        id: memberId,
       },
       select: {
-        role: true,
+        id: true,
       },
     });
 
-    return azitUser?.role ?? null;
+    return azitUser !== null;
   }
 
-  async existsAzitUserByUserIdAndAzitId(
-    userId: bigint,
-    azitId: bigint,
-  ): Promise<boolean> {
+  // ----------------------------------------------------------------------------------------------------
+  // 역할 확인
+  // ----------------------------------------------------------------------------------------------------
+
+  async isHost(memberId: bigint): Promise<boolean> {
     const azitUser = await prisma.azitUser.findFirst({
       where: {
-        userId,
-        azitId,
+        id: memberId,
+        role: AzitUserRole.HOST,
       },
       select: {
         id: true,

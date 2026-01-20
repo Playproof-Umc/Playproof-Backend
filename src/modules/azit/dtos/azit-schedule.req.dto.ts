@@ -1,14 +1,14 @@
 // src/modules/azit/dtos/azit-schedule.req.dto.ts
-import {
-  IsString,
-  IsNotEmpty,
-  IsDateString,
-  MaxLength,
-  IsInt,
-  Min,
-  IsOptional,
-} from 'class-validator';
 import { Type } from 'class-transformer';
+import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  MaxLength,
+  Min,
+  IsString,
+} from 'class-validator';
 
 export class AzitScheduleCreateReqDto {
   /**

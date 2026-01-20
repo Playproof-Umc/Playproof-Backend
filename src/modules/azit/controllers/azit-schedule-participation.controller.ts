@@ -1,25 +1,25 @@
 // src/modules/azit/controllers/azit-schedule-participation.controller.ts
+import { injectable, inject } from 'tsyringe';
 import {
   Controller,
-  Post,
   Delete,
-  Route,
-  Tags,
-  SuccessResponse,
-  Response,
-  Request,
-  Security,
   Path,
+  Post,
+  Request,
+  Response,
+  Route,
+  Security,
+  SuccessResponse,
+  Tags,
 } from 'tsoa';
-import { injectable, inject } from 'tsyringe';
+
 import { AzitScheduleParticipationService } from '../services/azit-schedule-participation.service';
-import { AzitScheduleParticipationResDto } from '../dtos/azit-schedule-participation.res.dto';
 import {
-  Result,
-  ForbiddenError,
-  NotFoundError,
   BadRequestError,
   ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  Result,
 } from '../../../common/types/result.type';
 
 @Route('azits/{azit_id}/schedules/{schedule_id}/participants')
@@ -33,7 +33,7 @@ export class AzitScheduleParticipationController extends Controller {
     super();
   }
 
-  @SuccessResponse('201', 'Created')
+  @SuccessResponse('204', 'No Content')
   @Response<BadRequestError>(400, 'Bad Request')
   @Response<ForbiddenError>(403, 'Forbidden')
   @Response<NotFoundError>(404, 'Not Found')
@@ -44,7 +44,7 @@ export class AzitScheduleParticipationController extends Controller {
     @Request() req: any,
     @Path() azit_id: number,
     @Path() schedule_id: number,
-  ): Promise<Result<AzitScheduleParticipationResDto>> {
+  ): Promise<Result<null>> {
     const userId = BigInt(req.user.id);
     const azitId = BigInt(azit_id);
     const scheduleId = BigInt(schedule_id);

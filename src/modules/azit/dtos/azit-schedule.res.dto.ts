@@ -1,13 +1,14 @@
 // src/modules/azit/dtos/azit-schedule.res.dto.ts
 import {
+  IsArray,
   IsBoolean,
   IsNumber,
-  IsString,
   IsObject,
-  IsArray,
+  IsString,
 } from 'class-validator';
+import { formatDate } from '../utils/azit.util';
 
-export class AzitScheduleCreateResDto {
+export class AzitScheduleResDto {
   /**
    * 일정 ID
    * @example 1
@@ -43,15 +44,36 @@ export class AzitScheduleCreateResDto {
    * @example "2026-02-28T13:00:00"
    */
   recruitment_end_at!: string;
+
+  /**
+   * 정적 팩토리 메서드
+   */
+  static from(schedule: {
+    id: bigint;
+    title: string;
+    maxParticipants: number;
+    gameStartAt: Date;
+    gameEndAt: Date;
+    recruitmentEndAt: Date;
+  }): AzitScheduleResDto {
+    return {
+      schedule_id: Number(schedule.id),
+      title: schedule.title,
+      max_participants: schedule.maxParticipants,
+      game_start_at: formatDate(schedule.gameStartAt),
+      game_end_at: formatDate(schedule.gameEndAt),
+      recruitment_end_at: formatDate(schedule.recruitmentEndAt),
+    };
+  }
 }
 
 export class AzitScheduleParticipantResDto {
   /**
-   * 사용자 ID
+   * 아지트 멤버 ID
    * @example 1
    */
   @IsNumber()
-  user_id!: number;
+  member_id!: number;
 
   /**
    * 닉네임
@@ -61,14 +83,43 @@ export class AzitScheduleParticipantResDto {
   nickname!: string | null;
 
   /**
-   * 아바타 URL
+   * 아바타 URL (착용한 아바타가 없을 경우 null)
    * @example "https://example.com/avatar.png"
    */
   @IsString()
   avatar_url!: string | null;
+
+  /**
+   * 정적 팩토리 메서드
+   */
+  static from(participation: {
+    memberId: bigint;
+    member: {
+      id: bigint;
+      userId: bigint;
+      user: {
+        id: bigint;
+        nickname: string | null;
+        userAvatars: {
+          avatar: {
+            avatarUrl: string;
+          } | null;
+        }[];
+      };
+    };
+  }): AzitScheduleParticipantResDto {
+    const user = participation.member.user;
+    const avatarUrl = user.userAvatars?.[0]?.avatar?.avatarUrl || null;
+
+    return {
+      member_id: Number(participation.memberId),
+      nickname: user.nickname,
+      avatar_url: avatarUrl,
+    };
+  }
 }
 
-export class AzitScheduleItemResDto extends AzitScheduleCreateResDto {
+export class AzitScheduleDetailResDto extends AzitScheduleResDto {
   /**
    * 현재 참여 인원 수
    * @example 3
@@ -90,6 +141,31 @@ export class AzitScheduleItemResDto extends AzitScheduleCreateResDto {
   @IsArray()
   @IsObject({ each: true })
   participants!: AzitScheduleParticipantResDto[];
+
+  /**
+   * 정적 팩토리 메서드
+   */
+  static fromDetail(
+    schedule: {
+      id: bigint;
+      title: string;
+      maxParticipants: number;
+      gameStartAt: Date;
+      gameEndAt: Date;
+      recruitmentEndAt: Date;
+      participations: any[];
+    },
+    isParticipated: boolean,
+    participants: AzitScheduleParticipantResDto[],
+  ): AzitScheduleDetailResDto {
+    const base = AzitScheduleResDto.from(schedule);
+    return {
+      ...base,
+      current_participants: schedule.participations.length,
+      is_participated: isParticipated,
+      participants: participants,
+    };
+  }
 }
 
 export class AzitScheduleListResDto {
@@ -99,7 +175,7 @@ export class AzitScheduleListResDto {
    */
   @IsArray()
   @IsObject({ each: true })
-  schedules!: AzitScheduleItemResDto[];
+  schedules!: AzitScheduleDetailResDto[];
 
   /**
    * 형식: `${game_start_at}|${schedule_id}`
@@ -115,4 +191,19 @@ export class AzitScheduleListResDto {
    */
   @IsBoolean()
   hasNext!: boolean;
+
+  /**
+   * 정적 팩토리 메서드: 일정 목록 DTO 생성
+   */
+  static from(
+    schedules: AzitScheduleDetailResDto[],
+    nextCursor: string | null,
+    hasNext: boolean,
+  ): AzitScheduleListResDto {
+    return {
+      schedules,
+      nextCursor,
+      hasNext,
+    };
+  }
 }

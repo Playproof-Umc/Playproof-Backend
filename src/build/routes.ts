@@ -424,7 +424,7 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "AzitCreateResDto": {
+    "AzitResDto": {
         "dataType": "refObject",
         "properties": {
             "azit_id": {"dataType":"double","required":true},
@@ -434,20 +434,20 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Success_AzitCreateResDto_": {
+    "Success_AzitResDto_": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"AzitCreateResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"AzitResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Result_AzitCreateResDto_": {
+    "Result_AzitResDto_": {
         "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"ref":"Success_AzitCreateResDto_"},{"ref":"Failed"}],"validators":{}},
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_AzitResDto_"},{"ref":"Failed"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AzitListResDto": {
         "dataType": "refObject",
         "properties": {
-            "azits": {"dataType":"array","array":{"dataType":"refObject","ref":"AzitCreateResDto"},"required":true},
+            "azits": {"dataType":"array","array":{"dataType":"refObject","ref":"AzitResDto"},"required":true},
         },
         "additionalProperties": false,
     },

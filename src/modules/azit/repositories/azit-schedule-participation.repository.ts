@@ -1,17 +1,23 @@
 // src/modules/azit/repositories/azit-schedule-participation.repository.ts
 import { singleton } from 'tsyringe';
-
 import { AzitScheduleParticipation, AzitScheduleRole } from '@prisma/client';
+
 import { prisma } from '../../../common/config/database';
 
 @singleton()
 export class AzitScheduleParticipationRepository {
+  // ----------------------------------------------------------------------------------------------------
+  // 생성
+  // ----------------------------------------------------------------------------------------------------
+
   async createParticipation(
     memberId: bigint,
     scheduleId: bigint,
     role: AzitScheduleRole = AzitScheduleRole.PARTICIPANT,
+    tx?: any,
   ): Promise<AzitScheduleParticipation> {
-    return prisma.azitScheduleParticipation.create({
+    const client = tx || prisma;
+    return client.azitScheduleParticipation.create({
       data: {
         memberId,
         scheduleId,
@@ -20,19 +26,9 @@ export class AzitScheduleParticipationRepository {
     });
   }
 
-  async findParticipation(
-    memberId: bigint,
-    scheduleId: bigint,
-  ): Promise<AzitScheduleParticipation | null> {
-    return prisma.azitScheduleParticipation.findUnique({
-      where: {
-        memberId_scheduleId: {
-          memberId,
-          scheduleId,
-        },
-      },
-    });
-  }
+  // ----------------------------------------------------------------------------------------------------
+  // 조회: scheduleId
+  // ----------------------------------------------------------------------------------------------------
 
   async countParticipations(scheduleId: bigint): Promise<number> {
     return prisma.azitScheduleParticipation.count({
@@ -41,6 +37,32 @@ export class AzitScheduleParticipationRepository {
       },
     });
   }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 존재 여부 확인
+  // ----------------------------------------------------------------------------------------------------
+
+  async existsParticipation(
+    memberId: bigint,
+    scheduleId: bigint,
+  ): Promise<boolean> {
+    const participation = await prisma.azitScheduleParticipation.findUnique({
+      where: {
+        memberId_scheduleId: {
+          memberId,
+          scheduleId,
+        },
+      },
+      select: {
+        memberId: true,
+      },
+    });
+    return participation !== null;
+  }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 삭제
+  // ----------------------------------------------------------------------------------------------------
 
   async deleteParticipation(
     memberId: bigint,
@@ -54,5 +76,23 @@ export class AzitScheduleParticipationRepository {
         },
       },
     });
+  }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 역할 확인
+  // ----------------------------------------------------------------------------------------------------
+
+  async isScheduleCreator(
+    memberId: bigint,
+    scheduleId: bigint,
+  ): Promise<boolean> {
+    const participation = await prisma.azitScheduleParticipation.findFirst({
+      where: {
+        memberId,
+        scheduleId,
+        role: AzitScheduleRole.CREATOR,
+      },
+    });
+    return participation !== null;
   }
 }

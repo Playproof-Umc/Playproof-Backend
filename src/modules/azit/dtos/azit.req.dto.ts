@@ -1,6 +1,13 @@
 // src/modules/azit/dtos/azit.req.dto.ts
-import { IsString, MinLength, IsOptional, IsBoolean, IsInt, Min } from "class-validator";
-import { Type } from "class-transformer";
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+  MinLength,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class AzitCreateReqDto {
   /**
@@ -25,8 +32,9 @@ export class AzitUpdateReqDto {
    * @example true
    * @example false
    */
+  @IsOptional()
   @IsBoolean()
-  is_delete_icon: boolean = false;
+  is_delete_icon?: boolean;
 }
 
 export class GetAzitMembersReqDto {
