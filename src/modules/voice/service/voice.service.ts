@@ -1,17 +1,16 @@
 import { AccessToken } from 'livekit-server-sdk';
 import { inject, injectable } from 'tsyringe';
 import { livekitConfig } from '../../../common/config/livekit';
-import { UserErrorCode } from '../../../common/constants/error-code';
 import {
   Result,
   internalServerError,
   isSuccess,
-  notFound,
   ok,
 } from '../../../common/types/result.type';
 import { UserRepository } from '../../user/user.repository';
 import { ChatService } from '../../chat/service/chat.service';
 import { VoiceTokenResDto } from '../dtos/voice.res.dto';
+import { validateRoomAccess, validateUserExists } from '../utils/voice.validator';
 
 const CHAT_ROOM_PREFIX = 'chatRoom:';
 
@@ -26,17 +25,17 @@ export class VoiceService {
     roomId: number,
     userId: number,
   ): Promise<Result<VoiceTokenResDto>> {
-    const access = await this.chatService.getRoomAndMember(roomId, userId);
+    const access = await validateRoomAccess(
+      this.chatService,
+      roomId,
+      userId,
+    );
     if (!isSuccess(access)) return access;
 
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      return notFound({
-        message: '사용자를 찾을 수 없습니다.',
-        errorCode: UserErrorCode.NOT_FOUND,
-      });
-    }
+    const userResult = await validateUserExists(userId, this.userRepository);
+    if (!isSuccess(userResult)) return userResult;
 
+    const user = userResult.data;
     const identity = String(userId);
     const name = user.nickname ?? `User${userId}`;
     const roomName = `${CHAT_ROOM_PREFIX}${roomId}`;

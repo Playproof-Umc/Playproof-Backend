@@ -4,38 +4,18 @@ import { ChatMessageListResDto, ChatMessageResDto } from '../dtos/chat.res.dto';
 import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
   Result,
-  forbidden,
   internalServerError,
   isSuccess,
-  notFound,
   ok,
 } from '../../../common/types/result.type';
+import { validateRoomAndMember } from '../utils/chat.validator';
 
 @injectable()
 export class ChatService {
   constructor(@inject(ChatRepository) private chatRepository: ChatRepository) {}
 
   public async getRoomAndMember(roomId: number, userId: number) {
-    const room = await this.chatRepository.findChatRoomById(roomId);
-    if (!room) {
-      return notFound({
-        message: '채팅방을 찾을 수 없습니다.',
-        errorCode: ChatErrorCode.ROOM_NOT_FOUND,
-      });
-    }
-
-    const member = await this.chatRepository.findAzitUserByUserIdAndAzitId(
-      userId,
-      room.azitId,
-    );
-    if (!member) {
-      return forbidden({
-        message: '아지트 멤버만 채팅할 수 있습니다.',
-        errorCode: ChatErrorCode.AZIT_MEMBER_ONLY,
-      });
-    }
-
-    return ok({ room, member });
+    return validateRoomAndMember(this.chatRepository, roomId, userId);
   }
 
   async joinRoom(
