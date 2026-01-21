@@ -12,6 +12,8 @@ import { PartyInteractionController } from './../modules/party/controller/party-
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { PartyCommentController } from './../modules/party/controller/party-comment.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { CommunityPostController } from './../modules/community/controllers/community-post.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AzitController } from './../modules/azit/controllers/azit.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AzitScheduleController } from './../modules/azit/controllers/azit-schedule.controller';
@@ -424,6 +426,102 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CommunityPostResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "post_id": {"dataType":"double","required":true},
+            "user_id": {"dataType":"double","required":true},
+            "nickname": {"dataType":"string","required":true},
+            "game_id": {"dataType":"double","required":true},
+            "title": {"dataType":"string","required":true},
+            "content": {"dataType":"string","required":true},
+            "medias": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"order":{"dataType":"double","required":true},"media_url":{"dataType":"string","required":true}}},"required":true},
+            "comment_count": {"dataType":"double","required":true},
+            "like_count": {"dataType":"double","required":true},
+            "created_at": {"dataType":"string","required":true},
+            "updated_at": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CommunityPostListResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "posts": {"dataType":"array","array":{"dataType":"refObject","ref":"CommunityPostResDto"},"required":true},
+            "meta": {"dataType":"nestedObjectLiteral","nestedProperties":{"total_pages":{"dataType":"double","required":true},"current_page":{"dataType":"double","required":true},"total_count":{"dataType":"double","required":true}},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_CommunityPostListResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"CommunityPostListResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_CommunityPostListResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_CommunityPostListResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_CommunityPostResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"CommunityPostResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_CommunityPostResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_CommunityPostResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CommunityMediaDto": {
+        "dataType": "refObject",
+        "properties": {
+            "media_url": {"dataType":"string","required":true},
+            "order": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CommunityPostCreateReqDto": {
+        "dataType": "refObject",
+        "properties": {
+            "game_id": {"dataType":"double","required":true},
+            "title": {"dataType":"string","required":true},
+            "content": {"dataType":"string","required":true},
+            "medias": {"dataType":"array","array":{"dataType":"refObject","ref":"CommunityMediaDto"}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CommunityPostUpdateReqDto": {
+        "dataType": "refObject",
+        "properties": {
+            "title": {"dataType":"string"},
+            "content": {"dataType":"string"},
+            "medias": {"dataType":"array","array":{"dataType":"refObject","ref":"CommunityMediaDto"}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CommunityPostDeleteResDto": {
+        "dataType": "refObject",
+        "properties": {
+            "post_id": {"dataType":"double","required":true},
+            "message": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Success_CommunityPostDeleteResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"CommunityPostDeleteResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Result_CommunityPostDeleteResDto_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_CommunityPostDeleteResDto_"},{"ref":"Failed"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AzitResDto": {
         "dataType": "refObject",
         "properties": {
@@ -492,7 +590,7 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"union","subSchemas":[{"ref":"Success_null_"},{"ref":"Failed"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "AzitScheduleCreateResDto": {
+    "AzitScheduleResDto": {
         "dataType": "refObject",
         "properties": {
             "schedule_id": {"dataType":"double","required":true},
@@ -505,14 +603,14 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Success_AzitScheduleCreateResDto_": {
+    "Success_AzitScheduleResDto_": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"AzitScheduleCreateResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"AzitScheduleResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Result_AzitScheduleCreateResDto_": {
+    "Result_AzitScheduleResDto_": {
         "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"ref":"Success_AzitScheduleCreateResDto_"},{"ref":"Failed"}],"validators":{}},
+        "type": {"dataType":"union","subSchemas":[{"ref":"Success_AzitScheduleResDto_"},{"ref":"Failed"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AzitScheduleCreateReqDto": {
@@ -530,14 +628,14 @@ const models: TsoaRoute.Models = {
     "AzitScheduleParticipantResDto": {
         "dataType": "refObject",
         "properties": {
-            "user_id": {"dataType":"double","required":true},
+            "member_id": {"dataType":"double","required":true},
             "nickname": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "avatar_url": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
         },
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "AzitScheduleItemResDto": {
+    "AzitScheduleDetailResDto": {
         "dataType": "refObject",
         "properties": {
             "schedule_id": {"dataType":"double","required":true},
@@ -556,7 +654,7 @@ const models: TsoaRoute.Models = {
     "AzitScheduleListResDto": {
         "dataType": "refObject",
         "properties": {
-            "schedules": {"dataType":"array","array":{"dataType":"refObject","ref":"AzitScheduleItemResDto"},"required":true},
+            "schedules": {"dataType":"array","array":{"dataType":"refObject","ref":"AzitScheduleDetailResDto"},"required":true},
             "nextCursor": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "hasNext": {"dataType":"boolean","required":true},
         },
@@ -583,24 +681,6 @@ const models: TsoaRoute.Models = {
             "recruitment_end_at": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
         },
         "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "AzitScheduleParticipationResDto": {
-        "dataType": "refObject",
-        "properties": {
-            "success": {"dataType":"boolean","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Success_AzitScheduleParticipationResDto_": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"enum","enums":[null]},"data":{"ref":"AzitScheduleParticipationResDto","required":true},"statusCode":{"dataType":"double","required":true}},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Result_AzitScheduleParticipationResDto_": {
-        "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"ref":"Success_AzitScheduleParticipationResDto_"},{"ref":"Failed"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AzitMemberResDto": {
@@ -1345,9 +1425,228 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCommunityPostController_getPostList: Record<string, TsoaRoute.ParameterSchema> = {
+                game_id: {"in":"path","name":"game_id","required":true,"dataType":"double"},
+                page: {"default":1,"in":"query","name":"page","dataType":"double"},
+                size: {"default":10,"in":"query","name":"size","dataType":"double"},
+        };
+        app.get('/community/games/:game_id/posts',
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController)),
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController.prototype.getPostList)),
+
+            async function CommunityPostController_getPostList(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCommunityPostController_getPostList, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<CommunityPostController>(CommunityPostController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getPostList',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCommunityPostController_getBestPosts: Record<string, TsoaRoute.ParameterSchema> = {
+                game_id: {"in":"query","name":"game_id","dataType":"double"},
+        };
+        app.get('/community/posts/best',
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController)),
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController.prototype.getBestPosts)),
+
+            async function CommunityPostController_getBestPosts(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCommunityPostController_getBestPosts, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<CommunityPostController>(CommunityPostController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getBestPosts',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCommunityPostController_getPostDetail: Record<string, TsoaRoute.ParameterSchema> = {
+                post_id: {"in":"path","name":"post_id","required":true,"dataType":"double"},
+        };
+        app.get('/community/posts/:post_id',
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController)),
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController.prototype.getPostDetail)),
+
+            async function CommunityPostController_getPostDetail(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCommunityPostController_getPostDetail, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<CommunityPostController>(CommunityPostController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getPostDetail',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCommunityPostController_createPost: Record<string, TsoaRoute.ParameterSchema> = {
+                body: {"in":"body","name":"body","required":true,"ref":"CommunityPostCreateReqDto"},
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+        };
+        app.post('/community/posts',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController)),
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController.prototype.createPost)),
+
+            async function CommunityPostController_createPost(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCommunityPostController_createPost, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<CommunityPostController>(CommunityPostController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'createPost',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCommunityPostController_updatePost: Record<string, TsoaRoute.ParameterSchema> = {
+                post_id: {"in":"path","name":"post_id","required":true,"dataType":"double"},
+                body: {"in":"body","name":"body","required":true,"ref":"CommunityPostUpdateReqDto"},
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+        };
+        app.patch('/community/posts/:post_id',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController)),
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController.prototype.updatePost)),
+
+            async function CommunityPostController_updatePost(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCommunityPostController_updatePost, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<CommunityPostController>(CommunityPostController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'updatePost',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCommunityPostController_deletePost: Record<string, TsoaRoute.ParameterSchema> = {
+                post_id: {"in":"path","name":"post_id","required":true,"dataType":"double"},
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+        };
+        app.delete('/community/posts/:post_id',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController)),
+            ...(fetchMiddlewares<RequestHandler>(CommunityPostController.prototype.deletePost)),
+
+            async function CommunityPostController_deletePost(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCommunityPostController_deletePost, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<CommunityPostController>(CommunityPostController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'deletePost',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsAzitController_createAzit: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
-                azit_name: {"in":"formData","name":"azit_name","required":true,"dataType":"string"},
+                azit_name: {"in":"formData","name":"azit_name","dataType":"string"},
                 azit_icon: {"in":"formData","name":"azit_icon","dataType":"file"},
         };
         app.post('/azits',
@@ -1693,7 +1992,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 response,
                 next,
                 validatedArgs,
-                successStatus: 201,
+                successStatus: 204,
               });
             } catch (err) {
                 return next(err);

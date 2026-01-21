@@ -57,7 +57,7 @@
 				"type": "object"
 			},
 			"ApiErrorDetail": {
-				"description": "* ------------------------------------------------------------------\r\nApiErrorDetail Interface\r\n------------------------------------------------------------------",
+				"description": "* ------------------------------------------------------------------\nApiErrorDetail Interface\n------------------------------------------------------------------",
 				"properties": {
 					"field": {
 						"type": "string"
@@ -116,7 +116,7 @@
 					"statusCode"
 				],
 				"type": "object",
-				"description": "------------------------------------------------------------------\r\nBase Result Types\r\n------------------------------------------------------------------"
+				"description": "------------------------------------------------------------------\nBase Result Types\n------------------------------------------------------------------"
 			},
 			"Result_UserGetResDto_": {
 				"anyOf": [
@@ -129,7 +129,7 @@
 				]
 			},
 			"BadRequestError": {
-				"description": "* ------------------------------------------------------------------\r\nInterfaces for Swagger Documentation\r\n------------------------------------------------------------------",
+				"description": "* ------------------------------------------------------------------\nInterfaces for Swagger Documentation\n------------------------------------------------------------------",
 				"properties": {
 					"error": {
 						"properties": {
@@ -1393,6 +1393,295 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"CommunityPostResDto": {
+				"properties": {
+					"post_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"user_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"nickname": {
+						"type": "string"
+					},
+					"game_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"title": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"medias": {
+						"items": {
+							"properties": {
+								"order": {
+									"type": "number",
+									"format": "double"
+								},
+								"media_url": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"order",
+								"media_url"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"comment_count": {
+						"type": "number",
+						"format": "double"
+					},
+					"like_count": {
+						"type": "number",
+						"format": "double"
+					},
+					"created_at": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"post_id",
+					"user_id",
+					"nickname",
+					"game_id",
+					"title",
+					"content",
+					"medias",
+					"comment_count",
+					"like_count",
+					"created_at",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CommunityPostListResDto": {
+				"properties": {
+					"posts": {
+						"items": {
+							"$ref": "#/components/schemas/CommunityPostResDto"
+						},
+						"type": "array"
+					},
+					"meta": {
+						"properties": {
+							"total_pages": {
+								"type": "number",
+								"format": "double"
+							},
+							"current_page": {
+								"type": "number",
+								"format": "double"
+							},
+							"total_count": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"total_pages",
+							"current_page",
+							"total_count"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"posts",
+					"meta"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_CommunityPostListResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/CommunityPostListResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_CommunityPostListResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_CommunityPostListResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"Success_CommunityPostResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/CommunityPostResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_CommunityPostResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_CommunityPostResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
+			"CommunityMediaDto": {
+				"properties": {
+					"media_url": {
+						"type": "string"
+					},
+					"order": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"media_url",
+					"order"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CommunityPostCreateReqDto": {
+				"properties": {
+					"game_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"title": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"medias": {
+						"items": {
+							"$ref": "#/components/schemas/CommunityMediaDto"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"game_id",
+					"title",
+					"content"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CommunityPostUpdateReqDto": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"medias": {
+						"items": {
+							"$ref": "#/components/schemas/CommunityMediaDto"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CommunityPostDeleteResDto": {
+				"properties": {
+					"post_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"post_id",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Success_CommunityPostDeleteResDto_": {
+				"properties": {
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"data": {
+						"$ref": "#/components/schemas/CommunityPostDeleteResDto"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"data",
+					"statusCode"
+				],
+				"type": "object"
+			},
+			"Result_CommunityPostDeleteResDto_": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/Success_CommunityPostDeleteResDto_"
+					},
+					{
+						"$ref": "#/components/schemas/Failed"
+					}
+				]
+			},
 			"AzitResDto": {
 				"properties": {
 					"azit_id": {
@@ -1658,7 +1947,7 @@
 					}
 				]
 			},
-			"AzitScheduleCreateResDto": {
+			"AzitScheduleResDto": {
 				"properties": {
 					"schedule_id": {
 						"type": "number",
@@ -1704,7 +1993,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Success_AzitScheduleCreateResDto_": {
+			"Success_AzitScheduleResDto_": {
 				"properties": {
 					"error": {
 						"type": "number",
@@ -1714,7 +2003,7 @@
 						"nullable": true
 					},
 					"data": {
-						"$ref": "#/components/schemas/AzitScheduleCreateResDto"
+						"$ref": "#/components/schemas/AzitScheduleResDto"
 					},
 					"statusCode": {
 						"type": "number",
@@ -1727,10 +2016,10 @@
 				],
 				"type": "object"
 			},
-			"Result_AzitScheduleCreateResDto_": {
+			"Result_AzitScheduleResDto_": {
 				"anyOf": [
 					{
-						"$ref": "#/components/schemas/Success_AzitScheduleCreateResDto_"
+						"$ref": "#/components/schemas/Success_AzitScheduleResDto_"
 					},
 					{
 						"$ref": "#/components/schemas/Failed"
@@ -1778,10 +2067,10 @@
 			},
 			"AzitScheduleParticipantResDto": {
 				"properties": {
-					"user_id": {
+					"member_id": {
 						"type": "number",
 						"format": "double",
-						"description": "사용자 ID",
+						"description": "아지트 멤버 ID",
 						"example": 1
 					},
 					"nickname": {
@@ -1793,19 +2082,19 @@
 					"avatar_url": {
 						"type": "string",
 						"nullable": true,
-						"description": "아바타 URL",
+						"description": "아바타 URL (착용한 아바타가 없을 경우 null)",
 						"example": "https://example.com/avatar.png"
 					}
 				},
 				"required": [
-					"user_id",
+					"member_id",
 					"nickname",
 					"avatar_url"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
-			"AzitScheduleItemResDto": {
+			"AzitScheduleDetailResDto": {
 				"properties": {
 					"schedule_id": {
 						"type": "number",
@@ -1877,7 +2166,7 @@
 				"properties": {
 					"schedules": {
 						"items": {
-							"$ref": "#/components/schemas/AzitScheduleItemResDto"
+							"$ref": "#/components/schemas/AzitScheduleDetailResDto"
 						},
 						"type": "array",
 						"description": "일정 목록",
@@ -1886,7 +2175,7 @@
 					"nextCursor": {
 						"type": "string",
 						"nullable": true,
-						"description": "형식: `${game_start_at}|${schedule_id}`\r\n마지막 페이지인 경우 null",
+						"description": "형식: `${game_start_at}|${schedule_id}`\n마지막 페이지인 경우 null",
 						"example": "2026-03-01T20:00:00|1"
 					},
 					"hasNext": {
@@ -1972,53 +2261,6 @@
 				},
 				"type": "object",
 				"additionalProperties": false
-			},
-			"AzitScheduleParticipationResDto": {
-				"properties": {
-					"success": {
-						"type": "boolean",
-						"description": "참여 성공 여부",
-						"example": true
-					}
-				},
-				"required": [
-					"success"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Success_AzitScheduleParticipationResDto_": {
-				"properties": {
-					"error": {
-						"type": "number",
-						"enum": [
-							null
-						],
-						"nullable": true
-					},
-					"data": {
-						"$ref": "#/components/schemas/AzitScheduleParticipationResDto"
-					},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"data",
-					"statusCode"
-				],
-				"type": "object"
-			},
-			"Result_AzitScheduleParticipationResDto_": {
-				"anyOf": [
-					{
-						"$ref": "#/components/schemas/Success_AzitScheduleParticipationResDto_"
-					},
-					{
-						"$ref": "#/components/schemas/Failed"
-					}
-				]
 			},
 			"AzitMemberResDto": {
 				"properties": {
@@ -3229,6 +3471,236 @@
 				]
 			}
 		},
+		"/community/games/{game_id}/posts": {
+			"get": {
+				"operationId": "GetPostList",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommunityPostListResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Community"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "game_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 1,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/community/posts/best": {
+			"get": {
+				"operationId": "GetBestPosts",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommunityPostListResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Community"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "game_id",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/community/posts/{post_id}": {
+			"get": {
+				"operationId": "GetPostDetail",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommunityPostResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Community"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "post_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			},
+			"patch": {
+				"operationId": "UpdatePost",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommunityPostResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Community"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "post_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CommunityPostUpdateReqDto"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeletePost",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommunityPostDeleteResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Community"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "post_id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/community/posts": {
+			"post": {
+				"operationId": "CreatePost",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Result_CommunityPostResDto_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Community"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CommunityPostCreateReqDto"
+							}
+						}
+					}
+				}
+			}
+		},
 		"/azits": {
 			"post": {
 				"operationId": "CreateAzit",
@@ -3274,7 +3746,7 @@
 				],
 				"parameters": [],
 				"requestBody": {
-					"required": true,
+					"required": false,
 					"content": {
 						"multipart/form-data": {
 							"schema": {
@@ -3287,10 +3759,7 @@
 										"type": "string",
 										"format": "binary"
 									}
-								},
-								"required": [
-									"azit_name"
-								]
+								}
 							}
 						}
 					}
@@ -3503,7 +3972,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_AzitScheduleCreateResDto_"
+									"$ref": "#/components/schemas/Result_AzitScheduleResDto_"
 								}
 							}
 						}
@@ -3650,7 +4119,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_AzitScheduleCreateResDto_"
+									"$ref": "#/components/schemas/Result_AzitScheduleResDto_"
 								}
 							}
 						}
@@ -3793,12 +4262,12 @@
 			"post": {
 				"operationId": "ParticipateSchedule",
 				"responses": {
-					"201": {
-						"description": "Created",
+					"204": {
+						"description": "No Content",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Result_AzitScheduleParticipationResDto_"
+									"$ref": "#/components/schemas/Result_null_"
 								}
 							}
 						}
@@ -3992,7 +4461,7 @@
 						}
 					}
 				},
-				"description": "아지트 멤버 조회\r\n특정 아지트에 속한 모든 멤버 정보를 조회합니다.",
+				"description": "아지트 멤버 조회\n특정 아지트에 속한 모든 멤버 정보를 조회합니다.",
 				"tags": [
 					"Azit"
 				],
@@ -4106,7 +4575,7 @@
 						}
 					}
 				},
-				"description": "아지트 멤버 추가\r\n특정 아지트에 새로운 멤버를 추가합니다. (아지트장만 가능)",
+				"description": "아지트 멤버 추가\n특정 아지트에 새로운 멤버를 추가합니다. (아지트장만 가능)",
 				"tags": [
 					"Azit"
 				],
@@ -4203,7 +4672,7 @@
 						}
 					}
 				},
-				"description": "아지트 멤버 제거\r\n특정 아지트에서 멤버를 제거합니다. (아지트장만 가능 또는 본인이 탈퇴)",
+				"description": "아지트 멤버 제거\n특정 아지트에서 멤버를 제거합니다. (아지트장만 가능 또는 본인이 탈퇴)",
 				"tags": [
 					"Azit"
 				],
