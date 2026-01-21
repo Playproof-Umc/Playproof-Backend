@@ -1,8 +1,15 @@
-import { inject, injectable } from "tsyringe";
-import { ChatRepository } from "../repository/chat.repository";
-import { ChatMessageListResDto, ChatMessageResDto } from "../dtos/chat.res.dto";
-import { ChatErrorCode } from "../../../common/constants/error-code";
-import { Result, forbidden, internalServerError, isSuccess, notFound, ok } from "../../../common/types/result.type";
+import { inject, injectable } from 'tsyringe';
+import { ChatRepository } from '../repository/chat.repository';
+import { ChatMessageListResDto, ChatMessageResDto } from '../dtos/chat.res.dto';
+import { ChatErrorCode } from '../../../common/constants/error-code';
+import {
+  Result,
+  forbidden,
+  internalServerError,
+  isSuccess,
+  notFound,
+  ok,
+} from '../../../common/types/result.type';
 
 @injectable()
 export class ChatService {
@@ -12,15 +19,18 @@ export class ChatService {
     const room = await this.chatRepository.findChatRoomById(roomId);
     if (!room) {
       return notFound({
-        message: "채팅방을 찾을 수 없습니다.",
+        message: '채팅방을 찾을 수 없습니다.',
         errorCode: ChatErrorCode.ROOM_NOT_FOUND,
       });
     }
 
-    const member = await this.chatRepository.findAzitUserByUserIdAndAzitId(userId, room.azitId);
+    const member = await this.chatRepository.findAzitUserByUserIdAndAzitId(
+      userId,
+      room.azitId,
+    );
     if (!member) {
       return forbidden({
-        message: "아지트 멤버만 채팅할 수 있습니다.",
+        message: '아지트 멤버만 채팅할 수 있습니다.',
         errorCode: ChatErrorCode.AZIT_MEMBER_ONLY,
       });
     }
@@ -28,7 +38,10 @@ export class ChatService {
     return ok({ room, member });
   }
 
-  async joinRoom(roomId: number, userId: number): Promise<Result<{ roomId: number; azitId: number }>> {
+  async joinRoom(
+    roomId: number,
+    userId: number,
+  ): Promise<Result<{ roomId: number; azitId: number }>> {
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
 
@@ -38,12 +51,20 @@ export class ChatService {
     });
   }
 
-  async sendMessage(roomId: number, userId: number, content: string): Promise<Result<ChatMessageResDto>> {
+  async sendMessage(
+    roomId: number,
+    userId: number,
+    content: string,
+  ): Promise<Result<ChatMessageResDto>> {
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
 
     try {
-      const chat = await this.chatRepository.createChat(roomId, access.data.member.id, content);
+      const chat = await this.chatRepository.createChat(
+        roomId,
+        access.data.member.id,
+        content,
+      );
       return ok({
         id: Number(chat.id),
         chatRoomId: Number(chat.chatRoomId),
@@ -54,9 +75,9 @@ export class ChatService {
         createdAt: chat.createdAt.toISOString(),
       });
     } catch (error) {
-      console.error("Failed to create chat:", error);
+      console.error('Failed to create chat:', error);
       return internalServerError({
-        message: "메시지 저장에 실패했습니다.",
+        message: '메시지 저장에 실패했습니다.',
         errorCode: ChatErrorCode.MESSAGE_CREATE_FAILED,
       });
     }
@@ -65,7 +86,7 @@ export class ChatService {
   async getMessages(
     roomId: number,
     userId: number,
-    options: { size?: number; cursor?: number }
+    options: { size?: number; cursor?: number },
   ): Promise<Result<ChatMessageListResDto>> {
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
@@ -86,7 +107,8 @@ export class ChatService {
       }))
       .reverse();
 
-    const nextCursor = chats.length === size ? Number(chats[chats.length - 1].id) : null;
+    const nextCursor =
+      chats.length === size ? Number(chats[chats.length - 1].id) : null;
 
     return ok({
       messages,

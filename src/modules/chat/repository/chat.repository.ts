@@ -1,5 +1,5 @@
-import { singleton } from "tsyringe";
-import { prisma } from "../../../common/config/database";
+import { singleton } from 'tsyringe';
+import { prisma } from '../../../common/config/database';
 
 @singleton()
 export class ChatRepository {
@@ -44,7 +44,7 @@ export class ChatRepository {
   async listChats(chatRoomId: number, size: number, cursor?: number) {
     return prisma.chat.findMany({
       where: { chatRoomId: BigInt(chatRoomId) },
-      orderBy: { id: "desc" },
+      orderBy: { id: 'desc' },
       take: size,
       ...(cursor
         ? {
