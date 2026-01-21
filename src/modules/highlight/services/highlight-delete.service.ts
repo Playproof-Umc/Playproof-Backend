@@ -1,7 +1,7 @@
 // src/modules/highlight/services/highlight-delete.service.ts
 import { injectable, inject } from "tsyringe";
 import { HighlightRepository } from "../repositories/highlight.repository";
-import { AzitRepository } from "../../azit/repositories/azit.repository";
+import { HighlightValidator } from "../utils/highlight.validator";
 import { HighlightDeleteResDto } from "../dtos/highlight.res.dto";
 import {
   Result,
@@ -10,14 +10,14 @@ import {
   forbidden,
   internalServerError,
 } from "../../../common/types/result.type";
-import { PartyErrorCode, HighlightErrorCode, CommonErrorCode } from "../../../common/constants/error-code";
+import { HighlightErrorCode, CommonErrorCode } from "../../../common/constants/error-code";
 import { deleteFileFromS3 } from "../../../common/utils/file-util";
 
 @injectable()
 export class HighlightDeleteService {
   constructor(
     @inject(HighlightRepository) private highlightRepository: HighlightRepository,
-    @inject(AzitRepository) private azitRepository: AzitRepository,
+    @inject(HighlightValidator) private highlightValidator: HighlightValidator,
   ) {}
 
   async deleteHighlight(
@@ -25,13 +25,14 @@ export class HighlightDeleteService {
     azitId: bigint,
     highlightId: bigint,
   ): Promise<Result<HighlightDeleteResDto>> {
-    // 1. 아지트 존재 여부 확인
-    const azit = await this.azitRepository.findAzitById(azitId);
-    if (!azit) {
-      return notFound({
-        message: "아지트를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_AZIT,
-      });
+    // 1. 아지트 존재 및 멤버 권한 확인
+    const azitAccessError = await this.highlightValidator.validateAzitAccess<HighlightDeleteResDto>(
+      userId,
+      azitId,
+      "삭제",
+    );
+    if (azitAccessError) {
+      return azitAccessError;
     }
 
     // 2. 하이라이트 존재 여부 및 아지트 소속 확인
@@ -101,7 +102,7 @@ export class HighlightDeleteService {
       // 8. 응답 DTO 생성
       const response: HighlightDeleteResDto = {
         highlight_id: Number(highlight.id),
-        azit_id: Number(azit.id),
+        azit_id: Number(highlight.azitId),
         user_id: Number(highlight.userId),
         nickname: highlight.user.nickname,
         content: highlight.content,

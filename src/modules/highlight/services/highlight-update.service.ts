@@ -1,7 +1,7 @@
 // src/modules/highlight/services/highlight-update.service.ts
 import { injectable, inject } from "tsyringe";
 import { HighlightRepository } from "../repositories/highlight.repository";
-import { AzitRepository } from "../../azit/repositories/azit.repository";
+import { HighlightValidator } from "../utils/highlight.validator";
 import { HighlightUpdateReqDto, HighlightVisibility } from "../dtos/highlight.req.dto";
 import { GetHighlightDetailResDto, HighlightMediaResDto } from "../dtos/highlight.res.dto";
 import {
@@ -9,17 +9,15 @@ import {
   ok,
   notFound,
   forbidden,
-  badRequest,
   internalServerError,
 } from "../../../common/types/result.type";
-import { PartyErrorCode } from "../../../common/constants/error-code";
 import { uploadFileToS3 } from "../../../common/utils/file-util";
 
 @injectable()
 export class HighlightUpdateService {
   constructor(
     @inject(HighlightRepository) private highlightRepository: HighlightRepository,
-    @inject(AzitRepository) private azitRepository: AzitRepository,
+    @inject(HighlightValidator) private highlightValidator: HighlightValidator,
   ) {}
 
   async updateHighlight(
@@ -29,13 +27,14 @@ export class HighlightUpdateService {
     dto: HighlightUpdateReqDto,
     files: Express.Multer.File[] | undefined,
   ): Promise<Result<GetHighlightDetailResDto>> {
-    // 1. 아지트 존재 여부 확인
-    const azit = await this.azitRepository.findAzitById(azitId);
-    if (!azit) {
-      return notFound({
-        message: "아지트를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_AZIT,
-      });
+    // 1. 아지트 존재 및 멤버 권한 확인
+    const azitAccessError = await this.highlightValidator.validateAzitAccess<GetHighlightDetailResDto>(
+      userId,
+      azitId,
+      "수정",
+    );
+    if (azitAccessError) {
+      return azitAccessError;
     }
 
     // 2. 하이라이트 존재 여부 및 아지트 소속 확인
@@ -90,51 +89,17 @@ export class HighlightUpdateService {
 
     // 6. 신규 미디어 파일 검증 (있는 경우)
     if (files && files.length > 0) {
-      const totalMediaCount = existingMediaCount + files.length;
-      if (totalMediaCount > 10) {
-        return badRequest({
-          message: "요청 파라미터가 잘못되었습니다.",
-          errorCode: "COMMON_INVALID_PARAMETER",
-          errors: [
-            {
-              field: "medias",
-              value: null,
-              reason: `기존 미디어와 신규 미디어를 합쳐서 최대 10개까지만 가능합니다. (현재: ${existingMediaCount}개 기존 + ${files.length}개 신규 = ${totalMediaCount}개)`,
-            },
-          ],
-        });
+      const mediaCountError = this.highlightValidator.validateMediaCountForUpdate(
+        existingMediaCount,
+        files.length,
+      );
+      if (mediaCountError) {
+        return mediaCountError;
       }
 
-      // 6-2. 각 파일 크기 및 타입 검증
-      const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-      const errors = [];
-
-      for (const file of files) {
-        if (file.size > MAX_FILE_SIZE) {
-          errors.push({
-            field: "medias",
-            value: file.originalname,
-            reason: "파일 크기가 100MB를 초과합니다.",
-          });
-        }
-
-        const isImage = file.mimetype.startsWith('image/');
-        const isVideo = file.mimetype.startsWith('video/');
-        if (!isImage && !isVideo) {
-          errors.push({
-            field: "medias",
-            value: file.originalname,
-            reason: "지원하지 않는 파일 형식입니다. (이미지, 영상만 가능)",
-          });
-        }
-      }
-
-      if (errors.length > 0) {
-        return badRequest({
-          message: "요청 파라미터가 잘못되었습니다.",
-          errorCode: "COMMON_INVALID_PARAMETER",
-          errors,
-        });
+      const mediaValidationError = this.highlightValidator.validateNewMediaFiles(files);
+      if (mediaValidationError) {
+        return mediaValidationError;
       }
     }
 
@@ -207,8 +172,8 @@ export class HighlightUpdateService {
       // 13. 응답 DTO 변환
       const response: GetHighlightDetailResDto = {
         highlight_id: Number(updatedHighlight.id),
-        azit_id: Number(azit.id),
-        azit_name: azit.azitName,
+        azit_id: Number(updatedHighlight.azitId),
+        azit_name: updatedHighlight.azit?.azitName || "",
         user_id: Number(updatedHighlight.userId),
         nickname: updatedHighlight.user.nickname,
         content: updatedHighlight.content,

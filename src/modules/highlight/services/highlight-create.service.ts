@@ -1,20 +1,17 @@
 // src/modules/highlight/services/highlight-create.service.ts
 import { injectable, inject } from "tsyringe";
 import { HighlightRepository } from "../repositories/highlight.repository";
-import { AzitRepository } from "../../azit/repositories/azit.repository";
-import { AzitUserRepository } from "../../azit/repositories/azit-user.repository";
+import { HighlightValidator } from "../utils/highlight.validator";
 import { HighlightCreateReqDto, HighlightVisibility } from "../dtos/highlight.req.dto";
 import { HighlightCreateResDto, HighlightMediaResDto } from "../dtos/highlight.res.dto";
-import { Result, ok, created, notFound, forbidden, badRequest, internalServerError } from "../../../common/types/result.type";
-import { PartyErrorCode } from "../../../common/constants/error-code";
+import { Result, ok, created, internalServerError } from "../../../common/types/result.type";
 import { uploadFileToS3 } from "../../../common/utils/file-util";
 
 @injectable()
 export class HighlightCreateService {
   constructor(
     @inject(HighlightRepository) private highlightRepository: HighlightRepository,
-    @inject(AzitRepository) private azitRepository: AzitRepository,
-    @inject(AzitUserRepository) private azitUserRepository: AzitUserRepository,
+    @inject(HighlightValidator) private highlightValidator: HighlightValidator,
   ) {}
 
   async createHighlight(
@@ -23,101 +20,41 @@ export class HighlightCreateService {
     dto: HighlightCreateReqDto,
     files: Express.Multer.File[] | undefined,
   ): Promise<Result<HighlightCreateResDto>> {
-    // 1. 아지트 존재 여부 확인
-    const azit = await this.azitRepository.findAzitById(azitId);
-    if (!azit) {
-      return notFound({
-        message: "아지트를 찾을 수 없습니다.",
-        errorCode: PartyErrorCode.NOT_FOUND_AZIT,
-      });
+    // 1. 아지트 존재 및 멤버 권한 확인
+    const azitAccessError = await this.highlightValidator.validateAzitAccess<HighlightCreateResDto>(
+      userId,
+      azitId,
+      "생성",
+    );
+    if (azitAccessError) {
+      return azitAccessError;
     }
 
-    // 2. 사용자가 아지트 멤버인지 확인
-    const azitUserRole = await this.azitUserRepository.findAzitUserRoleByUserIdAndAzitId(userId, azitId);
-    if (!azitUserRole) {
-      return forbidden({
-        message: "아지트 멤버만 하이라이트를 생성할 수 있습니다.",
-        errorCode: "HIGHLIGHT_CREATE_FORBIDDEN",
-      });
+    // 2. 미디어 파일 검증
+    const mediaValidationError = this.highlightValidator.validateMediaFiles(files);
+    if (mediaValidationError) {
+      return mediaValidationError;
     }
 
-    // 3. 미디어 파일 검증
-    if (!files || files.length === 0) {
-      return badRequest({
-        message: "요청 파라미터가 잘못되었습니다.",
-        errorCode: "COMMON_INVALID_PARAMETER",
-        errors: [
-          {
-            field: "medias",
-            value: null,
-            reason: "최소 1개 이상의 미디어 파일이 필요합니다.",
-          },
-        ],
-      });
-    }
-
-    if (files.length > 10) {
-      return badRequest({
-        message: "요청 파라미터가 잘못되었습니다.",
-        errorCode: "COMMON_INVALID_PARAMETER",
-        errors: [
-          {
-            field: "medias",
-            value: null,
-            reason: "최대 10개의 미디어 파일까지만 업로드할 수 있습니다.",
-          },
-        ],
-      });
-    }
-
-    // 4. 각 파일 크기 및 타입 검증
-    const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-    const errors = [];
-
-    for (const file of files) {
-      if (file.size > MAX_FILE_SIZE) {
-        errors.push({
-          field: "medias",
-          value: file.originalname,
-          reason: "파일 크기가 100MB를 초과합니다.",
-        });
-      }
-
-      const isImage = file.mimetype.startsWith('image/');
-      const isVideo = file.mimetype.startsWith('video/');
-      if (!isImage && !isVideo) {
-        errors.push({
-          field: "medias",
-          value: file.originalname,
-          reason: "지원하지 않는 파일 형식입니다. (이미지, 영상만 가능)",
-        });
-      }
-    }
-
-    if (errors.length > 0) {
-      return badRequest({
-        message: "요청 파라미터가 잘못되었습니다.",
-        errorCode: "COMMON_INVALID_PARAMETER",
-        errors,
-      });
-    }
+    // files는 위에서 검증되어 null이 아님을 보장
+    const validatedFiles = files!;
 
     try {
-      // 5. S3에 파일 업로드
+      // 3. S3에 파일 업로드
       const mediaUrls: string[] = [];
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let i = 0; i < validatedFiles.length; i++) {
+        const file = validatedFiles[i];
         const mediaUrl = await uploadFileToS3(file, 'highlights');
         mediaUrls.push(mediaUrl);
       }
 
-      // 6. 미디어 데이터 준비
+      // 4. 미디어 데이터 준비
       const mediaData = mediaUrls.map((url, index) => ({
         mediaUrl: url,
         order: index,
       }));
 
-      // 7. 트랜잭션 사용  하이라이트 생성 및 미디어 일괄 생성
+      // 5. 트랜잭션 사용 - 하이라이트 생성 및 미디어 일괄 생성
       const isPublic = dto.visibility === HighlightVisibility.PUBLIC;
       const { highlight, medias } = await this.highlightRepository.createHighlightWithMedias(
         userId,
@@ -127,21 +64,21 @@ export class HighlightCreateService {
         mediaData,
       );
 
-      // 8. 사용자 정보 조회
+      // 6. 사용자 정보 조회
       const highlightWithDetails = await this.highlightRepository.findHighlightById(highlight.id);
       
-      if (!highlightWithDetails) {
+      if (!highlightWithDetails || !highlightWithDetails.azit) {
         return internalServerError({
           message: "하이라이트 생성 후 조회에 실패했습니다.",
           errorCode: "HIGHLIGHT_CREATE_FAILED",
         });
       }
 
-      // 9. 좋아요 수, 댓글 수 조회 
+      // 7. 좋아요 수, 댓글 수 조회 
       const likeCount = 0;
       const commentCount = 0;
 
-      // 10. 응답 DTO 변환
+      // 8. 응답 DTO 변환
       const mediaDtos: HighlightMediaResDto[] = medias.map((media) => ({
         highlight_media_id: Number(media.id),
         media_url: media.mediaUrl,
@@ -153,8 +90,8 @@ export class HighlightCreateService {
         highlight_id: Number(highlight.id),
         user_id: Number(highlightWithDetails.userId),
         nickname: highlightWithDetails.user.nickname,
-        azit_id: Number(azit.id),
-        azit_name: azit.azitName,
+        azit_id: Number(highlightWithDetails.azit.id),
+        azit_name: highlightWithDetails.azit.azitName,
         content: highlight.content,
         visibility: dto.visibility,
         media_count: medias.length,
