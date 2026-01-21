@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString, IsOptional, IsEnum } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { CommunityTargetType } from "../types/community-type";
 
 /**
@@ -27,6 +28,7 @@ export class CommunityCommentCreateReqDto {
   target_id!: number;
 
   @IsOptional()
+  @Transform(({ value }) => (value === null ? undefined : value))
   @IsNumber()
   parent_id?: number;
 
