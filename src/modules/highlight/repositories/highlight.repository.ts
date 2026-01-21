@@ -25,6 +25,52 @@ export class HighlightRepository {
   }
 
   /**
+   * 하이라이트 생성 및 미디어 일괄 생성 (트랜잭션)
+   */
+  async createHighlightWithMedias(
+    userId: bigint,
+    azitId: bigint,
+    content: string | undefined,
+    isPublic: boolean,
+    mediaData: Array<{ mediaUrl: string; order: number }>,
+  ): Promise<{ highlight: Highlight; medias: CommunityMedia[] }> {
+    return prisma.$transaction(async (tx) => {
+      // 1. 하이라이트 생성
+      const highlight = await tx.highlight.create({
+        data: {
+          userId,
+          azitId,
+          content: content || null,
+          isPublic,
+        },
+      });
+
+      // 2. 미디어 일괄 생성
+      if (mediaData.length > 0) {
+        await tx.communityMedia.createMany({
+          data: mediaData.map((media) => ({
+            highlightId: highlight.id,
+            mediaUrl: media.mediaUrl,
+            order: media.order,
+          })),
+        });
+      }
+
+      // 3. 생성된 미디어 조회
+      const medias = await tx.communityMedia.findMany({
+        where: {
+          highlightId: highlight.id,
+        },
+        orderBy: {
+          order: 'asc',
+        },
+      });
+
+      return { highlight, medias };
+    });
+  }
+
+  /**
    * 하이라이트 ID로 조회 (상세 정보 포함)
    */
   async findHighlightById(highlightId: bigint) {

@@ -103,16 +103,7 @@ export class HighlightCreateService {
     }
 
     try {
-      // 5. Highlight 생성
-      const isPublic = dto.visibility === HighlightVisibility.PUBLIC;
-      const highlight = await this.highlightRepository.createHighlight(
-        userId,
-        azitId,
-        dto.content,
-        isPublic,
-      );
-
-      // 6. S3에 파일 업로드 및 CommunityMedia 생성
+      // 5. S3에 파일 업로드
       const mediaUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -120,22 +111,23 @@ export class HighlightCreateService {
         mediaUrls.push(mediaUrl);
       }
 
-      // 7. CommunityMedia 일괄 생성
+      // 6. 미디어 데이터 준비
       const mediaData = mediaUrls.map((url, index) => ({
         mediaUrl: url,
         order: index,
       }));
 
-      await this.highlightRepository.createHighlightMediaBatch(highlight.id, mediaData);
+      // 7. 트랜잭션 사용  하이라이트 생성 및 미디어 일괄 생성
+      const isPublic = dto.visibility === HighlightVisibility.PUBLIC;
+      const { highlight, medias } = await this.highlightRepository.createHighlightWithMedias(
+        userId,
+        azitId,
+        dto.content,
+        isPublic,
+        mediaData,
+      );
 
-      // 8. 생성된 미디어 조회
-      const medias = await this.highlightRepository.findMediasByHighlightId(highlight.id);
-
-      // 9. 좋아요 수, 댓글 수 조회 (생성 직후이므로 0)
-      const likeCount = 0;
-      const commentCount = 0;
-
-      // 10. 사용자 정보 조회 (닉네임)
+      // 8. 사용자 정보 조회
       const highlightWithDetails = await this.highlightRepository.findHighlightById(highlight.id);
       
       if (!highlightWithDetails) {
@@ -145,7 +137,11 @@ export class HighlightCreateService {
         });
       }
 
-      // 11. 응답 DTO 변환
+      // 9. 좋아요 수, 댓글 수 조회 
+      const likeCount = 0;
+      const commentCount = 0;
+
+      // 10. 응답 DTO 변환
       const mediaDtos: HighlightMediaResDto[] = medias.map((media) => ({
         highlight_media_id: Number(media.id),
         media_url: media.mediaUrl,
