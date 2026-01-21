@@ -1,7 +1,6 @@
 // src/modules/highlight/services/highlight-delete.service.ts
 import { injectable, inject } from "tsyringe";
 import { HighlightRepository } from "../repositories/highlight.repository";
-import { CommunityMediaRepository } from "../repositories/community-media.repository";
 import { AzitRepository } from "../../azit/repositories/azit.repository";
 import { HighlightDeleteResDto } from "../dtos/highlight.res.dto";
 import {
@@ -18,7 +17,6 @@ import { deleteFileFromS3 } from "../../../common/utils/file-util";
 export class HighlightDeleteService {
   constructor(
     @inject(HighlightRepository) private highlightRepository: HighlightRepository,
-    @inject(CommunityMediaRepository) private communityMediaRepository: CommunityMediaRepository,
     @inject(AzitRepository) private azitRepository: AzitRepository,
   ) {}
 

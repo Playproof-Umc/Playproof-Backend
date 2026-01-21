@@ -1,7 +1,6 @@
 // src/modules/highlight/services/highlight-create.service.ts
 import { injectable, inject } from "tsyringe";
 import { HighlightRepository } from "../repositories/highlight.repository";
-import { CommunityMediaRepository } from "../repositories/community-media.repository";
 import { AzitRepository } from "../../azit/repositories/azit.repository";
 import { AzitUserRepository } from "../../azit/repositories/azit-user.repository";
 import { HighlightCreateReqDto, HighlightVisibility } from "../dtos/highlight.req.dto";
@@ -14,7 +13,6 @@ import { uploadFileToS3 } from "../../../common/utils/file-util";
 export class HighlightCreateService {
   constructor(
     @inject(HighlightRepository) private highlightRepository: HighlightRepository,
-    @inject(CommunityMediaRepository) private communityMediaRepository: CommunityMediaRepository,
     @inject(AzitRepository) private azitRepository: AzitRepository,
     @inject(AzitUserRepository) private azitUserRepository: AzitUserRepository,
   ) {}
@@ -128,10 +126,10 @@ export class HighlightCreateService {
         order: index,
       }));
 
-      await this.communityMediaRepository.createHighlightMediaBatch(highlight.id, mediaData);
+      await this.highlightRepository.createHighlightMediaBatch(highlight.id, mediaData);
 
       // 8. 생성된 미디어 조회
-      const medias = await this.communityMediaRepository.findMediasByHighlightId(highlight.id);
+      const medias = await this.highlightRepository.findMediasByHighlightId(highlight.id);
 
       // 9. 좋아요 수, 댓글 수 조회 (생성 직후이므로 0)
       const likeCount = 0;

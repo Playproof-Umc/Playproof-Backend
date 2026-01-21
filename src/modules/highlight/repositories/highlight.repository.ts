@@ -1,6 +1,6 @@
 // src/modules/highlight/repositories/highlight.repository.ts
 import { singleton } from "tsyringe";
-import { Highlight } from "@prisma/client";
+import { Highlight, CommunityMedia } from "@prisma/client";
 import { prisma } from "../../../common/config/database";
 
 @singleton()
@@ -116,9 +116,7 @@ export class HighlightRepository {
       }
     }
 
-    // like_count 정렬의 경우 별도 처리 (모든 하이라이트 조회 후 메모리에서 정렬)
     if (sortField === 'likeCount') {
-      // 먼저 모든 하이라이트를 조회 (나중에 메모리에서 정렬)
       const allHighlights = await prisma.highlight.findMany({
         where: whereCondition,
         include: {
@@ -160,11 +158,9 @@ export class HighlightRepository {
         }
       }
 
-      // limit + 1개만 반환
       return filteredHighlights.slice(0, limit + 1);
     }
 
-    // createdAt, updatedAt 정렬의 경우 Prisma에서 직접 정렬
     const orderBy: any = {};
     orderBy[sortField] = sortOrder;
 
@@ -238,5 +234,86 @@ export class HighlightRepository {
         id: highlightId,
       },
     });
+  }
+
+  /**
+   * 하이라이트 미디어 생성
+   */
+  async createHighlightMedia(
+    highlightId: bigint,
+    mediaUrl: string,
+    order: number,
+  ): Promise<CommunityMedia> {
+    return prisma.communityMedia.create({
+      data: {
+        highlightId,
+        mediaUrl,
+        order,
+      },
+    });
+  }
+
+  /**
+   * 여러 하이라이트 미디어 일괄 생성
+   */
+  async createHighlightMediaBatch(
+    highlightId: bigint,
+    mediaData: Array<{ mediaUrl: string; order: number }>,
+  ): Promise<number> {
+    const result = await prisma.communityMedia.createMany({
+      data: mediaData.map((media) => ({
+        highlightId,
+        mediaUrl: media.mediaUrl,
+        order: media.order,
+      })),
+    });
+
+    return result.count;
+  }
+
+  /**
+   * 하이라이트 ID로 미디어 목록 조회
+   */
+  async findMediasByHighlightId(highlightId: bigint): Promise<CommunityMedia[]> {
+    return prisma.communityMedia.findMany({
+      where: {
+        highlightId,
+      },
+      orderBy: {
+        order: 'asc',
+      },
+    });
+  }
+
+  /**
+   * 하이라이트 ID로 미디어 일괄 삭제
+   */
+  async deleteMediasByHighlightId(highlightId: bigint): Promise<number> {
+    const result = await prisma.communityMedia.deleteMany({
+      where: {
+        highlightId,
+      },
+    });
+
+    return result.count;
+  }
+
+  /**
+   * 특정 미디어 ID들로 미디어 삭제
+   */
+  async deleteMediaByIds(mediaIds: bigint[]): Promise<number> {
+    if (mediaIds.length === 0) {
+      return 0;
+    }
+
+    const result = await prisma.communityMedia.deleteMany({
+      where: {
+        id: {
+          in: mediaIds,
+        },
+      },
+    });
+
+    return result.count;
   }
 }

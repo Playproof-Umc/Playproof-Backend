@@ -1,7 +1,6 @@
 // src/modules/highlight/services/highlight-update.service.ts
 import { injectable, inject } from "tsyringe";
 import { HighlightRepository } from "../repositories/highlight.repository";
-import { CommunityMediaRepository } from "../repositories/community-media.repository";
 import { AzitRepository } from "../../azit/repositories/azit.repository";
 import { HighlightUpdateReqDto, HighlightVisibility } from "../dtos/highlight.req.dto";
 import { GetHighlightDetailResDto, HighlightMediaResDto } from "../dtos/highlight.res.dto";
@@ -20,7 +19,6 @@ import { uploadFileToS3 } from "../../../common/utils/file-util";
 export class HighlightUpdateService {
   constructor(
     @inject(HighlightRepository) private highlightRepository: HighlightRepository,
-    @inject(CommunityMediaRepository) private communityMediaRepository: CommunityMediaRepository,
     @inject(AzitRepository) private azitRepository: AzitRepository,
   ) {}
 
@@ -87,7 +85,7 @@ export class HighlightUpdateService {
     }
 
     // 5. 기존 미디어 개수 확인
-    const existingMedias = await this.communityMediaRepository.findMediasByHighlightId(highlightId);
+    const existingMedias = await this.highlightRepository.findMediasByHighlightId(highlightId);
     const existingMediaCount = existingMedias.length;
 
     // 6. 신규 미디어 파일 검증 (있는 경우)
@@ -177,7 +175,7 @@ export class HighlightUpdateService {
           order: maxOrder + 1 + index,
         }));
 
-        await this.communityMediaRepository.createHighlightMediaBatch(highlightId, mediaData);
+        await this.highlightRepository.createHighlightMediaBatch(highlightId, mediaData);
       }
 
       // 9. 수정된 하이라이트 조회
