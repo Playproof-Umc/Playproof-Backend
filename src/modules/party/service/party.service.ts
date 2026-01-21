@@ -20,46 +20,38 @@ export class PartyService {
     if (masterError) return masterError;
 
     // 1-2. 아지트 정보 검증 및 설정
-    let { azitId, azitName, azitIconUrl } = dto;
+    const { azitId } = dto;
+    let azitName: string | null = null;
+    let azitIconUrl: string | null = null;
     if (azitId) {
       const azit = await this.partyRepository.findAzitById(azitId);
       if (!azit) return notFound({ message: "아지트를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND_AZIT });
       azitName = azit.azitName;
-      azitIconUrl = azit.imageUrl ?? undefined;
-    } else if (!azitName || !azitIconUrl) {
-      return notFound({ message: "아지트 이름과 아이콘 URL이 필요합니다.", errorCode: PartyErrorCode.NOT_FOUND_AZIT });
+      azitIconUrl = azit.imageUrl ?? null;
     }
 
-    // 1-3. 트랜잭션: 임시 아지트 및 파티 생성
-    const result = await prisma.$transaction(async (tx) => {
-      let currentAzitId = azitId;
-      if (!currentAzitId) {
-        const tempAzit = await this.partyRepository.createTempAzit(azitName!, azitIconUrl!, tx);
-        currentAzitId = Number(tempAzit.id);
-      }
-      const party = await this.partyRepository.createParty(dto, userId, Number(currentAzitId), tx);
-      return { party, currentAzitId };
-    });
+    // 1-3. 파티 생성
+    const party = await this.partyRepository.createParty(dto, userId, azitId ?? null);
 
-    if (!result?.party) {
+    if (!party) {
       return internalServerError({ message: "파티 생성에 실패했습니다.", errorCode: PartyErrorCode.INTERNAL_SERVER_ERROR });
     }
 
     // 1-4. 응답 DTO 반환
     return created({
-      partyId: Number(result.party.id),
-      userId: Number(result.party.userId),
-      gameId: Number(result.party.gameId),
-      title: result.party.title,
-      memo: result.party.memo,
-      recruitmentPeople: result.party.recruitmentPeople,
-      tierId: result.party.tierId ? Number(result.party.tierId) : null,
+      partyId: Number(party.id),
+      userId: Number(party.userId),
+      gameId: Number(party.gameId),
+      title: party.title,
+      memo: party.memo,
+      recruitmentPeople: party.recruitmentPeople,
+      tierId: party.tierId ? Number(party.tierId) : null,
       positionIds: dto.positionIds,
-      isMicUse: result.party.isMicUse,
-      azitId: Number(result.party.azitId),
+      isMicUse: party.isMicUse,
+      azitId: Number(party.azitId),
       azitName,
       azitIconUrl,
-      createdAt: result.party.createdAt,
+      createdAt: party.createdAt,
     } as PartyCreateResDto);
   }
 
@@ -161,7 +153,7 @@ export class PartyService {
       title: party.title,
       memo: party.memo,
       tierName: party.tier?.name || null,
-      azitName: party.azit.azitName,
+      azitName: party.azit?.azitName ?? null,
       participants: party.recruitmentPeople,
       currentParticipants: party.applications.length + 1,
       isMic: party.isMicUse,

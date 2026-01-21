@@ -12,7 +12,7 @@ export class PartyRepository {
   }
 
   // 2. 파티 생성
-  async createParty(data: any, userId: number, azitId: number, tx?: any) {
+  async createParty(data: any, userId: number, azitId?: number | null, tx?: any) {
     const client = tx || prisma;
     const { positionIds, gameId, tierId, ...rest } = data;
     return client.partyPost.create({
@@ -24,7 +24,7 @@ export class PartyRepository {
         user: { connect: { id: userId } },
         game: { connect: { id: gameId } },
         tier: tierId ? { connect: { id: BigInt(tierId) } } : undefined,
-        azit: { connect: { id: azitId } },
+        azit: azitId ? { connect: { id: azitId } } : undefined,
       },
     });
   }
