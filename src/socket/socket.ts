@@ -4,7 +4,6 @@ import * as jose from "jose";
 import { authConfig } from "../common/config/auth";
 import { SocketAuthData } from "./types";
 import { extractToken, parseUserId } from "./utils/auth";
-import { VoiceRoomStore } from "./utils/voice-room.store";
 import { ChatRoomHandler } from "./handler/chat.handler";
 import { VoiceRoomHandler } from "./handler/voice.handler";
 
@@ -21,9 +20,8 @@ export class SocketServer {
       },
     });
 
-    const voiceRoomStore = new VoiceRoomStore();
     this.chatHandler = new ChatRoomHandler(this.io);
-    this.voiceHandler = new VoiceRoomHandler(this.io, voiceRoomStore);
+    this.voiceHandler = new VoiceRoomHandler();
 
     this.configureAuthMiddleware();
     this.configureHandlers();
@@ -53,22 +51,11 @@ export class SocketServer {
 
   private configureHandlers() {
     this.io.on("connection", (socket) => {
-      const authData = socket.data as SocketAuthData;
-      if (!authData.voiceRooms) authData.voiceRooms = new Set<number>();
-
-      const eventHandlers: Array<[string, (...args: any[]) => void]> = [
-        ["joinRoom", (payload, ack) => this.chatHandler.handleJoinRoom(socket, payload, ack)],
-        ["leaveRoom", (payload) => this.chatHandler.handleLeaveRoom(socket, payload)],
-        ["sendMessage", (payload, ack) => this.chatHandler.handleSendMessage(socket, payload, ack)],
-        ["voiceJoin", (payload, ack) => this.voiceHandler.handleVoiceJoin(socket, payload, ack)],
-        ["voiceLeave", (payload, ack) => this.voiceHandler.handleVoiceLeave(socket, payload, ack)],
-      ];
-
-      for (const [event, handler] of eventHandlers) {
-        socket.on(event, handler);
-      }
-
-      socket.on("disconnect", () => this.voiceHandler.handleDisconnect(socket));
+      socket.on("joinRoom", (payload, ack) => this.chatHandler.handleJoinRoom(socket, payload, ack));
+      socket.on("leaveRoom", (payload) => this.chatHandler.handleLeaveRoom(socket, payload));
+      socket.on("sendMessage", (payload, ack) => this.chatHandler.handleSendMessage(socket, payload, ack));
+      socket.on("voiceJoin", (payload, ack) => this.voiceHandler.handleVoiceJoin(socket, payload, ack));
+      socket.on("voiceLeave", (payload, ack) => this.voiceHandler.handleVoiceLeave(socket, payload, ack));
     });
   }
 

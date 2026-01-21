@@ -12,7 +12,7 @@ async function startServer() {
     // Redis 연결
     await redisClient.connect(); 
 
-    const httpServer = http.createServer(app);
+    const httpServer: http.Server = http.createServer(app);
     new SocketServer(httpServer);
 
     httpServer.listen(PORT, () => {
