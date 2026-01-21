@@ -3,7 +3,7 @@ import "dotenv/config";
 import http from "http";
 import { app } from "./app";
 import { redisClient } from "./common/config/database";
-import { initSocketServer } from "./socket";
+import { SocketServer } from "./socket/socket";
 
 const PORT = process.env.PORT || 3000;
 
@@ -13,7 +13,7 @@ async function startServer() {
     await redisClient.connect(); 
 
     const httpServer = http.createServer(app);
-    initSocketServer(httpServer);
+    new SocketServer(httpServer);
 
     httpServer.listen(PORT, () => {
       console.log(`🚀 Server is running on http://localhost:${PORT}`);
