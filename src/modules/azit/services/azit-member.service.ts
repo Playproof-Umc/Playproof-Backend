@@ -88,8 +88,8 @@ export class AzitMemberService {
         }
 
         // 2. 사용자가 해당 아지트의 멤버장인지 확인
-        const hostRole = await this.azitUserRepository.findAzitUserRoleByUserIdAndAzitId(hostUserId, azitId);
-        if (!hostRole || hostRole !== AzitUserRole.HOST) {
+        const host = await this.azitUserRepository.findAzitUserByUserIdAndAzitId(hostUserId, azitId);
+        if (!host || host.role !== AzitUserRole.HOST) {
             return forbidden({
                 message: "아지트 멤버 추가는 멤버장만 가능합니다.",
                 errorCode: "AZIT_MEMBER_ADD_FORBIDDEN",
@@ -163,11 +163,11 @@ export class AzitMemberService {
         }
 
         // 3. 요청자의 역할 확인
-        const requestUserRole = await this.azitUserRepository.findAzitUserRoleByUserIdAndAzitId(
+        const requestUser = await this.azitUserRepository.findAzitUserByUserIdAndAzitId(
             requestUserId,
             azitId,
         );
-        if (!requestUserRole) {
+        if (!requestUser) {
             return forbidden({
                 message: "해당 아지트의 멤버가 아닙니다.",
                 errorCode: "AZIT_NOT_MEMBER",
@@ -176,7 +176,7 @@ export class AzitMemberService {
 
         // 4. 권한 조합 계산
         const isSelf = targetMember.userId === requestUserId;
-        const isHost = requestUserRole === AzitUserRole.HOST;
+        const isHost = requestUser.role === AzitUserRole.HOST;
 
         // 5. 권한 검증
         // Case 1: 일반 멤버는 본인만 제거 가능 (타인 제거 시도 시 권한 없음)

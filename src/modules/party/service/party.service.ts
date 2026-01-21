@@ -25,7 +25,7 @@ export class PartyService {
       const azit = await this.partyRepository.findAzitById(azitId);
       if (!azit) return notFound({ message: "아지트를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND_AZIT });
       azitName = azit.azitName;
-      azitIconUrl = azit.imageUrl;
+      azitIconUrl = azit.imageUrl ?? undefined;
     } else if (!azitName || !azitIconUrl) {
       return notFound({ message: "아지트 이름과 아이콘 URL이 필요합니다.", errorCode: PartyErrorCode.NOT_FOUND_AZIT });
     }
