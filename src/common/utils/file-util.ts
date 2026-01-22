@@ -1,12 +1,14 @@
 // src/common/utils/file-util.ts
 import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { s3Client, BUCKET_NAME } from '../config/s3';
+import { Result, ok, internalServerError } from '../types/result.type';
+import { FileUploadErrorCode } from '../constants/error-code';
 
 /**
  * 파일을 S3에 업로드하고 URL을 반환합니다.
  * @param file - multer로 받은 파일 객체
  * @param folder - S3 내 저장할 폴더 경로
- * @returns 업로드된 파일의 S3 URL
+ * @returns 성공 시 Result<string>, 실패 시 Result<never>
  */
 export async function uploadFileToS3(
   file: Express.Multer.File,
@@ -40,22 +42,35 @@ export async function uploadFileToS3(
 /**
  * S3에서 파일을 삭제합니다.
  * @param fileUrl - 삭제할 파일의 S3 URL
+ * @returns 성공 시 Result<void>, 실패 시 Result<never>
  */
-export async function deleteFileFromS3(fileUrl: string): Promise<void> {
-  // URL에서 key 추출
-  const url = new URL(fileUrl);
-  let key = url.pathname.substring(1);
-  
-  // URL 디코딩 
+export async function deleteFileFromS3(fileUrl: string): Promise<Result<void>> {
   try {
-    key = decodeURIComponent(key);
-  } catch (error) {
-    console.warn('Failed to decode URL, using original key:', key);
-  }
+    // URL에서 key 추출
+    const url = new URL(fileUrl);
+    let key = url.pathname.substring(1);
 
-  // S3에서 파일 삭제
-  const result = await s3Client.send(new DeleteObjectCommand({
-    Bucket: BUCKET_NAME,
-    Key: key,
-  }));
+    // URL 디코딩 (한글 등 특수문자 처리)
+    try {
+      key = decodeURIComponent(key);
+    } catch {
+      // 디코딩 실패 시 원본 key 사용
+      console.warn('Failed to decode URL, using original key:', key);
+    }
+
+    // S3에서 파일 삭제
+    await s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+      }),
+    );
+
+    return ok(undefined);
+  } catch {
+    return internalServerError({
+      message: '파일 삭제에 실패했습니다.',
+      errorCode: FileUploadErrorCode.S3_UPLOAD_FAILED,
+    });
+  }
 }

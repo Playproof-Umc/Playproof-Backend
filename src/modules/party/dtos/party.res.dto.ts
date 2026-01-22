@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsObject, IsString } from "class-validator";
+import { IsBoolean, IsNumber, IsObject, IsOptional, IsString } from "class-validator";
 
 export class PartyHostDto {
   /**
@@ -80,8 +80,9 @@ export class PartyGetResDto {
   /**
    * @example "아지트 이름"
    */
+  @IsOptional()
   @IsString()
-  azitName!: string;
+  azitName!: string | null;
 
   /**
    * @example 5

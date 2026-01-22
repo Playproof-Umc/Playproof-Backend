@@ -1,0 +1,80 @@
+name: deploy-playproof-dev
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          cat > ~/.ssh/config <<END
+          Host playproof-server
+            HostName $EC2_HOST
+            User $EC2_USER
+            IdentityFile ~/.ssh/id_rsa
+            StrictHostKeyChecking no
+          END
+        env:
+          EC2_USER: ubuntu
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Create Remote Directory
+        run: |
+          ssh playproof-server 'sudo mkdir -p /opt/playproof'
+          ssh playproof-server 'sudo chown ubuntu:ubuntu /opt/playproof'
+
+      - name: Sync Files (Incremental)
+        run: |
+          rsync -avz --delete \
+            --exclude 'node_modules' \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.env' \
+            ./ playproof-server:/opt/playproof
+
+      - name: Install Dependencies & Generate Prisma
+        run: |
+          ssh playproof-server '
+            cd /opt/playproof
+            npm install
+            npx prisma generate
+          '
+
+      - name: Copy systemd service file
+        run: |
+          ssh playproof-server '
+            echo "[Unit]
+            Description=Playproof API Server
+            After=network.target
+
+            [Service]
+            User=ubuntu
+            WorkingDirectory=/opt/playproof
+            ExecStart=/usr/bin/npm run dev
+            Restart=always
+            Environment=NODE_ENV=development
+
+            [Install]
+            WantedBy=multi-user.target" | sudo tee /etc/systemd/system/playproof.service
+          '
+
+      - name: Enable & Restart systemd service
+        run: |
+          ssh playproof-server '
+            sudo systemctl daemon-reload
+            sudo systemctl enable playproof
+            sudo systemctl restart playproof
+          '
