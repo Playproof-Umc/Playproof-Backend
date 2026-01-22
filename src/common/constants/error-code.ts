@@ -105,5 +105,11 @@ export const CommunityErrorCode = {
   LIKE_NOT_FOUND: "COMMUNITY_LIKE_NOT_FOUND",       // 좋아요 기록 없음
 } as const;
 
+export const ChatErrorCode = {
+  ROOM_NOT_FOUND: "CHAT_ROOM_NOT_FOUND", // 채팅방을 찾을 수 없음
+  AZIT_MEMBER_ONLY: "CHAT_AZIT_MEMBER_ONLY", // 아지트 멤버만 접근 가능
+  MESSAGE_CREATE_FAILED: "CHAT_MESSAGE_CREATE_FAILED", // 메시지 저장 실패
+} as const;
+
 // 나중에 다른 도메인이 생기면 추가
 // export const OrderErrorCode = { ... } as const;

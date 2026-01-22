@@ -24,6 +24,9 @@ npm install
 루트 디렉토리에 .env 파일을 생성
 ```env
 DATABASE_URL="mysql://root:비밀번호@localhost:3306/playproof"
+LIVEKIT_URL="wss://your-livekit-domain"
+LIVEKIT_API_KEY="your-livekit-api-key"
+LIVEKIT_API_SECRET="your-livekit-api-secret"
 ```
 ### 4. 서버 실행
 ```bash
