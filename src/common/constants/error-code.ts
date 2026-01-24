@@ -97,12 +97,22 @@ export const AzitErrorCode = {
 } as const;
 
 export const CommunityErrorCode = {
+  // 리소스 관련
   POST_NOT_FOUND: "COMMUNITY_POST_NOT_FOUND",       // 게시글을 찾을 수 없음
+  HIGHLIGHT_NOT_FOUND: "COMMUNITY_HIGHLIGHT_NOT_FOUND", // 하이라이트를 찾을 수 없음
   GAME_NOT_FOUND: "COMMUNITY_GAME_NOT_FOUND",       // 게임 카테고리를 찾을 수 없음
-  FORBIDDEN: "COMMUNITY_FORBIDDEN",                 // 작성자 권한 없음
+  
+  // 권한 관련
+  FORBIDDEN: "COMMUNITY_FORBIDDEN",                 // 수정/삭제 권한 없음
+  
+  // 댓글 관련
   COMMENT_NOT_FOUND: "COMMUNITY_COMMENT_NOT_FOUND", // 댓글을 찾을 수 없음
+  
+  // 좋아요 관련
   ALREADY_LIKED: "COMMUNITY_ALREADY_LIKED",         // 이미 좋아요를 누름
   LIKE_NOT_FOUND: "COMMUNITY_LIKE_NOT_FOUND",       // 좋아요 기록 없음
+  // 공통
+  INVALID_TARGET_TYPE: "COMMUNITY_INVALID_TARGET_TYPE", // 잘못된 타겟 타입 (HIGHLIGHT/POST 외)
 } as const;
 
 // 하이라이트 관련 에러 코드
