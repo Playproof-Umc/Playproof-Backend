@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Playproof AsyncAPI 문서</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@asyncapi/react-component@3.0.0/styles/default.min.css"
+    />
+  </head>
+  <body>
+    <div id="asyncapi"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@asyncapi/react-component@3.0.0/browser/standalone/index.js"></script>
+    <script>
+      fetch("/asyncapi.yaml")
+        .then((response) => response.text())
+        .then((schema) => {
+          AsyncApiStandalone.render({ schema }, document.getElementById("asyncapi"));
+        })
+        .catch((error) => {
+          console.error("AsyncAPI 스키마 로딩 실패:", error);
+        });
+    </script>
+  </body>
+</html>
