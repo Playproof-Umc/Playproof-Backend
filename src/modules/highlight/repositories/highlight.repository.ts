@@ -71,6 +71,38 @@ export class HighlightRepository {
   }
 
   /**
+   * 커뮤니티용 통합 목록 조회
+   * - 직접 등록(azitId: null) + 아지트 공개 전환(isPublic: true) 통합 조회
+   */
+  async findCommunityHighlights(
+    cursor: bigint | null,
+    limit: number,
+  ) {
+    const whereCondition: any = {
+      isPublic: true,
+    };
+
+    if (cursor) {
+      whereCondition.id = { lt: cursor };
+    }
+
+    return prisma.highlight.findMany({
+      where: whereCondition,
+      include: {
+        user: {
+          select: { id: true, nickname: true }
+        },
+        medias: { orderBy: { order: 'asc' } },
+        _count: {
+          select: { likes: true, comments: true }
+        }
+      },
+      orderBy: { id: 'desc' },
+      take: limit + 1,
+    });
+  }
+
+  /**
    * 하이라이트 ID로 조회 (상세 정보 포함)
    */
   async findHighlightById(highlightId: bigint) {
