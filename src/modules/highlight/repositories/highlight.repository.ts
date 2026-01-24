@@ -10,7 +10,7 @@ export class HighlightRepository {
    */
   async createHighlight(
     userId: bigint,
-    azitId: bigint,
+    azitId: bigint | null,
     content: string | undefined,
     isPublic: boolean,
   ): Promise<Highlight> {
