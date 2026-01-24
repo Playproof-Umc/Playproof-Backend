@@ -44,8 +44,8 @@ export class HighlightListService {
     }
 
     // 2. 사용자가 아지트 멤버인지 확인
-    const azitUserRole = await this.azitUserRepository.findAzitUserRoleByUserIdAndAzitId(userId, azitId);
-    if (!azitUserRole) {
+    const azitUser = await this.azitUserRepository.findAzitUserByUserIdAndAzitId(userId, azitId);
+    if (!azitUser) {
       return forbidden({
         message: "아지트 멤버만 하이라이트를 조회할 수 있습니다.",
         errorCode: "HIGHLIGHT_LIST_FORBIDDEN",
@@ -155,8 +155,8 @@ export class HighlightListService {
     }
 
     // 2. 사용자가 아지트 멤버인지 확인
-    const azitUserRole = await this.azitUserRepository.findAzitUserRoleByUserIdAndAzitId(userId, azitId);
-    if (!azitUserRole) {
+    const azitUser = await this.azitUserRepository.findAzitUserByUserIdAndAzitId(userId, azitId);
+    if (!azitUser) {
       return forbidden({
         message: "권한이 없습니다.",
         errorCode: "AZIT_NOT_MEMBER",
