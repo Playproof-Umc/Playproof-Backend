@@ -1,9 +1,11 @@
+// src/modules/auth/service/auth.service.ts
 import { injectable, inject } from "tsyringe";
 import * as jose from "jose";
 import { UserRepository } from "../../user/user.repository";
 import { SignUpReqDto, LoginReqDto, SendCertificationReqDto, VerifyCertificationReqDto} from "../dtos/auth.req.dto";
 import { SignUpResDto, LoginResDto, SendCertificationResDto, VerifyCertificationResDto } from "../dtos/auth.res.dto"
-import { Result, created, ok, unauthorized, conflict, isSuccess, badRequest } from "../../../common/types/result.type";
+import { Result, created, ok, unauthorized, conflict, isSuccess, badRequest, success} from "../../../common/types/result.type";
+import { ResultChain } from "../../../common/types/result.chain";
 import { sendVerificationSms } from "../../../common/utils/sms.util";
 import { redisClient } from "../../../common/config/database";
 import { SmsErrorCode } from "../../../common/constants/error-code";
@@ -20,6 +22,16 @@ export class AuthService {
   constructor(@inject(UserRepository) private userRepository: UserRepository) {}
 
   async signUp(dto: SignUpReqDto): Promise<Result<SignUpResDto>> {
+    
+    // 중복 검증
+    const check = await ResultChain.of(dto)
+      .flatThenAsync(checkPhoneNumberDuplicate(this.userRepository))
+      .flatThenAsync(checkNicknameDuplicate(this.userRepository))
+      .getResult();
+
+    if(!isSuccess(check)) return check;
+
+    /*
     // 전화번호 중복 검증
     const phoneDuplicateError = await checkPhoneNumberDuplicate<SignUpResDto>(this.userRepository, dto.phone);
     if (phoneDuplicateError) return phoneDuplicateError;
@@ -27,6 +39,7 @@ export class AuthService {
     // 닉네임 중복 검증
     const nicknameDuplicateError = await checkNicknameDuplicate<SignUpResDto>(this.userRepository, dto.nickname);
     if (nicknameDuplicateError) return nicknameDuplicateError;
+    */
 
     // 비밀번호 해쉬
     const hashedPasswordResult = await hashPassword(dto.password)
@@ -69,8 +82,11 @@ export class AuthService {
 
   async sendCertification(dto: SendCertificationReqDto): Promise<Result<SendCertificationResDto>> {
     // 전화번호 중복 검증
-    const phoneDuplicateError = await checkPhoneNumberDuplicate<SendCertificationResDto>(this.userRepository, dto.phone);
-    if (phoneDuplicateError) return phoneDuplicateError;
+    const check = await ResultChain.of(dto)
+      .flatThenAsync(checkPhoneNumberDuplicate(this.userRepository))
+      .getResult();
+      
+    if(!isSuccess(check)) return check;
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 

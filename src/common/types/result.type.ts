@@ -1,5 +1,7 @@
 // src/common/types/result.type.ts
 
+import { deprecate } from "node:util";
+
 /** * ------------------------------------------------------------------
  * ApiErrorDetail Interface
  * ------------------------------------------------------------------
@@ -29,7 +31,7 @@ export type Failed = {
 export type Success<T> = {
   statusCode: number;
   data: T;
-  error?: null;
+  error: null;
 };
 
 export type Result<T> = Success<T> | Failed;
@@ -62,6 +64,7 @@ export const failed = (
     errors,
   }
 });
+
 
 /**
  * ------------------------------------------------------------------
@@ -129,16 +132,20 @@ export const internalServerError = failedMessageBuilder({ message: "서버 내�
  * ------------------------------------------------------------------
  */
 
+export interface BaseError<StatusCode extends number> extends Failed{
+  statusCode: StatusCode;
+}
+
 // 400 에러 (Bad Request)
-export interface BadRequestError extends Failed {
-  statusCode: 400;
+export interface BadRequestError extends BaseError<400> {
   /**
-   * @example {
-   * "code": "COMMON_INVALID_PARAMETER",
-   * "message": "요청 파라미터가 잘못되었습니다.",
-   * "errors": [
-   * { "field": "email", "value": "invalid-email", "reason": "이메일 형식이 올바르지 않습니다." }
-   * ]
+   * @example 
+   * {
+   *    "code": "COMMON_INVALID_PARAMETER",
+   *    "message": "요청 파라미터가 잘못되었습니다.",
+   *    "errors": [
+   *      { "field": "email", "value": "invalid-email", "reason": "이메일 형식이 올바르지 않습니다." }
+   *    ]
    * }
    */
   error: {
