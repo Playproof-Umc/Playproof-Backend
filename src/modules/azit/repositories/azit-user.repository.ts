@@ -226,4 +226,17 @@ export class AzitUserRepository {
       },
     });
   }
+
+  // ----------------------------------------------------------------------------------------------------
+  // 멤버 여부 확인
+  // ----------------------------------------------------------------------------------------------------
+
+  /**
+   * 특정 유저가 아지트의 멤버인지 여부 확인
+   * 하이라이트가 비공개일때, 해당 하이라이트가 속한 아지트의 멤버인지 확인하는 메소드
+   */
+  async isMember(azitId: bigint, userId: bigint): Promise<boolean> {
+    const azitUser = await this.findAzitUserByUserIdAndAzitId(userId, azitId);
+    return azitUser !== null;
+  }
 }
