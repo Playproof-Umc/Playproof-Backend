@@ -127,8 +127,11 @@ export class HighlightUpdateService {
         const mediaUrls: string[] = [];
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          const mediaUrl = await uploadFileToS3(file, 'highlights');
-          mediaUrls.push(mediaUrl);
+          const uploadResult = await uploadFileToS3(file, 'highlights');
+          if (uploadResult.error) {
+            return uploadResult;
+          }
+          mediaUrls.push(uploadResult.data);
         }
 
         const maxOrder = existingMedias.length > 0

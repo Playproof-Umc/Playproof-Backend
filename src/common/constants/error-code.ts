@@ -130,6 +130,8 @@ export const HighlightErrorCode = {
 // 공통 에러 코드
 export const CommonErrorCode = {
   RESOURCE_NOT_FOUND: "COMMON_RESOURCE_NOT_FOUND", // 리소스를 찾을 수 없음
+} as const;
+
 export const ChatErrorCode = {
   ROOM_NOT_FOUND: "CHAT_ROOM_NOT_FOUND", // 채팅방을 찾을 수 없음
   AZIT_MEMBER_ONLY: "CHAT_AZIT_MEMBER_ONLY", // 아지트 멤버만 접근 가능

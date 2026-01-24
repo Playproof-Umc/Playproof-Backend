@@ -44,8 +44,11 @@ export class HighlightCreateService {
       const mediaUrls: string[] = [];
       for (let i = 0; i < validatedFiles.length; i++) {
         const file = validatedFiles[i];
-        const mediaUrl = await uploadFileToS3(file, 'highlights');
-        mediaUrls.push(mediaUrl);
+        const uploadResult = await uploadFileToS3(file, 'highlights');
+        if (uploadResult.error) {
+          return uploadResult;
+        }
+        mediaUrls.push(uploadResult.data);
       }
 
       // 4. 미디어 데이터 준비

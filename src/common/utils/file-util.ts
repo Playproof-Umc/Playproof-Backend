@@ -13,12 +13,12 @@ import { FileUploadErrorCode } from '../constants/error-code';
 export async function uploadFileToS3(
   file: Express.Multer.File,
   folder: string
-): Promise<string> {
+): Promise<Result<string>> {
   // 고유한 파일명 생성: 타임스탬프-랜덤숫자-확장자
   const timestamp = Date.now();
   const random = Math.round(Math.random() * 1E9);
   
-  // 한글 파일명 제거거
+  // 한글 파일명 제거
   const originalName = file.originalname || 'file';
   const lastDotIndex = originalName.lastIndexOf('.');
   const extension = lastDotIndex !== -1 ? originalName.substring(lastDotIndex).toLowerCase() : '';
@@ -28,15 +28,31 @@ export async function uploadFileToS3(
   const key = `${folder}/${fileName}`;
 
   // S3에 업로드
-  await s3Client.send(new PutObjectCommand({
+  const command = new PutObjectCommand({
     Bucket: BUCKET_NAME,
     Key: key,
     Body: file.buffer,
     ContentType: file.mimetype,
-  }));
+  });
 
-  const region = process.env.AWS_REGION || 'ap-northeast-2';
-  return `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`;
+  const sendPromise = s3Client.send(command);
+  
+  // Promise의 결과를 확인하여 에러 처리
+  const result = await Promise.resolve(sendPromise).then(
+    () => {
+      const region = process.env.AWS_REGION || 'ap-northeast-2';
+      const url = `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`;
+      return ok(url);
+    },
+    (error) => {
+      return internalServerError({
+        message: '파일 업로드에 실패했습니다.',
+        errorCode: FileUploadErrorCode.S3_UPLOAD_FAILED,
+      });
+    }
+  );
+  
+  return result;
 }
 
 /**
