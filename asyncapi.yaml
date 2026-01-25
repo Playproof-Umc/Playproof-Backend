@@ -1,0 +1,199 @@
+asyncapi: "2.6.0"
+info:
+  title: Playproof 소켓 API
+  version: "1.0.0"
+  description: |
+    Playproof 실시간 이벤트 (Socket.IO).
+    클라이언트는 Authorization 헤더(Bearer) 또는 socket auth 토큰으로 JWT를 제공해야 합니다.
+defaultContentType: application/json
+servers:
+  socket:
+    url: "{host}"
+    protocol: socket.io
+    description: Socket.IO 서버 엔드포인트
+    variables:
+      host:
+        default: localhost:3000
+        description: API 서버 호스트와 포트
+    security:
+      - bearerAuth: []
+channels:
+  joinRoom:
+    subscribe:
+      summary: 클라이언트가 채팅방에 참여
+      message:
+        $ref: "#/components/messages/JoinRoom"
+  leaveRoom:
+    subscribe:
+      summary: 클라이언트가 채팅방을 나감
+      message:
+        $ref: "#/components/messages/LeaveRoom"
+  sendMessage:
+    subscribe:
+      summary: 클라이언트가 채팅 메시지 전송
+      message:
+        $ref: "#/components/messages/SendMessage"
+  newMessage:
+    publish:
+      summary: 서버가 새 채팅 메시지 브로드캐스트
+      message:
+        $ref: "#/components/messages/NewMessage"
+  voiceJoin:
+    subscribe:
+      summary: 클라이언트가 보이스룸에 참여
+      message:
+        $ref: "#/components/messages/VoiceJoin"
+  voiceLeave:
+    subscribe:
+      summary: 클라이언트가 보이스룸을 나감
+      message:
+        $ref: "#/components/messages/VoiceLeave"
+  error:
+    publish:
+      summary: 서버가 에러 정보 전송
+      message:
+        $ref: "#/components/messages/Error"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  messages:
+    JoinRoom:
+      name: joinRoom
+      title: 채팅방 참여 요청
+      description: |
+        응답(ack):
+        - ok: true, data: { roomId, azitId }
+        - ok: false, error: ApiError
+      payload:
+        $ref: "#/components/schemas/JoinRoomPayload"
+    LeaveRoom:
+      name: leaveRoom
+      title: 채팅방 나가기 요청
+      payload:
+        $ref: "#/components/schemas/JoinRoomPayload"
+    SendMessage:
+      name: sendMessage
+      title: 채팅 메시지 전송 요청
+      description: |
+        응답(ack):
+        - ok: true, data: ChatMessage
+        - ok: false, error: ApiError
+      payload:
+        $ref: "#/components/schemas/SendMessagePayload"
+    NewMessage:
+      name: newMessage
+      title: 새 채팅 메시지 브로드캐스트
+      payload:
+        $ref: "#/components/schemas/ChatMessage"
+    VoiceJoin:
+      name: voiceJoin
+      title: 보이스룸 참여 요청
+      description: |
+        응답(ack):
+        - ok: true, data: { roomId }
+        - ok: false, error: ApiError
+      payload:
+        $ref: "#/components/schemas/JoinRoomPayload"
+    VoiceLeave:
+      name: voiceLeave
+      title: 보이스룸 나가기 요청
+      description: |
+        응답(ack):
+        - ok: true, data: { roomId }
+        - ok: false, error: ApiError
+      payload:
+        $ref: "#/components/schemas/JoinRoomPayload"
+    Error:
+      name: error
+      title: 에러 이벤트
+      payload:
+        $ref: "#/components/schemas/ApiError"
+  schemas:
+    JoinRoomPayload:
+      type: object
+      required:
+        - roomId
+      properties:
+        roomId:
+          type: integer
+          example: 1
+    SendMessagePayload:
+      type: object
+      required:
+        - roomId
+        - content
+      properties:
+        roomId:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: "안녕하세요!"
+    ChatMessage:
+      type: object
+      required:
+        - id
+        - chatRoomId
+        - memberId
+        - userId
+        - content
+        - createdAt
+      properties:
+        id:
+          type: integer
+          example: 1
+        chatRoomId:
+          type: integer
+          example: 1
+        memberId:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        nickname:
+          type: string
+          nullable: true
+          example: "닉네임"
+        content:
+          type: string
+          example: "안녕하세요!"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+    ApiErrorDetail:
+      type: object
+      required:
+        - field
+        - value
+        - reason
+      properties:
+        field:
+          type: string
+          example: "roomId"
+        value:
+          description: 잘못된 값
+          nullable: true
+        reason:
+          type: string
+          example: "roomId가 올바르지 않습니다."
+    ApiError:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: "INVALID_ROOM"
+        message:
+          type: string
+          example: "roomId가 올바르지 않습니다."
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApiErrorDetail"
