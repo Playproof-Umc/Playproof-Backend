@@ -29,7 +29,7 @@ export class HighlightRepository {
    */
   async createHighlightWithMedias(
     userId: bigint,
-    azitId: bigint,
+    azitId: bigint | null,
     content: string | undefined,
     isPublic: boolean,
     mediaData: Array<{ mediaUrl: string; order: number }>,
