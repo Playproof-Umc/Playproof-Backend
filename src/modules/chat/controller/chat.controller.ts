@@ -13,7 +13,7 @@ import { inject, injectable } from 'tsyringe';
 import { ChatService } from '../service/chat.service';
 import { ChatMessageListResDto } from '../dtos/chat.res.dto';
 import { Result } from '../../../common/types/result.type';
-
+  
 @Route('chat-rooms')
 @Tags('Chat')
 @injectable()

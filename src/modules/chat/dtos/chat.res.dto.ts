@@ -56,3 +56,11 @@ export class ChatMessageListResDto {
   @IsNumber()
   nextCursor!: number | null;
 }
+
+export class ChatRoomCreateResDto {
+  /**
+   * @example 1
+   */
+  @IsNumber()
+  roomId!: number;
+}

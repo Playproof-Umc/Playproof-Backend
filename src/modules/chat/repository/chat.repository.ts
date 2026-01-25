@@ -1,8 +1,23 @@
 import { singleton } from 'tsyringe';
 import { prisma } from '../../../common/config/database';
+import { ChatRoomCreateReqDto } from '../dtos/chat.req.dto';
 
 @singleton()
 export class ChatRepository {
+  async createChatRoom(
+    azitId: number,
+    userId: number,
+    dto: ChatRoomCreateReqDto,
+  ) {
+    return prisma.chatRoom.create({
+      data: {
+        azitId: BigInt(azitId),
+        roomName: dto.roomName,
+        roomType: dto.chatType,
+        isPrivate: dto.isPrivate ?? false,
+      },
+    });
+  }
   async findChatRoomById(roomId: number) {
     return prisma.chatRoom.findUnique({
       where: { id: BigInt(roomId) },

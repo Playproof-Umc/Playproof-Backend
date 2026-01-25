@@ -1,14 +1,20 @@
 import { inject, injectable } from 'tsyringe';
 import { ChatRepository } from '../repository/chat.repository';
-import { ChatMessageListResDto, ChatMessageResDto } from '../dtos/chat.res.dto';
+import {
+  ChatMessageListResDto,
+  ChatMessageResDto,
+  ChatRoomCreateResDto,
+} from '../dtos/chat.res.dto';
 import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
   Result,
+  created,
   internalServerError,
   isSuccess,
   ok,
 } from '../../../common/types/result.type';
 import { validateRoomAndMember } from '../utils/chat.validator';
+import { ChatRoomCreateReqDto } from '../dtos/chat.req.dto';
 
 @injectable()
 export class ChatService {
@@ -93,6 +99,17 @@ export class ChatService {
     return ok({
       messages,
       nextCursor,
+    });
+  }
+
+  async createChatRoom(
+    azitId: number,
+    userId: number,
+    dto: ChatRoomCreateReqDto,
+  ): Promise<Result<ChatRoomCreateResDto>> {
+    const chatRoom = await this.chatRepository.createChatRoom(azitId, userId, dto);
+    return created({
+      roomId: Number(chatRoom.id),
     });
   }
 }
