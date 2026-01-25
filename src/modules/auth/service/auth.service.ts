@@ -174,4 +174,18 @@ export class AuthService {
   private toValidateCodeResponse(): VerifyCertificationResDto {
     return { status: "VERIFIED" };
   }
+
+    async verifyDuplicateNickname(dto: VerifiyDuplicateNicknameReqDto): Promise<Result<VerifiyDuplicateNicknameResDto>> {
+    return await ResultChain.of(dto)
+      .flatThenAsync(checkNicknameDuplicate(this.userRepository))
+      .flatThen((data) => Promise.resolve(ok(this.toVerifyDuplicateNicknameResponse(data))))
+      .getResult();
+  }
+
+  private toVerifyDuplicateNicknameResponse(dto: VerifiyDuplicateNicknameReqDto): VerifiyDuplicateNicknameResDto {
+    if (dto) {
+      return { isDuplicate: true };
+    }
+    return { isDuplicate: false };
+  }
 }
