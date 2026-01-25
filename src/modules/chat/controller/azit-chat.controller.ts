@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Middlewares,
   Path,
   Post,
@@ -13,7 +14,7 @@ import {
 import { inject, injectable } from 'tsyringe';
 import { ChatService } from '../service/chat.service';
 import { ChatRoomCreateReqDto } from '../dtos/chat.req.dto';
-import { ChatRoomCreateResDto } from '../dtos/chat.res.dto';
+import { ChatRoomCreateResDto, ChatRoomGetResDto } from '../dtos/chat.res.dto';
 import { validationMiddleware } from '../../../common/middlewares/validation';
 import { Result } from '../../../common/types/result.type';
 
@@ -28,7 +29,7 @@ export class AzitChatController extends Controller {
   @SuccessResponse('201', 'Created')
   @Security('jwt')
   @Middlewares(validationMiddleware(ChatRoomCreateReqDto))
-  @Post('{azitId}/chat')
+  @Post('{azitId}/chat-rooms')
   public async createChatRoom(
     @Request() req: any,
     @Path() azitId: number,
@@ -37,6 +38,18 @@ export class AzitChatController extends Controller {
     const userId = Number(req.user.id);
     const result = await this.chatService.createChatRoom(azitId, userId, dto);
     this.setStatus(result.statusCode);
+    return result;
+  }
+
+  @SuccessResponse('200', 'OK')
+  @Security('jwt')
+  @Get('{azitId}/chat-rooms')
+  public async getChatRooms(
+    @Path() azitId: number,
+    @Request() req: any,
+  ): Promise<Result<ChatRoomGetResDto[]>> {
+    const userId = Number(req.user.id);
+    const result = await this.chatService.getChatRooms(azitId, userId);
     return result;
   }
 }

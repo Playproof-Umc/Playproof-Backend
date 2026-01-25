@@ -4,6 +4,7 @@ import { ChatRoomCreateReqDto } from '../dtos/chat.req.dto';
 
 @singleton()
 export class ChatRepository {
+
   async createChatRoom(
     azitId: number,
     userId: number,
@@ -21,6 +22,15 @@ export class ChatRepository {
   async findChatRoomById(roomId: number) {
     return prisma.chatRoom.findUnique({
       where: { id: BigInt(roomId) },
+    });
+  }
+
+  // 오직 방 방에 대한 정보만 반환. 메시지는 제외
+  async getChatRooms(azitId: number, userId: number) {
+    return prisma.chatRoom.findMany({
+      where: {
+        azitId: BigInt(azitId),
+      },
     });
   }
 

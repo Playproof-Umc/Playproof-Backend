@@ -1,4 +1,5 @@
-import { IsNumber, IsOptional, IsString, IsArray } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsArray, IsEnum, IsBoolean } from 'class-validator';
+import { ChatType } from './chat.req.dto';
 
 export class ChatMessageResDto {
   /**
@@ -63,4 +64,42 @@ export class ChatRoomCreateResDto {
    */
   @IsNumber()
   roomId!: number;
+}
+
+export class ChatRoomGetResDto {
+  /**
+   * @example 1
+   */
+  @IsNumber()
+  id!: number;
+
+  /**
+   * @example "Chat Room Name"
+   */
+  @IsString()
+  roomName!: string;
+
+  /**
+   * @example TEXT
+   */
+  @IsEnum(ChatType)
+  chatType!: ChatType;
+
+  /**
+   * @example true
+   */
+  @IsBoolean()
+  isPrivate!: boolean;
+
+  /**
+   * @example "2025-01-01T00:00:00.000Z"
+   */
+  @IsString()
+  createdAt!: string;
+
+  /**
+   * @example "2025-01-01T00:00:00.000Z"
+   */
+  @IsString()
+  updatedAt!: string;
 }

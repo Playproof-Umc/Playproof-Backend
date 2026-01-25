@@ -4,6 +4,7 @@ import {
   ChatMessageListResDto,
   ChatMessageResDto,
   ChatRoomCreateResDto,
+  ChatRoomGetResDto,
 } from '../dtos/chat.res.dto';
 import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
@@ -14,11 +15,24 @@ import {
   ok,
 } from '../../../common/types/result.type';
 import { validateRoomAndMember } from '../utils/chat.validator';
-import { ChatRoomCreateReqDto } from '../dtos/chat.req.dto';
+import { ChatRoomCreateReqDto, ChatType } from '../dtos/chat.req.dto';
+import { ChatRoom } from '.prisma/client';
 
 @injectable()
 export class ChatService {
   constructor(@inject(ChatRepository) private chatRepository: ChatRepository) {}
+
+  async getChatRooms(azitId: number, userId: number): Promise<Result<ChatRoomGetResDto[]>> {
+    const chatRooms = await this.chatRepository.getChatRooms(azitId, userId);
+    return ok<ChatRoomGetResDto[]>(chatRooms.map((chatRoom: ChatRoom): ChatRoomGetResDto => ({
+      id: Number(chatRoom.id),
+      roomName: chatRoom.roomName,
+      chatType: chatRoom.roomType as ChatType,
+      isPrivate: chatRoom.isPrivate,
+      createdAt: chatRoom.createdAt.toISOString(),
+      updatedAt: chatRoom.updatedAt.toISOString(),
+    })));
+  }
 
   public async getRoomAndMember(roomId: number, userId: number) {
     return validateRoomAndMember(this.chatRepository, roomId, userId);
