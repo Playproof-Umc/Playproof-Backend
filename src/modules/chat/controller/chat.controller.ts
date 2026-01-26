@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Path,
   Query,
@@ -12,8 +13,8 @@ import {
 import { inject, injectable } from 'tsyringe';
 import { ChatService } from '../service/chat.service';
 import { ChatMessageListResDto } from '../dtos/chat.res.dto';
-import { Result } from '../../../common/types/result.type';
-  
+import { ok, Result } from '../../../common/types/result.type';
+
 @Route('chat-rooms')
 @Tags('Chat')
 @injectable()
@@ -38,5 +39,13 @@ export class ChatController extends Controller {
     });
     this.setStatus(result.statusCode);
     return result;
+  }
+
+  @SuccessResponse('200', 'OK')
+  @Security('jwt')
+  @Delete('{roomId}')
+  public async deleteChatRoom(@Path() roomId: number): Promise<Result<void>> {
+    await this.chatService.deleteChatRoom(roomId);
+    return ok(undefined);
   }
 }

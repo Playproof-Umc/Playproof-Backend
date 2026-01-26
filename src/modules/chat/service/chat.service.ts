@@ -126,4 +126,9 @@ export class ChatService {
       roomId: Number(chatRoom.id),
     });
   }
+
+  async deleteChatRoom(roomId: number): Promise<Result<void>> {
+    await this.chatRepository.deleteChatRoom(BigInt(roomId));
+    return ok(undefined);
+  }
 }

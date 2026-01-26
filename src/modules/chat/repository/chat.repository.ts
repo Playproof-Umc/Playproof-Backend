@@ -4,7 +4,6 @@ import { ChatRoomCreateReqDto } from '../dtos/chat.req.dto';
 
 @singleton()
 export class ChatRepository {
-
   async createChatRoom(
     azitId: number,
     userId: number,
@@ -90,6 +89,12 @@ export class ChatRepository {
           },
         },
       },
+    });
+  }
+
+  async deleteChatRoom(roomId: bigint) {
+    return prisma.chatRoom.delete({
+      where: { id: roomId },
     });
   }
 }
