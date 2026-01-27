@@ -22,14 +22,16 @@ import { HighlightCreateService } from "../services/highlight-create.service";
 import { HighlightListService } from "../services/highlight-list.service";
 import { HighlightUpdateService } from "../services/highlight-update.service";
 import { HighlightDeleteService } from "../services/highlight-delete.service";
+import { HighlightLikeService } from "../services/highlight-like.service";
 import { HighlightCreateReqDto, HighlightVisibility, GetHighlightListReqDto, HighlightUpdateReqDto } from "../dtos/highlight.req.dto";
-import { HighlightCreateResDto, GetHighlightListResDto, GetHighlightDetailResDto, HighlightDeleteResDto } from "../dtos/highlight.res.dto";
+import { HighlightCreateResDto, GetHighlightListResDto, GetHighlightDetailResDto, HighlightDeleteResDto, HighlightLikeResDto } from "../dtos/highlight.res.dto";
 import {
   Result,
   BadRequestError,
   UnauthorizedError,
   ForbiddenError,
   NotFoundError,
+  ConflictError,
   InternalServerError,
 } from "../../../common/types/result.type";
 import { validationMiddleware } from "../../../common/middlewares/validation";
@@ -43,6 +45,7 @@ export class HighlightCreateController extends Controller {
     @inject(HighlightListService) private highlightListService: HighlightListService,
     @inject(HighlightUpdateService) private highlightUpdateService: HighlightUpdateService,
     @inject(HighlightDeleteService) private highlightDeleteService: HighlightDeleteService,
+    @inject(HighlightLikeService) private highlightLikeService: HighlightLikeService,
   ) {
     super();
   }
@@ -221,6 +224,38 @@ export class HighlightCreateController extends Controller {
     const highlightId = BigInt(highlight_id);
 
     const result = await this.highlightDeleteService.deleteHighlight(
+      userId,
+      azitId,
+      highlightId,
+    );
+
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  /**
+   * 하이라이트 좋아요 추가
+   * 특정 하이라이트에 좋아요를 추가합니다.
+   */
+  @SuccessResponse("201", "Created")
+  @Response<BadRequestError>(400, "Bad Request")
+  @Response<UnauthorizedError>(401, "Unauthorized")
+  @Response<ForbiddenError>(403, "Forbidden")
+  @Response<NotFoundError>(404, "Not Found")
+  @Response<ConflictError>(409, "Conflict")
+  @Response<InternalServerError>(500, "Internal Server Error")
+  @Security("jwt")
+  @Post("{azit_id}/highlights/{highlight_id}/likes")
+  public async addLike(
+    @Request() req: any,
+    @Path() azit_id: number,
+    @Path() highlight_id: number,
+  ): Promise<Result<HighlightLikeResDto>> {
+    const userId = BigInt(req.user.id);
+    const azitId = BigInt(azit_id);
+    const highlightId = BigInt(highlight_id);
+
+    const result = await this.highlightLikeService.addLike(
       userId,
       azitId,
       highlightId,
