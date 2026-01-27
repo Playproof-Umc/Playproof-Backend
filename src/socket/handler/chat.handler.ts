@@ -4,7 +4,7 @@ import { ChatService } from '../../modules/chat/service/chat.service';
 import { isSuccess } from '../../common/types/result.type';
 import { JoinRoomPayload, SendMessagePayload, SocketAuthData } from '../types';
 import { getRoomKey } from '../utils/rooms';
-import { CHAT_MESSAGE_MAX_LENGTH } from '../../modules/chat/dtos/chat.req.dto';
+import { validateMessageContent } from '../../modules/chat/utils/chat.validator';
 
 type Ack = (data: unknown) => void;
 
@@ -60,21 +60,11 @@ export class ChatRoomHandler {
     const authData = socket.data as SocketAuthData;
     const { userId } = authData;
     const roomId = this.parseRoomId(payload);
-    const trimmedContent = payload?.content?.trim();
-    if (!roomId || !trimmedContent) {
+    const contentResult = validateMessageContent(payload?.content);
+    if (!roomId || !isSuccess(contentResult)) {
       const response = {
-        code: 'INVALID_MESSAGE',
-        message: '메시지 입력이 올바르지 않습니다.',
-      };
-      socket.emit('error', response);
-      ack?.({ ok: false, error: response });
-      return;
-    }
-
-    if (trimmedContent.length > CHAT_MESSAGE_MAX_LENGTH) {
-      const response = {
-        code: 'MESSAGE_TOO_LONG',
-        message: `메시지는 ${CHAT_MESSAGE_MAX_LENGTH}자를 초과할 수 없습니다.`,
+        code: contentResult.error?.code ?? 'INVALID_MESSAGE',
+        message: contentResult.error?.message ?? '메시지 입력이 올바르지 않습니다.',
       };
       socket.emit('error', response);
       ack?.({ ok: false, error: response });
@@ -84,7 +74,7 @@ export class ChatRoomHandler {
     const result = await this.chatService.sendMessage(
       roomId,
       userId,
-      trimmedContent,
+      contentResult.data.content,
     );
     if (!isSuccess(result)) {
       socket.emit('error', result.error);

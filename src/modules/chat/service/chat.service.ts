@@ -9,19 +9,17 @@ import {
 import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
   Result,
-  badRequest,
   created,
   internalServerError,
   isSuccess,
   ok,
 } from '../../../common/types/result.type';
-import { validateAzitMemberOnly, validateRoomAndMember } from '../utils/chat.validator';
 import {
-  CHAT_MESSAGE_MAX_LENGTH,
-  ChatRoomCreateReqDto,
-  ChatRoomUpdateReqDto,
-  ChatType,
-} from '../dtos/chat.req.dto';
+  validateAzitMemberOnly,
+  validateMessageContent,
+  validateRoomAndMember,
+} from '../utils/chat.validator';
+import { ChatRoomCreateReqDto, ChatRoomUpdateReqDto, ChatType } from '../dtos/chat.req.dto';
 import { ChatRoom } from '.prisma/client';
 
 @injectable()
@@ -69,20 +67,8 @@ export class ChatService {
     userId: number,
     content: string,
   ): Promise<Result<ChatMessageResDto>> {
-    const trimmed = content?.trim();
-    if (!trimmed) {
-      return badRequest({
-        message: '메시지 입력이 올바르지 않습니다.',
-        errorCode: ChatErrorCode.MESSAGE_INVALID,
-      });
-    }
-
-    if (trimmed.length > CHAT_MESSAGE_MAX_LENGTH) {
-      return badRequest({
-        message: `메시지는 ${CHAT_MESSAGE_MAX_LENGTH}자를 초과할 수 없습니다.`,
-        errorCode: ChatErrorCode.MESSAGE_TOO_LONG,
-      });
-    }
+    const contentResult = validateMessageContent(content);
+    if (!isSuccess(contentResult)) return contentResult;
 
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
@@ -91,7 +77,7 @@ export class ChatService {
       const chat = await this.chatRepository.createChat(
         roomId,
         access.data.member.id,
-        trimmed,
+        contentResult.data.content,
       );
       return created({
         id: Number(chat.id),
