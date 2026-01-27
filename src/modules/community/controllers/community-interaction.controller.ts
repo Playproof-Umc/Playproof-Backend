@@ -53,6 +53,7 @@ export class CommunityInteractionController extends Controller {
 
   @SuccessResponse("200", "OK")
   @Get("comments")
+  @Security("jwt")
   public async getComments(
     @Request() request: any,
     @Query() target_type: CommunityTargetType,
