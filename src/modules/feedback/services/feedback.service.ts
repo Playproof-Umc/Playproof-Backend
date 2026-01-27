@@ -4,12 +4,13 @@ import { AzitScheduleParticipationRepository } from '../../azit/repositories/azi
 import { AzitScheduleRepository } from '../../azit/repositories/azit-schedule.repository';
 import { UserRepository } from '../../user/user.repository';
 import { FeedbackCreateReqDto } from '../dtos/feedback.req.dto';
-import { FeedbackCreateResDto } from '../dtos/feedback.res.dto';
+import { FeedbackCreateResDto, FeedbackListResDto, FeedbackResDto, FeedbackCategoryResDto } from '../dtos/feedback.res.dto';
 import { FeedbackCategoryRepository } from '../repositories/feedback-category.repository';
 import { FeedbackRepository } from '../repositories/feedback.repository';
 import { validateFeedbackCreation } from '../utils/feedback.validator';
+import { formatDate } from '../utils/feedback.util';
 import { prisma } from '../../../common/config/database';
-import { Result, created } from '../../../common/types/result.type';
+import { Result, created, ok } from '../../../common/types/result.type';
 
 @injectable()
 export class FeedbackService {
@@ -92,5 +93,30 @@ export class FeedbackService {
     return created({
       id: Number(result.id),
     });
+  }
+
+  async getFeedbacksMyPage(
+    userId: bigint,
+    cursor?: string,
+    size: number = 15,
+  ): Promise<Result<FeedbackListResDto>> {
+
+    // 피드백 목록 조회
+    const { feedbacks: feedbacksData, hasNext } =
+      await this.feedbackRepository.findFeedbacksByTargetIdWithCursor(userId, size, cursor);
+
+    // 응답 DTO 변환
+    const feedbacks: FeedbackResDto[] = feedbacksData.map((feedback) =>
+      FeedbackResDto.from(feedback),
+    );
+
+    // 다음 커서 생성
+    let nextCursor: string | null = null;
+    if (hasNext && feedbacks.length > 0) {
+      const lastFeedback = feedbacksData[feedbacks.length - 1];
+      nextCursor = `${formatDate(lastFeedback.createdAt)}|${lastFeedback.id}`;
+    }
+
+    return ok(FeedbackListResDto.from(feedbacks, nextCursor, hasNext));
   }
 }
