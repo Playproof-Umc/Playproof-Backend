@@ -90,7 +90,15 @@ export class HighlightRepository {
       where: whereCondition,
       include: {
         user: {
-          select: { id: true, nickname: true }
+          select: {
+            id: true,
+            nickname: true,
+            userAvatars: {
+              where: { isEquipped: true },
+              include: { avatar: true },
+              take: 1
+            }
+          }
         },
         medias: { orderBy: { order: 'asc' } },
         _count: {
