@@ -239,7 +239,7 @@ export class HighlightListService {
   }
 
   /**
-   * 커뮤니티용 통합 하이라이트 목록 조회 (3, 5번 작업 마무리)
+   * 커뮤니티용 통합 하이라이트 목록 조회
    */
   async getCommunityHighlightList(
     cursor: bigint | null,
