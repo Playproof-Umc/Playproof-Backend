@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Route, Tags, SuccessResponse, Get, Path, Security, Middlewares, Request, Patch, Delete, Query } from "tsoa";
 import { injectable, inject } from "tsyringe";
 import { CommunityPostService } from "../services/community-post.service";
+import { HighlightListService } from "../../highlight/services/highlight-list.service"; 
 import { Result } from "../../../common/types/result.type";
 import { CommunityPostResDto, CommunityPostListResDto, CommunityPostDeleteResDto } from "../dtos/community-post.res.dto";
 import { CommunityPostCreateReqDto, CommunityPostUpdateReqDto } from "../dtos/community-post.req.dto";
@@ -10,7 +11,9 @@ import { validationMiddleware } from "../../../common/middlewares/validation";
 @Tags("Community")
 @injectable()
 export class CommunityPostController extends Controller {
-  constructor(@inject(CommunityPostService) private service: CommunityPostService) {
+  
+  constructor(@inject(CommunityPostService) private service: CommunityPostService,
+  @inject(HighlightListService) private highlightListService: HighlightListService) {
     super();
   }
 
@@ -65,5 +68,21 @@ export class CommunityPostController extends Controller {
     const result = await this.service.deletePost(req.user.id, post_id);
     this.setStatus(result.statusCode);
     return result;
+  }
+
+  @Get("highlights")
+  @SuccessResponse("200", "OK")
+  public async getCommunityHighlights(
+    @Request() request: any,
+    @Query() cursor?: number,
+    @Query() limit: number = 10
+  ): Promise<Result<any>> {
+    const userId = request.user ? BigInt(request.user.id) : null;
+    
+    return await this.highlightListService.getCommunityHighlightList(
+      cursor ? BigInt(cursor) : null,
+      limit,
+      userId
+    );
   }
 }
