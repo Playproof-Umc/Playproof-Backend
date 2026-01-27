@@ -23,6 +23,7 @@ export class PartyService {
     const { azitId } = dto;
     let azitName: string | null = null;
     let azitIconUrl: string | null = null;
+
     if (azitId) {
       const azit = await this.partyRepository.findAzitById(azitId);
       if (!azit) return notFound({ message: "아지트를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND_AZIT });
@@ -39,13 +40,13 @@ export class PartyService {
 
     // 1-4. 응답 DTO 반환
     return created({
-      partyId: Number(party.id),
-      userId: Number(party.userId),
-      gameId: Number(party.gameId),
-      title: party.title,
-      memo: party.memo,
-      recruitmentPeople: party.recruitmentPeople,
-      tierId: party.tierId ? Number(party.tierId) : null,
+      partyId: Number(result.party.id),
+      userId: Number(result.party.userId),
+      gameId: Number(result.party.gameId),
+      title: result.party.title,
+      memo: result.party.memo,
+      recruitmentPeople: result.party.recruitmentPeople,
+      tierId: result.party.tierId ? Number(result.party.tierId) : null,
       positionIds: dto.positionIds,
       isMicUse: party.isMicUse,
       azitId: Number(party.azitId),

@@ -77,7 +77,7 @@ enum ShopItemCategory {
 
 model Term {
   id         BigInt   @id @default(autoincrement())
-  name       String
+  name       String   @unique
   content    String   @db.Text
   isRequired Boolean  @map("is_required")
   userTerms  UserTerm[]
@@ -97,7 +97,7 @@ model Avatar {
 model ShopItem {
   id            BigInt           @id @default(autoincrement())
   category      ShopItemCategory @default(ITEM)
-  name          String
+  name          String           @unique
   price         Int
   imageUrl      String           @map("image_url")
   shoppingCarts ShoppingCart[]
@@ -108,7 +108,7 @@ model ShopItem {
 
 model Game {
   id             BigInt          @id @default(autoincrement())
-  name           String          @map("game_name")
+  name           String          @unique @map("game_name")
   gameInfos      GameInfo[]
   partyPosts     PartyPost[]
   communityPosts CommunityPost[]
@@ -118,7 +118,7 @@ model Game {
 
 model Tier {
   id         BigInt      @id @default(autoincrement())
-  name       String      @map("tier_name")
+  name       String      @unique @map("tier_name")
   gameInfos  GameInfo[]
   partyPosts PartyPost[]
 
@@ -127,7 +127,7 @@ model Tier {
 
 model Position {
   id            BigInt         @id @default(autoincrement())
-  name          String         @map("position_name")
+  name          String         @unique @map("position_name")
   gameInfos     GameInfo[]
   postPositions PostPosition[]
 
@@ -136,7 +136,7 @@ model Position {
 
 model Category {
   id                BigInt             @id @default(autoincrement())
-  name              String             @map("category_name")
+  name              String             @unique @map("category_name")
   userCategoryInfos UserCategoryInfo[]
   postCategories    PostCategory[]
 
@@ -145,7 +145,7 @@ model Category {
 
 model PositiveCategory {
   id                         BigInt                     @id @default(autoincrement())
-  name                       String                     @map("positive_category_name")
+  name                       String                     @unique @map("positive_category_name")
   feedbackPositiveCategories FeedbackPositiveCategory[]
 
   @@map("positive_categories")
@@ -153,7 +153,7 @@ model PositiveCategory {
 
 model NegativeCategory {
   id                         BigInt                     @id @default(autoincrement())
-  name                       String                     @map("negative_category_name")
+  name                       String                     @unique @map("negative_category_name")
   feedbackNegativeCategories FeedbackNegativeCategory[]
 
   @@map("negative_categories")
@@ -475,6 +475,7 @@ model AzitSchedule {
 
   azit              Azit     @relation(fields: [azitId], references: [id], onDelete: Cascade)
   participations    AzitScheduleParticipation[]
+  feedbacks         Feedback[]
 
   @@map("azit_schedule")
 }
@@ -615,15 +616,18 @@ model CommunityMedia {
 
 // 13. 피드백 관련 테이블
 model Feedback {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt   @map("user_id")
-  targetId  BigInt   @map("target_id")
-  content   String?  @db.Text
-  isBan     Boolean  @default(false) @map("is_ban")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-  user      User     @relation("FeedbackUser", fields: [userId], references: [id])
-  target    User     @relation("FeedbackTarget", fields: [targetId], references: [id])
+  id          BigInt        @id @default(autoincrement())
+  userId      BigInt        @map("user_id")
+  targetId    BigInt        @map("target_id")
+  scheduleId  BigInt        @map("schedule_id")
+  content     String?       @db.Text
+  isBan       Boolean       @default(false) @map("is_ban")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at")
+  user        User          @relation("FeedbackUser", fields: [userId], references: [id])
+  target      User          @relation("FeedbackTarget", fields: [targetId], references: [id])
+  schedule    AzitSchedule  @relation(fields: [scheduleId], references: [id])
+  
   positiveCategories FeedbackPositiveCategory[]
   negativeCategories FeedbackNegativeCategory[]
 

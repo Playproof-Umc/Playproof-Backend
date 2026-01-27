@@ -60,6 +60,24 @@ export class AzitScheduleParticipationRepository {
     return participation !== null;
   }
 
+  async existsParticipationByUserId(
+    userId: bigint,
+    scheduleId: bigint,
+  ): Promise<boolean> {
+    const participation = await prisma.azitScheduleParticipation.findFirst({
+      where: {
+        scheduleId,
+        member: {
+          userId,
+        },
+      },
+      select: {
+        memberId: true,
+      },
+    });
+    return participation !== null;
+  }
+
   // ----------------------------------------------------------------------------------------------------
   // 삭제
   // ----------------------------------------------------------------------------------------------------
