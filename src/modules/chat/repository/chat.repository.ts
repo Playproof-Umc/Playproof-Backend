@@ -97,4 +97,17 @@ export class ChatRepository {
       where: { id: roomId },
     });
   }
+
+  async updateChatRoom(
+    roomId: number,
+    data: {
+      roomName?: string;
+      isPrivate?: boolean;
+    },
+  ) {
+    return prisma.chatRoom.update({
+      where: { id: BigInt(roomId) },
+      data,
+    });
+  }
 }

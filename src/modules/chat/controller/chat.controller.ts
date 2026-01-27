@@ -1,7 +1,10 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
+  Middlewares,
+  Patch,
   Path,
   Query,
   Request,
@@ -12,8 +15,10 @@ import {
 } from 'tsoa';
 import { inject, injectable } from 'tsyringe';
 import { ChatService } from '../service/chat.service';
-import { ChatMessageListResDto } from '../dtos/chat.res.dto';
+import { ChatMessageListResDto, ChatRoomGetResDto } from '../dtos/chat.res.dto';
 import { ok, Result } from '../../../common/types/result.type';
+import { ChatRoomUpdateReqDto } from '../dtos/chat.req.dto';
+import { validationMiddleware } from '../../../common/middlewares/validation';
 
 @Route('chat-rooms')
 @Tags('Chat')
@@ -47,5 +52,20 @@ export class ChatController extends Controller {
   public async deleteChatRoom(@Path() roomId: number): Promise<Result<void>> {
     await this.chatService.deleteChatRoom(roomId);
     return ok(undefined);
+  }
+
+  @SuccessResponse('200', 'OK')
+  @Security('jwt')
+  @Middlewares(validationMiddleware(ChatRoomUpdateReqDto))
+  @Patch('{roomId}')
+  public async updateChatRoom(
+    @Path() roomId: number,
+    @Request() req: any,
+    @Body() dto: ChatRoomUpdateReqDto,
+  ): Promise<Result<ChatRoomGetResDto>> {
+    const userId = Number(req.user.id);
+    const result = await this.chatService.updateChatRoom(roomId, userId, dto);
+    this.setStatus(result.statusCode);
+    return result;
   }
 }

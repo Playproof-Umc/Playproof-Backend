@@ -15,7 +15,7 @@ import {
   ok,
 } from '../../../common/types/result.type';
 import { validateRoomAndMember } from '../utils/chat.validator';
-import { ChatRoomCreateReqDto, ChatType } from '../dtos/chat.req.dto';
+import { ChatRoomCreateReqDto, ChatRoomUpdateReqDto, ChatType } from '../dtos/chat.req.dto';
 import { ChatRoom } from '.prisma/client';
 
 @injectable()
@@ -124,6 +124,45 @@ export class ChatService {
     const chatRoom = await this.chatRepository.createChatRoom(azitId, userId, dto);
     return created({
       roomId: Number(chatRoom.id),
+    });
+  }
+
+  async updateChatRoom(
+    roomId: number,
+    userId: number,
+    dto: ChatRoomUpdateReqDto,
+  ): Promise<Result<ChatRoomGetResDto>> {
+    const access = await this.getRoomAndMember(roomId, userId);
+    if (!isSuccess(access)) return access;
+
+    const updateData: {
+      roomName?: string;
+      isPrivate?: boolean;
+    } = {};
+
+    if (dto.roomName !== undefined) updateData.roomName = dto.roomName;
+    if (dto.isPrivate !== undefined) updateData.isPrivate = dto.isPrivate;
+
+    if (Object.keys(updateData).length === 0) {
+      const { room } = access.data;
+      return ok({
+        id: Number(room.id),
+        roomName: room.roomName,
+        chatType: room.roomType as ChatType,
+        isPrivate: room.isPrivate,
+        createdAt: room.createdAt.toISOString(),
+        updatedAt: room.updatedAt.toISOString(),
+      });
+    }
+
+    const updatedRoom = await this.chatRepository.updateChatRoom(roomId, updateData);
+    return ok({
+      id: Number(updatedRoom.id),
+      roomName: updatedRoom.roomName,
+      chatType: updatedRoom.roomType as ChatType,
+      isPrivate: updatedRoom.isPrivate,
+      createdAt: updatedRoom.createdAt.toISOString(),
+      updatedAt: updatedRoom.updatedAt.toISOString(),
     });
   }
 

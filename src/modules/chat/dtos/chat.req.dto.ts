@@ -51,3 +51,19 @@ export class ChatRoomCreateReqDto {
   @IsOptional()
   isPrivate?: boolean;
 }
+
+export class ChatRoomUpdateReqDto {
+  /**
+   * @example "Updated Chat Room Name"
+   */
+  @IsOptional()
+  @IsString()
+  roomName?: string;
+
+  /**
+   * @example false
+   */
+  @IsOptional()
+  @IsBoolean()
+  isPrivate?: boolean;
+}
