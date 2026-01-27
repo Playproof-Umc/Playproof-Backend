@@ -92,12 +92,7 @@ export class HighlightRepository {
         user: {
           select: {
             id: true,
-            nickname: true,
-            userAvatars: {
-              where: { isEquipped: true },
-              include: { avatar: true },
-              take: 1
-            }
+            nickname: true
           }
         },
         medias: { orderBy: { order: 'asc' } },
