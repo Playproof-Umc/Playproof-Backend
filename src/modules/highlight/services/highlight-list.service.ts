@@ -237,4 +237,51 @@ export class HighlightListService {
 
     return ok(response);
   }
+
+  /**
+   * 커뮤니티용 통합 하이라이트 목록 조회 (3, 5번 작업 마무리)
+   */
+  async getCommunityHighlightList(
+    cursor: bigint | null,
+    limit: number,
+    userId: bigint | null // 좋아요 여부 확인용
+  ): Promise<Result<any>> { // 리턴 타입은 프로젝트의 ListResDto 형식에 맞게 조정
+    
+    // 1. 레포지토리에서 데이터 조회
+    const highlights = await this.highlightRepository.findCommunityHighlights(cursor, limit);
+    
+    // 2. 다음 페이지 존재 여부 확인
+    const hasNext = highlights.length > limit;
+    const items = hasNext ? highlights.slice(0, limit) : highlights;
+    const nextCursor = hasNext ? items[items.length - 1].id : null;
+
+    // 3. 현재 유저의 좋아요 여부 일괄 조회 (로그인 시에만)
+    const highlightIds = items.map(h => h.id);
+    const likedHighlightIds = userId 
+      ? await this.highlightRepository.findUserLikesByHighlightIds(userId, highlightIds)
+      : [];
+    const likedSet = new Set(likedHighlightIds.map(l => l.highlightId));
+
+    // 4. 응답 데이터 매핑
+    const result = items.map(h => ({
+      highlight_id: Number(h.id),
+      user_id: Number(h.userId),
+      nickname: h.user.nickname,
+      content: h.content,
+      medias: h.medias.map(m => ({
+        media_url: m.mediaUrl,
+        order: m.order
+      })),
+      like_count: h._count.likes,
+      comment_count: h._count.comments,
+      is_liked: likedSet.has(h.id),
+      created_at: h.createdAt
+    }));
+
+    return ok({
+      items: result,
+      next_cursor: nextCursor ? Number(nextCursor) : null,
+      has_next: hasNext
+    });
+  }
 }
