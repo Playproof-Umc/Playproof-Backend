@@ -50,6 +50,7 @@ export class AzitChatController extends Controller {
   ): Promise<Result<ChatRoomGetResDto[]>> {
     const userId = Number(req.user.id);
     const result = await this.chatService.getChatRooms(azitId, userId);
+    this.setStatus(result.statusCode);
     return result;
   }
 }

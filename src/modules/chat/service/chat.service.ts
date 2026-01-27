@@ -15,7 +15,7 @@ import {
   isSuccess,
   ok,
 } from '../../../common/types/result.type';
-import { validateRoomAndMember } from '../utils/chat.validator';
+import { validateAzitMemberOnly, validateRoomAndMember } from '../utils/chat.validator';
 import {
   CHAT_MESSAGE_MAX_LENGTH,
   ChatRoomCreateReqDto,
@@ -29,6 +29,13 @@ export class ChatService {
   constructor(@inject(ChatRepository) private chatRepository: ChatRepository) {}
 
   async getChatRooms(azitId: number, userId: number): Promise<Result<ChatRoomGetResDto[]>> {
+    const memberAccess = await validateAzitMemberOnly(
+      this.chatRepository,
+      userId,
+      BigInt(azitId),
+    );
+    if (!isSuccess(memberAccess)) return memberAccess;
+
     const chatRooms = await this.chatRepository.getChatRooms(azitId, userId);
     return ok<ChatRoomGetResDto[]>(chatRooms.map((chatRoom: ChatRoom): ChatRoomGetResDto => ({
       id: Number(chatRoom.id),
