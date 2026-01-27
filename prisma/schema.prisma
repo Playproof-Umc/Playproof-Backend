@@ -209,6 +209,7 @@ model UserGameInfo {
   infoId     BigInt    @map("info_id")
   isVerified Boolean   @default(false) @map("is_verified")
   verifiedAt DateTime? @map("verified_at")
+  accountId  String?   @map("account_id")
   user       User      @relation(fields: [userId], references: [id])
   gameInfo   GameInfo  @relation(fields: [infoId], references: [id])
 
