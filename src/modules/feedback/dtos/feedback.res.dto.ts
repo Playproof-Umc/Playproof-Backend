@@ -179,5 +179,72 @@ export class FeedbackListResDto {
   }
 }
 
+export class FeedbackPendingResDto {
+  /**
+   * 일정 ID
+   * @example 1
+   */
+  @IsNumber()
+  schedule_id!: number;
+
+  /**
+   * 사용자 ID
+   * @example 1
+   */
+  @IsNumber()
+  user_id!: number;
+
+  /**
+   * 닉네임
+   * @example "홍길동"
+   */
+  @IsString()
+  nickname!: string | null;
+
+  /**
+   * 아바타 URL (착용한 아바타가 없을 경우 null)
+   * @example "https://example.com/avatar.png"
+   */
+  @IsString()
+  avatar_url!: string | null;
+
+  /**
+   * 정적 팩토리 메서드
+   */
+  static from(participation: {
+    scheduleId: bigint;
+    member: {
+      userId: bigint;
+      user: {
+        id: bigint;
+        nickname: string | null;
+        userAvatars: {
+          avatar: {
+            avatarUrl: string;
+          } | null;
+        }[];
+      };
+    };
+  }): FeedbackPendingResDto {
+    const user = participation.member.user;
+    const avatarUrl = user.userAvatars?.[0]?.avatar?.avatarUrl || null;
+
+    return {
+      schedule_id: Number(participation.scheduleId),
+      user_id: Number(user.id),
+      nickname: user.nickname,
+      avatar_url: avatarUrl,
+    };
+  }
+}
+
+export class FeedbackPendingListResDto {
+  /**
+   * 피드백 미완료 대상자 목록
+   */
+  @IsArray()
+  targets!: FeedbackPendingResDto[];
+}
+
 
 

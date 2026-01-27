@@ -4,7 +4,7 @@ import { AzitScheduleParticipationRepository } from '../../azit/repositories/azi
 import { AzitScheduleRepository } from '../../azit/repositories/azit-schedule.repository';
 import { UserRepository } from '../../user/user.repository';
 import { FeedbackCreateReqDto } from '../dtos/feedback.req.dto';
-import { FeedbackCreateResDto, FeedbackListResDto, FeedbackResDto, FeedbackCategoryResDto } from '../dtos/feedback.res.dto';
+import { FeedbackCreateResDto, FeedbackListResDto, FeedbackResDto, FeedbackPendingListResDto, FeedbackPendingResDto } from '../dtos/feedback.res.dto';
 import { FeedbackCategoryRepository } from '../repositories/feedback-category.repository';
 import { FeedbackRepository } from '../repositories/feedback.repository';
 import { validateFeedbackCreation } from '../utils/feedback.validator';
@@ -118,5 +118,23 @@ export class FeedbackService {
     }
 
     return ok(FeedbackListResDto.from(feedbacks, nextCursor, hasNext));
+  }
+
+  async getPendingTargets(
+    userId: bigint,
+  ): Promise<Result<FeedbackPendingListResDto>> {
+    // 피드백 미완료 대상자 조회 (사용자가 참여한 모든 종료된 일정)
+    const participations = await this.feedbackRepository.findParticipantsWithoutFeedback(
+      userId,
+    );
+
+    // 응답 DTO 변환
+    const targets: FeedbackPendingResDto[] = participations.map(
+      (participation) => FeedbackPendingResDto.from(participation),
+    );
+
+    return ok({
+      targets,
+    });
   }
 }

@@ -145,4 +145,101 @@ export class FeedbackRepository {
       hasNext,
     };
   }
+
+  /**
+   * 피드백을 작성하지 않은 참여자 목록 조회 (사용자가 참여한 모든 종료된 일정)
+   * @param userId - 피드백을 작성할 사용자 ID
+   * @returns 피드백 미완료 참여자 목록 (각 참여자마다 schedule_id 포함)
+   */
+  async findParticipantsWithoutFeedback(
+    userId: bigint, // 피드백을 작성할 사용자
+  ): Promise<any[]> {
+    const now = new Date();
+    
+    // 사용자가 참여한 종료된 일정들의 참여자 조회
+    const participants = await prisma.azitScheduleParticipation.findMany({
+      where: {
+        schedule: {
+          gameEndAt: {
+            lte: now, // 종료된 일정만
+          },
+          participations: {
+            some: {
+              member: {
+                userId, // 현재 사용자가 참여한 일정
+              },
+            },
+          },
+        },
+        member: {
+          userId: {
+            not: userId, // 자기 자신 제외
+          },
+        },
+      },
+      select: {
+        scheduleId: true,
+        member: {
+          select: {
+            userId: true,
+            user: {
+              select: {
+                id: true,
+                nickname: true,
+                userAvatars: {
+                  where: {
+                    isEquipped: true,
+                  },
+                  select: {
+                    avatar: {
+                      select: {
+                        avatarUrl: true,
+                      },
+                    },
+                  },
+                  take: 1,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // 피드백이 이미 작성된 참여자-일정 쌍 조회
+    if (participants.length === 0) {
+      return [];
+    }
+
+    const scheduleIds = [...new Set(participants.map((p) => p.scheduleId))];
+    const targetIds = [...new Set(participants.map((p) => p.member.userId))];
+
+    const existingFeedbacks = await prisma.feedback.findMany({
+      where: {
+        userId,
+        scheduleId: {
+          in: scheduleIds,
+        },
+        targetId: {
+          in: targetIds,
+        },
+      },
+      select: {
+        scheduleId: true,
+        targetId: true,
+      },
+    });
+
+    // 피드백이 작성된 쌍을 Set으로 만들어서 빠른 조회
+    const feedbackSet = new Set(
+      existingFeedbacks.map((f) => `${f.scheduleId}-${f.targetId}`),
+    );
+
+    // 피드백이 없는 참여자만 필터링
+    const filteredParticipants = participants.filter(
+      (p) => !feedbackSet.has(`${p.scheduleId}-${p.member.userId}`),
+    );
+
+    return filteredParticipants;
+  }
 }

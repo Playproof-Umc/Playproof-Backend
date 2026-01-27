@@ -2,7 +2,7 @@ import { Controller, Post, Get, Body, Query, Route, Tags, SuccessResponse, Respo
 import { injectable, inject } from "tsyringe";
 
 import { FeedbackCreateReqDto } from "../dtos/feedback.req.dto";
-import { FeedbackCreateResDto, FeedbackListResDto } from "../dtos/feedback.res.dto";
+import { FeedbackCreateResDto, FeedbackListResDto, FeedbackPendingListResDto } from "../dtos/feedback.res.dto";
 import { FeedbackService } from "../services/feedback.service";
 import { validationMiddleware } from "../../../common/middlewares/validation";
 import { Result, BadRequestError, NotFoundError, ConflictError, InternalServerError } from "../../../common/types/result.type";
@@ -49,6 +49,20 @@ export class FeedbackController extends Controller {
     const userId = BigInt(req.user.id);
     const pageSize = size || 15;
     const result = await this.feedbackService.getFeedbacksMyPage(userId, cursor, pageSize);
+    
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  @SuccessResponse("200", "OK")
+  @Response<InternalServerError>(500, "Internal Server Error")
+  @Security("jwt")
+  @Get("/pending")
+  public async getPendingTargets(
+    @Request() req: any,
+  ): Promise<Result<FeedbackPendingListResDto>> {
+    const userId = BigInt(req.user.id);
+    const result = await this.feedbackService.getPendingTargets(userId);
     
     this.setStatus(result.statusCode);
     return result;
