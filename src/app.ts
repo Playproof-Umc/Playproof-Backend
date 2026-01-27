@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
+import path from "path";
 import { RegisterRoutes } from "./build/routes"; 
 import swaggerDocument from "./build/swagger.json"; 
 import { globalErrorHandler } from "./common/middlewares/error.handler";
@@ -22,8 +23,13 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const asyncapiSpecPath = path.resolve(process.cwd(), "asyncapi.yaml");
+const asyncapiHtmlPath = path.resolve(process.cwd(), "public", "asyncapi.html");
+
 // Swagger UI
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get("/asyncapi.yaml", (_req, res) => res.sendFile(asyncapiSpecPath));
+app.get("/async-docs", (_req, res) => res.sendFile(asyncapiHtmlPath));
 
 // TSOA Routes 등록 (커스텀 multer 사용)
 RegisterRoutes(app, { multer: upload });

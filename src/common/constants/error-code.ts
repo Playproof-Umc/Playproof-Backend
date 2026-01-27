@@ -97,12 +97,23 @@ export const AzitErrorCode = {
 } as const;
 
 export const CommunityErrorCode = {
+  // 리소스 관련
   POST_NOT_FOUND: "COMMUNITY_POST_NOT_FOUND",       // 게시글을 찾을 수 없음
+  HIGHLIGHT_NOT_FOUND: "COMMUNITY_HIGHLIGHT_NOT_FOUND", // 하이라이트를 찾을 수 없음
   GAME_NOT_FOUND: "COMMUNITY_GAME_NOT_FOUND",       // 게임 카테고리를 찾을 수 없음
-  FORBIDDEN: "COMMUNITY_FORBIDDEN",                 // 작성자 권한 없음
+  
+  // 권한 관련
+  FORBIDDEN: "COMMUNITY_FORBIDDEN",                 // 수정/삭제 권한 없음
+  
+  // 댓글 관련
   COMMENT_NOT_FOUND: "COMMUNITY_COMMENT_NOT_FOUND", // 댓글을 찾을 수 없음
+  
+  // 좋아요 관련
   ALREADY_LIKED: "COMMUNITY_ALREADY_LIKED",         // 이미 좋아요를 누름
   LIKE_NOT_FOUND: "COMMUNITY_LIKE_NOT_FOUND",       // 좋아요 기록 없음
+  
+  // 공통
+  INVALID_TARGET_TYPE: "COMMUNITY_INVALID_TARGET_TYPE", // 잘못된 타겟 타입 (HIGHLIGHT/POST 외)
 } as const;
 
 // 피드백 관련 에러 코드
@@ -129,6 +140,29 @@ export const FeedbackErrorCode = {
   CONFLICT: {
     FEEDBACK_ALREADY_EXISTS: 'FEEDBACK_ALREADY_EXISTS', // 이미 피드백이 존재함
   },
+} as const;
+
+// 하이라이트 관련 에러 코드
+export const HighlightErrorCode = {
+  CREATE_FORBIDDEN: "HIGHLIGHT_CREATE_FORBIDDEN", // 하이라이트 생성 권한 없음
+  CREATE_FAILED: "HIGHLIGHT_CREATE_FAILED", // 하이라이트 생성 실패
+  LIST_FORBIDDEN: "HIGHLIGHT_LIST_FORBIDDEN", // 하이라이트 목록 조회 권한 없음
+  UPDATE_FORBIDDEN: "HIGHLIGHT_FORBIDDEN_UPDATE", // 하이라이트 수정 권한 없음
+  UPDATE_FAILED: "HIGHLIGHT_UPDATE_FAILED", // 하이라이트 수정 실패
+  DELETE_FORBIDDEN: "HIGHLIGHT_FORBIDDEN_DELETE", // 하이라이트 삭제 권한 없음
+  DELETE_FAILED: "HIGHLIGHT_DELETE_FAILED", // 하이라이트 삭제 실패
+  NOT_FOUND: "HIGHLIGHT_NOT_FOUND", // 하이라이트를 찾을 수 없음
+} as const;
+
+// 공통 에러 코드
+export const CommonErrorCode = {
+  RESOURCE_NOT_FOUND: "COMMON_RESOURCE_NOT_FOUND", // 리소스를 찾을 수 없음
+} as const;
+
+export const ChatErrorCode = {
+  ROOM_NOT_FOUND: "CHAT_ROOM_NOT_FOUND", // 채팅방을 찾을 수 없음
+  AZIT_MEMBER_ONLY: "CHAT_AZIT_MEMBER_ONLY", // 아지트 멤버만 접근 가능
+  MESSAGE_CREATE_FAILED: "CHAT_MESSAGE_CREATE_FAILED", // 메시지 저장 실패
 } as const;
 
 // 나중에 다른 도메인이 생기면 추가

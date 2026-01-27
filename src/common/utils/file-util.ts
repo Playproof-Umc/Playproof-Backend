@@ -12,35 +12,47 @@ import { FileUploadErrorCode } from '../constants/error-code';
  */
 export async function uploadFileToS3(
   file: Express.Multer.File,
-  folder: string,
+  folder: string
 ): Promise<Result<string>> {
-  try {
-    // 고유한 파일명 생성: 타임스탬프_랜덤숫자_원본파일명
-    const timestamp = Date.now();
-    const random = Math.round(Math.random() * 1e9);
-    const fileName = `${timestamp}-${random}-${file.originalname}`;
-    const key = `${folder}/${fileName}`;
+  // 고유한 파일명 생성: 타임스탬프-랜덤숫자-확장자
+  const timestamp = Date.now();
+  const random = Math.round(Math.random() * 1E9);
+  
+  // 한글 파일명 제거
+  const originalName = file.originalname || 'file';
+  const lastDotIndex = originalName.lastIndexOf('.');
+  const extension = lastDotIndex !== -1 ? originalName.substring(lastDotIndex).toLowerCase() : '';
+  
+  const fileName = `${timestamp}-${random}${extension}`;
+  
+  const key = `${folder}/${fileName}`;
 
-    // S3에 업로드
-    await s3Client.send(
-      new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      }),
-    );
+  // S3에 업로드
+  const command = new PutObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  });
 
-    // S3 URL 반환
-    const region = process.env.AWS_REGION || 'ap-northeast-2';
-    const imageUrl = `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`;
-    return ok(imageUrl);
-  } catch {
-    return internalServerError({
-      message: '파일 업로드에 실패했습니다.',
-      errorCode: FileUploadErrorCode.S3_UPLOAD_FAILED,
-    });
-  }
+  const sendPromise = s3Client.send(command);
+  
+  // Promise의 결과를 확인하여 에러 처리
+  const result = await Promise.resolve(sendPromise).then(
+    () => {
+      const region = process.env.AWS_REGION || 'ap-northeast-2';
+      const url = `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`;
+      return ok(url);
+    },
+    (error) => {
+      return internalServerError({
+        message: '파일 업로드에 실패했습니다.',
+        errorCode: FileUploadErrorCode.S3_UPLOAD_FAILED,
+      });
+    }
+  );
+  
+  return result;
 }
 
 /**
