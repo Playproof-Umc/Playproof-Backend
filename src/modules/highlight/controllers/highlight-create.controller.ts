@@ -24,7 +24,7 @@ import { HighlightUpdateService } from "../services/highlight-update.service";
 import { HighlightDeleteService } from "../services/highlight-delete.service";
 import { HighlightLikeService } from "../services/highlight-like.service";
 import { HighlightCreateReqDto, HighlightVisibility, GetHighlightListReqDto, HighlightUpdateReqDto } from "../dtos/highlight.req.dto";
-import { HighlightCreateResDto, GetHighlightListResDto, GetHighlightDetailResDto, HighlightDeleteResDto, HighlightLikeResDto } from "../dtos/highlight.res.dto";
+import { HighlightCreateResDto, GetHighlightListResDto, GetHighlightDetailResDto, HighlightDeleteResDto, HighlightLikeResDto, HighlightUnlikeResDto } from "../dtos/highlight.res.dto";
 import {
   Result,
   BadRequestError,
@@ -256,6 +256,37 @@ export class HighlightCreateController extends Controller {
     const highlightId = BigInt(highlight_id);
 
     const result = await this.highlightLikeService.addLike(
+      userId,
+      azitId,
+      highlightId,
+    );
+
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  /**
+   * 하이라이트 좋아요 취소
+   * 특정 하이라이트에서 좋아요를 삭제합니다.
+   */
+  @SuccessResponse("200", "OK")
+  @Response<BadRequestError>(400, "Bad Request")
+  @Response<UnauthorizedError>(401, "Unauthorized")
+  @Response<ForbiddenError>(403, "Forbidden")
+  @Response<NotFoundError>(404, "Not Found")
+  @Response<InternalServerError>(500, "Internal Server Error")
+  @Security("jwt")
+  @Delete("{azit_id}/highlights/{highlight_id}/likes")
+  public async removeLike(
+    @Request() req: any,
+    @Path() azit_id: number,
+    @Path() highlight_id: number,
+  ): Promise<Result<HighlightUnlikeResDto>> {
+    const userId = BigInt(req.user.id);
+    const azitId = BigInt(azit_id);
+    const highlightId = BigInt(highlight_id);
+
+    const result = await this.highlightLikeService.removeLike(
       userId,
       azitId,
       highlightId,

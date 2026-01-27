@@ -116,6 +116,7 @@ export const HighlightErrorCode = {
   DELETE_FAILED: "HIGHLIGHT_DELETE_FAILED", // 하이라이트 삭제 실패
   NOT_FOUND: "HIGHLIGHT_NOT_FOUND", // 하이라이트를 찾을 수 없음
   LIKE_ALREADY_EXISTS: "HIGHLIGHT_LIKE_ALREADY_EXISTS", // 이미 좋아요를 누른 하이라이트
+  LIKE_NOT_FOUND: "HIGHLIGHT_LIKE_NOT_FOUND", // 좋아요를 추가하지 않은 하이라이트
 } as const;
 
 // 공통 에러 코드

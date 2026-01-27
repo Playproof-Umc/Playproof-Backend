@@ -284,6 +284,18 @@ export class HighlightRepository {
   }
 
   /**
+   * 하이라이트 좋아요 삭제
+   */
+  async deleteHighlightLike(userId: bigint, highlightId: bigint) {
+    return prisma.communityLike.deleteMany({
+      where: {
+        userId,
+        highlightId,
+      },
+    });
+  }
+
+  /**
    * 하이라이트 삭제
    */
   async deleteHighlight(highlightId: bigint): Promise<Highlight> {
