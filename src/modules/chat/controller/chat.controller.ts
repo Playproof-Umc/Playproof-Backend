@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Middlewares,
+  Post,
   Patch,
   Path,
   Query,
@@ -15,9 +16,13 @@ import {
 } from 'tsoa';
 import { inject, injectable } from 'tsyringe';
 import { ChatService } from '../service/chat.service';
-import { ChatMessageListResDto, ChatRoomGetResDto } from '../dtos/chat.res.dto';
+import {
+  ChatMessageListResDto,
+  ChatMessageResDto,
+  ChatRoomGetResDto,
+} from '../dtos/chat.res.dto';
 import { ok, Result } from '../../../common/types/result.type';
-import { ChatRoomUpdateReqDto } from '../dtos/chat.req.dto';
+import { ChatMessageCreateReqDto, ChatRoomUpdateReqDto } from '../dtos/chat.req.dto';
 import { validationMiddleware } from '../../../common/middlewares/validation';
 
 @Route('chat-rooms')
@@ -42,6 +47,21 @@ export class ChatController extends Controller {
       size,
       cursor,
     });
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  @SuccessResponse('201', 'Created')
+  @Security('jwt')
+  @Middlewares(validationMiddleware(ChatMessageCreateReqDto))
+  @Post('{roomId}/messages')
+  public async createMessage(
+    @Path() roomId: number,
+    @Request() req: any,
+    @Body() dto: ChatMessageCreateReqDto,
+  ): Promise<Result<ChatMessageResDto>> {
+    const userId = Number(req.user.id);
+    const result = await this.chatService.sendMessage(roomId, userId, dto.content);
     this.setStatus(result.statusCode);
     return result;
   }

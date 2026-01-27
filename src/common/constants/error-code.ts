@@ -136,6 +136,8 @@ export const ChatErrorCode = {
   ROOM_NOT_FOUND: "CHAT_ROOM_NOT_FOUND", // 채팅방을 찾을 수 없음
   AZIT_MEMBER_ONLY: "CHAT_AZIT_MEMBER_ONLY", // 아지트 멤버만 접근 가능
   MESSAGE_CREATE_FAILED: "CHAT_MESSAGE_CREATE_FAILED", // 메시지 저장 실패
+  MESSAGE_INVALID: "CHAT_MESSAGE_INVALID", // 메시지 입력이 올바르지 않음
+  MESSAGE_TOO_LONG: "CHAT_MESSAGE_TOO_LONG", // 메시지 길이 초과
 } as const;
 
 // 나중에 다른 도메인이 생기면 추가
