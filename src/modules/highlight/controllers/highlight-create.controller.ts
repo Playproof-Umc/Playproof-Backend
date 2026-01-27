@@ -88,6 +88,40 @@ export class HighlightCreateController extends Controller {
   }
 
   /**
+   * 커뮤니티 직접 등록 하이라이트 생성 (추가된 기능)
+   * 아지트 ID 없이 커뮤니티에 직접 하이라이트를 생성합니다.
+   * URL: POST /azits/highlights
+   */
+  @SuccessResponse("201", "Created")
+  @Security("jwt")
+  @Middlewares(validationMiddleware(HighlightCreateReqDto))
+  @Post("highlights") // 🚩 기존 @Route("azits")와 합쳐져 /azits/highlights 가 됩니다.
+  public async createCommunityHighlight(
+    @Request() req: any,
+    @FormField() content?: string,
+    @FormField() visibility?: HighlightVisibility,
+    @UploadedFiles() medias?: Express.Multer.File[],
+  ): Promise<Result<HighlightCreateResDto>> {
+    const userId = BigInt(req.user.id);
+    const azitId = null; // 직접 등록이므로 null
+
+    const dto: HighlightCreateReqDto = {
+      content: req.body.content,
+      visibility: req.body.visibility,
+    };
+
+    const result = await this.highlightCreateService.createHighlight(
+      userId,
+      azitId,
+      dto,
+      medias,
+    );
+
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  /**
    * 하이라이트 목록 조회
    * 특정 아지트에 존재하는 모든 하이라이트 목록을 조회합니다.
    */
