@@ -176,16 +176,12 @@ export class AuthService {
   }
 
     async verifyDuplicateNickname(dto: VerifiyDuplicateNicknameReqDto): Promise<Result<VerifiyDuplicateNicknameResDto>> {
-    return await ResultChain.of(dto)
-      .flatThenAsync(checkNicknameDuplicate(this.userRepository))
-      .flatThen((data) => Promise.resolve(ok(this.toVerifyDuplicateNicknameResponse(data))))
-      .getResult();
-  }
+    const existingUser = await this.userRepository.findByName(dto.nickname);
+  
+    const isDuplicate = !!existingUser; 
 
-  private toVerifyDuplicateNicknameResponse(dto: VerifiyDuplicateNicknameReqDto): VerifiyDuplicateNicknameResDto {
-    if (dto) {
-      return { isDuplicate: true };
-    }
-    return { isDuplicate: false };
+    return ok({ 
+      isDuplicate 
+    });
   }
 }
