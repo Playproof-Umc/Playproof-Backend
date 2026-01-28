@@ -1,7 +1,7 @@
 import { CommunityInteractionService } from '../services/community-interaction.service';
 import { CommunityLikeRepository } from '../repositories/community-like.repository';
 import { CommunityCommentRepository } from '../repositories/community-comment.repository';
-import { CommunityValidator } from '../utils/community-interaction.validator';
+import { CommunityInteractionValidator } from '../utils/community-interaction.validator';
 import { CommunityTargetType } from '../types/community-type';
 import { isSuccess } from '../../../common/types/result.type';
 import { CommunityErrorCode } from '../../../common/constants/error-code';
@@ -10,7 +10,7 @@ describe('CommunityInteractionService', () => {
   let service: CommunityInteractionService;
   let likeRepository: jest.Mocked<CommunityLikeRepository>;
   let commentRepository: jest.Mocked<CommunityCommentRepository>;
-  let validator: jest.Mocked<CommunityValidator>;
+  let validator: jest.Mocked<CommunityInteractionValidator>;
 
   beforeEach(() => {
     // 1. Mock 초기화
@@ -159,15 +159,16 @@ describe('CommunityInteractionService', () => {
     });
   });
 
-  // 5. 댓글 목록 조회 테스트
   describe('getComments', () => {
     it('성공: 특정 리소스의 댓글 목록을 반환한다', async () => {
+      const userId = BigInt(1); 
+      
       validator.validateTargetResource.mockResolvedValue({ data: {} } as any);
       commentRepository.findCommentsByTarget.mockResolvedValue([
         { id: BigInt(1), parentId: null, userId: BigInt(1), user: { nickname: '작성자' }, content: 'ㅎㅇ', createdAt: new Date() }
       ] as any);
 
-      const result = await service.getComments(CommunityTargetType.POST, 100);
+      const result = await service.getComments(CommunityTargetType.POST, 100, userId);
 
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
@@ -231,6 +232,71 @@ describe('CommunityInteractionService', () => {
       }
       // 실제 레포지토리의 삭제 메서드가 올바른 ID로 호출되었는지 확인
       expect(commentRepository.deleteComment).toHaveBeenCalledWith(BigInt(commentId));
+    });
+  });
+
+  describe('Highlight 연동 권한 테스트', () => {
+    const userId = BigInt(1);
+    const highlightId = 200;
+    const highlightDto = { target_type: CommunityTargetType.HIGHLIGHT, target_id: highlightId };
+
+    it('실패: 아지트 비공개 하이라이트에 외부인이 접근하면 403 에러를 반환한다', async () => {
+      // 1. Validator가 아지트 멤버십 체크 후 403 Forbidden 결과 반환 시뮬레이션
+      validator.validateTargetResource.mockResolvedValue({
+        statusCode: 403,
+        error: { 
+          code: CommunityErrorCode.FORBIDDEN, 
+          message: '해당 아지트 멤버만 접근 가능한 하이라이트입니다.' 
+        },
+        data: null
+      } as any);
+
+      const result = await service.toggleLike(userId, highlightDto);
+
+      // 2. 서비스가 Validator의 에러 결과를 그대로 상위로 던지는지 확인
+      expect(result.statusCode).toBe(403);
+      if (!isSuccess(result)) {
+        expect(result.error.code).toBe(CommunityErrorCode.FORBIDDEN);
+        expect(result.error.message).toContain('아지트 멤버');
+      }
+      // 권한이 없으므로 레포지토리 로직은 실행되지 않아야 함
+      expect(likeRepository.findLike).not.toHaveBeenCalled();
+    });
+
+    it('성공: 커뮤니티 직접 등록 하이라이트(azitId: null)는 모든 유저가 접근 가능하다', async () => {
+      // 1. Validator가 하이라이트 존재 확인 및 권한 통과(null) 시뮬레이션
+      validator.validateTargetResource.mockResolvedValue({ 
+        data: { id: BigInt(highlightId), azitId: null, isPublic: true } 
+      } as any);
+      
+      likeRepository.findLike.mockResolvedValue(null);
+      likeRepository.countLikes.mockResolvedValue(5);
+
+      const result = await service.toggleLike(userId, highlightDto);
+
+      // 2. 정상적으로 좋아요 로직이 실행되는지 확인
+      expect(result.statusCode).toBe(200);
+      expect(isSuccess(result) && result.data.is_liked).toBe(true);
+      expect(likeRepository.createLike).toHaveBeenCalled();
+    });
+
+    it('성공: 아지트 하이라이트라도 PUBLIC 설정이면 비멤버도 댓글 작성이 가능하다', async () => {
+      // 1. Validator가 PUBLIC 권한 확인 시뮬레이션
+      validator.validateTargetResource.mockResolvedValue({ 
+        data: { id: BigInt(highlightId), azitId: BigInt(10), isPublic: true } 
+      } as any);
+      
+      const commentDto = { ...highlightDto, content: '공개 하이라이트 댓글' };
+      commentRepository.createComment.mockResolvedValue({
+        id: BigInt(1), userId: userId, content: commentDto.content, user: { nickname: '시영' }
+      } as any);
+
+      const result = await service.createComment(userId, commentDto);
+
+      // 2. 정상 생성 확인
+      expect(result.statusCode).toBe(201);
+      expect(isSuccess(result) && result.data.nickname).toBe('시영');
+      expect(commentRepository.createComment).toHaveBeenCalled();
     });
   });
 });
