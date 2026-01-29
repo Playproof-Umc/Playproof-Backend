@@ -22,7 +22,10 @@ import {
   ChatRoomGetResDto,
 } from '../dtos/chat.res.dto';
 import { ok, Result } from '../../../common/types/result.type';
-import { ChatMessageCreateReqDto, ChatRoomUpdateReqDto } from '../dtos/chat.req.dto';
+import {
+  ChatMessageCreateReqDto,
+  ChatRoomUpdateReqDto,
+} from '../dtos/chat.req.dto';
 import { validationMiddleware } from '../../../common/middlewares/validation';
 
 @Route('chat-rooms')
@@ -61,7 +64,11 @@ export class ChatController extends Controller {
     @Body() dto: ChatMessageCreateReqDto,
   ): Promise<Result<ChatMessageResDto>> {
     const userId = Number(req.user.id);
-    const result = await this.chatService.sendMessage(roomId, userId, dto.content);
+    const result = await this.chatService.sendMessage(
+      roomId,
+      userId,
+      dto.content,
+    );
     this.setStatus(result.statusCode);
     return result;
   }
@@ -69,8 +76,12 @@ export class ChatController extends Controller {
   @SuccessResponse('200', 'OK')
   @Security('jwt')
   @Delete('{roomId}')
-  public async deleteChatRoom(@Path() roomId: number): Promise<Result<void>> {
-    await this.chatService.deleteChatRoom(roomId);
+  public async deleteChatRoom(
+    @Path() roomId: number,
+    @Request() req: any,
+  ): Promise<Result<void>> {
+    const userId = Number(req.user.id);
+    await this.chatService.deleteChatRoom(roomId, userId);
     return ok(undefined);
   }
 

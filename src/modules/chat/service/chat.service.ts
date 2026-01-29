@@ -180,8 +180,11 @@ export class ChatService {
     });
   }
 
-  async deleteChatRoom(roomId: number): Promise<Result<void>> {
+  async deleteChatRoom(roomId: number, userId: number): Promise<Result<string>> {
+    const access = await this.getRoomAndMember(roomId, userId);
+    if (!isSuccess(access)) return access;
+    
     await this.chatRepository.deleteChatRoom(BigInt(roomId));
-    return ok(undefined);
+    return ok(`${roomId} 채팅방이 삭제되었습니다.`);
   }
 }
