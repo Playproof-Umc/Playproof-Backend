@@ -79,10 +79,9 @@ export class ChatController extends Controller {
   public async deleteChatRoom(
     @Path() roomId: number,
     @Request() req: any,
-  ): Promise<Result<void>> {
+  ): Promise<Result<string>> {
     const userId = Number(req.user.id);
-    await this.chatService.deleteChatRoom(roomId, userId);
-    return ok(undefined);
+    return this.chatService.deleteChatRoom(roomId, userId);
   }
 
   @SuccessResponse('200', 'OK')

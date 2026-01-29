@@ -181,6 +181,7 @@ export class ChatService {
   }
 
   async deleteChatRoom(roomId: number, userId: number): Promise<Result<string>> {
+    
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
     
