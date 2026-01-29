@@ -1,6 +1,13 @@
 import { ChatErrorCode } from '../../../common/constants/error-code';
-import { forbidden, notFound, ok, Result } from '../../../common/types/result.type';
+import {
+  badRequest,
+  forbidden,
+  notFound,
+  ok,
+  Result,
+} from '../../../common/types/result.type';
 import { ChatRepository } from '../repository/chat.repository';
+import { CHAT_MESSAGE_MAX_LENGTH } from '../dtos/chat.req.dto';
 
 type ChatRoom = Awaited<ReturnType<ChatRepository['findChatRoomById']>>;
 type AzitMember = Awaited<
@@ -57,4 +64,23 @@ export async function validateRoomAndMember(
   if (memberResult.error) return memberResult;
 
   return ok({ room: roomResult.data, member: memberResult.data });
+}
+
+export function validateMessageContent(content?: string): Result<{ content: string }> {
+  const trimmed = content?.trim();
+  if (!trimmed) {
+    return badRequest({
+      message: '메시지 입력이 올바르지 않습니다.',
+      errorCode: ChatErrorCode.MESSAGE_INVALID,
+    });
+  }
+
+  if (trimmed.length > CHAT_MESSAGE_MAX_LENGTH) {
+    return badRequest({
+      message: `메시지는 ${CHAT_MESSAGE_MAX_LENGTH}자를 초과할 수 없습니다.`,
+      errorCode: ChatErrorCode.MESSAGE_TOO_LONG,
+    });
+  }
+
+  return ok({ content: trimmed });
 }
