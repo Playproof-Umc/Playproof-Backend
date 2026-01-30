@@ -21,6 +21,8 @@ export class ReportCreateResDto {
 
 /** 신고 목록 항목 */
 export class ReportListItemDto {
+  /** 신고 ID */
+  report_id!: number;
   /** 신고 대상자 이름 */
   target_name!: string;
   /** 신고 유형 */
