@@ -75,3 +75,13 @@ export class ReportDetailResDto {
   /** 생성 일시 */
   created_at!: Date;
 }
+
+/** 신고 삭제 응답 */
+export class ReportDeleteResDto {
+  /** 삭제된 신고 ID */
+  report_id!: number;
+  /** 메시지 */
+  message!: string;
+  /** 삭제 일시 */
+  deleted_at!: Date;
+}

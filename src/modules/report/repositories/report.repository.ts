@@ -149,4 +149,13 @@ export class ReportRepository {
       })),
     });
   }
+
+  /**
+   * 신고 삭제
+   */
+  async deleteReport(reportId: bigint) {
+    return prisma.report.delete({
+      where: { id: reportId },
+    });
+  }
 }

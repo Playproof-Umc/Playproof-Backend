@@ -3,7 +3,7 @@ import { injectable, inject } from "tsyringe";
 import { ReportRepository } from "../repositories/report.repository";
 import { ReportValidator } from "../utils/report.validator";
 import { ReportCreateReqDto, ReportListReqDto, ReportUpdateReqDto } from "../dtos/report.req.dto";
-import { ReportCreateResDto, ReportListResDto, ReportListItemDto, ReportDetailResDto, ReportMediaDto } from "../dtos/report.res.dto";
+import { ReportCreateResDto, ReportListResDto, ReportListItemDto, ReportDetailResDto, ReportMediaDto, ReportDeleteResDto } from "../dtos/report.res.dto";
 import {
   Result,
   ok,
@@ -245,6 +245,47 @@ export class ReportService {
       content: updatedReport.content,
       medias,
       created_at: updatedReport.createdAt,
+    };
+
+    return ok(response);
+  }
+
+  /**
+   * 신고 삭제
+   */
+  async deleteReport(
+    userId: bigint,
+    reportId: number,
+  ): Promise<Result<ReportDeleteResDto>> {
+    const report = await this.reportRepository.findReportById(BigInt(reportId));
+
+    // 1. 신고가 존재하지 않는 경우
+    if (!report) {
+      return notFound({
+        message: "신고를 찾을 수 없습니다.",
+        errorCode: "REPORT_NOT_FOUND",
+      });
+    }
+
+    // 2. 본인이 작성한 신고가 아닌 경우
+    if (report.userId !== userId) {
+      return forbidden({
+        message: "본인이 작성한 신고만 삭제할 수 있습니다.",
+        errorCode: "REPORT_ACCESS_FORBIDDEN",
+      });
+    }
+
+    // 3. 관련 미디어 삭제
+    await this.reportRepository.deleteReportMedias(BigInt(reportId));
+
+    // 4. 신고 삭제
+    await this.reportRepository.deleteReport(BigInt(reportId));
+
+    // 5. 응답 DTO 생성
+    const response: ReportDeleteResDto = {
+      report_id: reportId,
+      message: "성공적으로 삭제되었습니다.",
+      deleted_at: new Date(),
     };
 
     return ok(response);

@@ -5,6 +5,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Route,
   Tags,
   SuccessResponse,
@@ -19,7 +20,7 @@ import {
 } from "tsoa";
 import { ReportService } from "../services/report.service";
 import { ReportCreateReqDto, ReportListReqDto, ReportUpdateReqDto, ReportTypeEnum } from "../dtos/report.req.dto";
-import { ReportCreateResDto, ReportListResDto, ReportDetailResDto } from "../dtos/report.res.dto";
+import { ReportCreateResDto, ReportListResDto, ReportDetailResDto, ReportDeleteResDto } from "../dtos/report.res.dto";
 import {
   Result,
   BadRequestError,
@@ -150,6 +151,29 @@ export class ReportController extends Controller {
       dto,
       medias,
     );
+
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  /**
+   * 신고 삭제
+   * 신고를 삭제합니다.
+   */
+  @SuccessResponse("200", "OK")
+  @Response<UnauthorizedError>(401, "Unauthorized")
+  @Response<ForbiddenError>(403, "Forbidden")
+  @Response<NotFoundError>(404, "Not Found")
+  @Response<InternalServerError>(500, "Internal Server Error")
+  @Security("jwt")
+  @Delete("/{reportId}")
+  public async deleteReport(
+    @Request() req: any,
+    @Path() reportId: number,
+  ): Promise<Result<ReportDeleteResDto>> {
+    const userId = BigInt(req.user.id);
+
+    const result = await this.reportService.deleteReport(userId, reportId);
 
     this.setStatus(result.statusCode);
     return result;
