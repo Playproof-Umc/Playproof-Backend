@@ -350,3 +350,103 @@ export class HighlightDeleteResDto {
    */
   media_count!: number;
 }
+
+export class HighlightLikeResDto {
+  /**
+   * 하이라이트 ID
+   * @example 1
+   */
+  highlight_id!: number;
+
+  /**
+   * 아지트 ID
+   * @example 1
+   */
+  azit_id!: number;
+
+  /**
+   * 멤버 ID
+   * @example 102
+   */
+  member_id!: number;
+
+  /**
+   * 사용자 ID
+   * @example 1002
+   */
+  user_id!: number;
+
+  /**
+   * 닉네임
+   * @example "길동"
+   */
+  nickname!: string | null;
+
+  /**
+   * 좋아요 누른 일시
+   * @example "2025-01-09T16:45:00Z"
+   */
+  liked_at!: Date;
+
+  /**
+   * 좋아요 수 
+   * @example 6
+   */
+  like_count!: number;
+
+  /**
+   * 좋아요 여부
+   * @example true
+   */
+  is_liked!: boolean;
+}
+
+export class HighlightUnlikeResDto {
+  /**
+   * 하이라이트 ID
+   * @example 1
+   */
+  highlight_id!: number;
+
+  /**
+   * 아지트 ID
+   * @example 1
+   */
+  azit_id!: number;
+
+  /**
+   * 멤버 ID
+   * @example 102
+   */
+  member_id!: number;
+
+  /**
+   * 사용자 ID
+   * @example 1002
+   */
+  user_id!: number;
+
+  /**
+   * 닉네임
+   * @example "길동"
+   */
+  nickname!: string | null;
+
+  /**
+   * 좋아요 취소 일시
+   * @example "2025-01-09T17:00:00Z"
+   */
+  unliked_at!: Date;
+
+  /**
+   * 좋아요 수
+   * @example 5
+   */
+  like_count!: number;
+
+  /**
+   * 좋아요 여부
+   * @example false
+   */
+  is_liked!: boolean;
+}
