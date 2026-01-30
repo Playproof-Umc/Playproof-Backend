@@ -85,3 +85,34 @@ export class ReportListReqDto {
   @IsString()
   sort: "latest" | "oldest" = "latest";
 }
+
+/** 신고 수정 요청 */
+export class ReportUpdateReqDto {
+  /**
+   * 신고 제목
+   * @example "부적절한 행동 신고 (수정)"
+   */
+  @IsOptional()
+  @IsString()
+  @MinLength(1, { message: "title은 1글자 이상이어야 합니다." })
+  @MaxLength(200, { message: "title은 200글자를 초과할 수 없습니다." })
+  title?: string;
+
+  /**
+   * 신고 내용
+   * @example "수정된 내용입니다."
+   */
+  @IsOptional()
+  @IsString()
+  @MinLength(1, { message: "content는 1글자 이상이어야 합니다." })
+  @MaxLength(2000, { message: "content는 2000글자를 초과할 수 없습니다." })
+  content?: string;
+
+  /**
+   * 신고자 이메일
+   * @example "updated@email.com"
+   */
+  @IsOptional()
+  @ValidateIf((o) => (o.email ?? "").trim() !== "")
+  email?: string;
+}

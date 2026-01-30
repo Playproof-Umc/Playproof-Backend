@@ -102,4 +102,51 @@ export class ReportRepository {
       where: { userId },
     });
   }
+
+  /**
+   * 신고 수정
+   */
+  async updateReport(
+    reportId: bigint,
+    data: {
+      title?: string;
+      content?: string;
+      email?: string | null;
+    }
+  ) {
+    return prisma.report.update({
+      where: { id: reportId },
+      data,
+      include: {
+        medias: {
+          orderBy: {
+            uploadAt: 'asc',
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * 신고 미디어 전체 삭제
+   */
+  async deleteReportMedias(reportId: bigint) {
+    return prisma.reportMedia.deleteMany({
+      where: { reportId },
+    });
+  }
+
+  /**
+   * 신고 미디어 추가
+   */
+  async createReportMedias(reportId: bigint, mediaUrls: string[]) {
+    if (mediaUrls.length === 0) return;
+    
+    return prisma.reportMedia.createMany({
+      data: mediaUrls.map((url) => ({
+        reportId,
+        mediaUrl: url,
+      })),
+    });
+  }
 }

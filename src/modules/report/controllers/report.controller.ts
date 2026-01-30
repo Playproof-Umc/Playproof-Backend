@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Route,
   Tags,
   SuccessResponse,
@@ -17,7 +18,7 @@ import {
   Path,
 } from "tsoa";
 import { ReportService } from "../services/report.service";
-import { ReportCreateReqDto, ReportListReqDto, ReportTypeEnum } from "../dtos/report.req.dto";
+import { ReportCreateReqDto, ReportListReqDto, ReportUpdateReqDto, ReportTypeEnum } from "../dtos/report.req.dto";
 import { ReportCreateResDto, ReportListResDto, ReportDetailResDto } from "../dtos/report.res.dto";
 import {
   Result,
@@ -110,6 +111,42 @@ export class ReportController extends Controller {
 
     const result = await this.reportService.createReport(
       userId,
+      dto,
+      medias,
+    );
+
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  /**
+   * 신고 수정
+   * 신고의 제목, 내용, 이메일, 미디어를 수정합니다.
+   */
+  @SuccessResponse("200", "OK")
+  @Response<BadRequestError>(400, "Bad Request")
+  @Response<UnauthorizedError>(401, "Unauthorized")
+  @Response<ForbiddenError>(403, "Forbidden")
+  @Response<NotFoundError>(404, "Not Found")
+  @Response<InternalServerError>(500, "Internal Server Error")
+  @Security("jwt")
+  @Middlewares(validationMiddleware(ReportUpdateReqDto))
+  @Patch("/{reportId}")
+  public async updateReport(
+    @Request() req: any,
+    @Path() reportId: number,
+    @FormField() title?: string,
+    @FormField() content?: string,
+    @FormField() email?: string,
+    @UploadedFiles() medias?: Express.Multer.File[],
+  ): Promise<Result<ReportDetailResDto>> {
+    const userId = BigInt(req.user.id);
+
+    const dto = req.body as ReportUpdateReqDto;
+
+    const result = await this.reportService.updateReport(
+      userId,
+      reportId,
       dto,
       medias,
     );

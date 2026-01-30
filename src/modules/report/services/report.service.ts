@@ -2,7 +2,7 @@
 import { injectable, inject } from "tsyringe";
 import { ReportRepository } from "../repositories/report.repository";
 import { ReportValidator } from "../utils/report.validator";
-import { ReportCreateReqDto, ReportListReqDto } from "../dtos/report.req.dto";
+import { ReportCreateReqDto, ReportListReqDto, ReportUpdateReqDto } from "../dtos/report.req.dto";
 import { ReportCreateResDto, ReportListResDto, ReportListItemDto, ReportDetailResDto, ReportMediaDto } from "../dtos/report.res.dto";
 import {
   Result,
@@ -161,6 +161,90 @@ export class ReportService {
       content: report.content,
       medias,
       created_at: report.createdAt,
+    };
+
+    return ok(response);
+  }
+
+  /**
+   * 신고 수정
+   */
+  async updateReport(
+    userId: bigint,
+    reportId: number,
+    dto: ReportUpdateReqDto,
+    files: Express.Multer.File[] | undefined,
+  ): Promise<Result<ReportDetailResDto>> {
+    const report = await this.reportRepository.findReportById(BigInt(reportId));
+
+    // 1. 신고가 존재하지 않는 경우
+    if (!report) {
+      return notFound({
+        message: "신고를 찾을 수 없습니다.",
+        errorCode: "REPORT_NOT_FOUND",
+      });
+    }
+
+    // 2. 본인이 작성한 신고가 아닌 경우
+    if (report.userId !== userId) {
+      return forbidden({
+        message: "본인이 작성한 신고만 수정할 수 있습니다.",
+        errorCode: "REPORT_ACCESS_FORBIDDEN",
+      });
+    }
+
+    // 3. 미디어 파일 검증 (새로운 파일이 있는 경우)
+    if (files && files.length > 0) {
+      const mediaValidationError = this.reportValidator.validateMediaFiles(files);
+      if (mediaValidationError) {
+        return mediaValidationError;
+      }
+    }
+
+    // 4. S3에 새 파일 업로드
+    const mediaUrls: string[] = [];
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const uploadResult = await uploadFileToS3(file, 'reports');
+        if (uploadResult.error) {
+          return uploadResult;
+        }
+        mediaUrls.push(uploadResult.data);
+      }
+
+      // 5. 기존 미디어 삭제 후 새 미디어 추가
+      await this.reportRepository.deleteReportMedias(BigInt(reportId));
+      await this.reportRepository.createReportMedias(BigInt(reportId), mediaUrls);
+    }
+
+    // 6. 신고 정보 업데이트
+    const updateData: any = {};
+    if (dto.title !== undefined) updateData.title = dto.title;
+    if (dto.content !== undefined) updateData.content = dto.content;
+    if (dto.email !== undefined) updateData.email = dto.email || null;
+
+    const updatedReport = await this.reportRepository.updateReport(
+      BigInt(reportId),
+      updateData,
+    );
+
+    // 7. 응답 DTO 변환
+    const medias: ReportMediaDto[] = updatedReport.medias.map((m) => ({
+      media_id: Number(m.id),
+      media_url: m.mediaUrl,
+      upload_at: m.uploadAt,
+    }));
+
+    const response: ReportDetailResDto = {
+      report_id: Number(updatedReport.id),
+      target_name: updatedReport.name,
+      email: updatedReport.email || undefined,
+      type: updatedReport.reportType,
+      status: updatedReport.reportStatus,
+      title: updatedReport.title,
+      content: updatedReport.content,
+      medias,
+      created_at: updatedReport.createdAt,
     };
 
     return ok(response);
