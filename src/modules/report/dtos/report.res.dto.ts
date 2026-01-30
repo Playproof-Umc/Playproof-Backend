@@ -43,3 +43,35 @@ export class ReportListResDto {
   /** 다음 페이지 존재 여부 */
   hasNext!: boolean;
 }
+
+/** 신고 미디어 항목 */
+export class ReportMediaDto {
+  /** 미디어 ID */
+  media_id!: number;
+  /** 미디어 URL */
+  media_url!: string;
+  /** 업로드 일시 */
+  upload_at!: Date;
+}
+
+/** 신고 상세 조회 응답 */
+export class ReportDetailResDto {
+  /** 신고 ID */
+  report_id!: number;
+  /** 신고 대상자 이름 */
+  target_name!: string;
+  /** 신고자 이메일 */
+  email?: string;
+  /** 신고 유형 */
+  type!: string;
+  /** 신고 상태 */
+  status!: string;
+  /** 제목 */
+  title!: string;
+  /** 내용 */
+  content!: string;
+  /** 미디어 목록 */
+  medias!: ReportMediaDto[];
+  /** 생성 일시 */
+  created_at!: Date;
+}

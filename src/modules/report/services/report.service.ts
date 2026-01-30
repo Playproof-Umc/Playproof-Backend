@@ -3,12 +3,14 @@ import { injectable, inject } from "tsyringe";
 import { ReportRepository } from "../repositories/report.repository";
 import { ReportValidator } from "../utils/report.validator";
 import { ReportCreateReqDto, ReportListReqDto } from "../dtos/report.req.dto";
-import { ReportCreateResDto, ReportListResDto, ReportListItemDto } from "../dtos/report.res.dto";
+import { ReportCreateResDto, ReportListResDto, ReportListItemDto, ReportDetailResDto, ReportMediaDto } from "../dtos/report.res.dto";
 import {
   Result,
   ok,
   created,
   internalServerError,
+  notFound,
+  forbidden,
 } from "../../../common/types/result.type";
 import { uploadFileToS3 } from "../../../common/utils/file-util";
 import { ReportType } from "@prisma/client";
@@ -102,6 +104,7 @@ export class ReportService {
 
     const hasNext = page * size < totalCount;
     const items: ReportListItemDto[] = reports.map((r) => ({
+      report_id: Number(r.id),
       target_name: r.name,
       type: r.reportType,
       status: r.reportStatus,
@@ -114,5 +117,52 @@ export class ReportService {
       nextCursor: hasNext ? page + 1 : null,
       hasNext,
     });
+  }
+
+  /**
+   * 신고 상세 조회
+   */
+  async getReportDetail(
+    userId: bigint,
+    reportId: number,
+  ): Promise<Result<ReportDetailResDto>> {
+    const report = await this.reportRepository.findReportById(BigInt(reportId));
+
+    // 1. 신고가 존재하지 않는 경우
+    if (!report) {
+      return notFound({
+        message: "신고를 찾을 수 없습니다.",
+        errorCode: "REPORT_NOT_FOUND",
+      });
+    }
+
+    // 2. 본인이 작성한 신고가 아닌 경우
+    if (report.userId !== userId) {
+      return forbidden({
+        message: "본인이 작성한 신고만 조회할 수 있습니다.",
+        errorCode: "REPORT_ACCESS_FORBIDDEN",
+      });
+    }
+
+    // 3. 응답 DTO 변환
+    const medias: ReportMediaDto[] = report.medias.map((m) => ({
+      media_id: Number(m.id),
+      media_url: m.mediaUrl,
+      upload_at: m.uploadAt,
+    }));
+
+    const response: ReportDetailResDto = {
+      report_id: Number(report.id),
+      target_name: report.name,
+      email: report.email || undefined,
+      type: report.reportType,
+      status: report.reportStatus,
+      title: report.title,
+      content: report.content,
+      medias,
+      created_at: report.createdAt,
+    };
+
+    return ok(response);
   }
 }

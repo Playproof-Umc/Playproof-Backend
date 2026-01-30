@@ -14,16 +14,18 @@ import {
   UploadedFiles,
   FormField,
   Query,
+  Path,
 } from "tsoa";
 import { ReportService } from "../services/report.service";
 import { ReportCreateReqDto, ReportListReqDto, ReportTypeEnum } from "../dtos/report.req.dto";
-import { ReportCreateResDto, ReportListResDto } from "../dtos/report.res.dto";
+import { ReportCreateResDto, ReportListResDto, ReportDetailResDto } from "../dtos/report.res.dto";
 import {
   Result,
   BadRequestError,
   UnauthorizedError,
   NotFoundError,
   InternalServerError,
+  ForbiddenError,
 } from "../../../common/types/result.type";
 import { validationMiddleware } from "../../../common/middlewares/validation";
 
@@ -55,6 +57,27 @@ export class ReportController extends Controller {
   ): Promise<Result<ReportListResDto>> {
     const userId = BigInt(req.user.id);
     const result = await this.reportService.getReportList(userId, { page, size, sort });
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  /**
+   * 신고 상세 조회
+   * 신고 ID로 신고의 상세 정보를 조회합니다.
+   */
+  @SuccessResponse("200", "OK")
+  @Response<UnauthorizedError>(401, "Unauthorized")
+  @Response<ForbiddenError>(403, "Forbidden")
+  @Response<NotFoundError>(404, "Not Found")
+  @Response<InternalServerError>(500, "Internal Server Error")
+  @Security("jwt")
+  @Get("/{reportId}")
+  public async getReportDetail(
+    @Request() req: any,
+    @Path() reportId: number,
+  ): Promise<Result<ReportDetailResDto>> {
+    const userId = BigInt(req.user.id);
+    const result = await this.reportService.getReportDetail(userId, reportId);
     this.setStatus(result.statusCode);
     return result;
   }
