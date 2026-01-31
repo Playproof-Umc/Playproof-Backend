@@ -8,7 +8,7 @@ export class AsyncResultChain<T> {
     return new AsyncResultChain(promise);
   }
 
-	public then<U>(mapper: (data: T) => Promise<U>): AsyncResultChain<U> {
+	public then<U>(mapper: (data: T) => Promise<U> | U): AsyncResultChain<U> {
     return new AsyncResultChain<U>(
       this.promise.then(async (result) => {
         if (!isSuccess(result)) return result; 

@@ -36,3 +36,10 @@ export class VerifyCertificationResDto {
    */
   status!: string;
 }
+
+export class VerifiyDuplicateNicknameResDto{
+  /**
+   * @example true
+   */
+  isDuplicate!: boolean;
+}
