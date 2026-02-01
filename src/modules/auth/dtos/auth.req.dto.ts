@@ -1,11 +1,13 @@
 // src/modules/auth/dtos/auth.req.dto.ts
-import { IsString, IsNotEmpty, Matches, MinLength, IsPhoneNumber } from "class-validator";
+import { IsString, IsNotEmpty, Matches, MinLength, IsPhoneNumber, IsArray, IsJSON, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
+import { TermDto, GameInfoDto } from "./signup.req.dto";
 
 export class SignUpReqDto {
-	/**
-   * @example "홍길동"
-   */
-  @IsString()
+/**
+ * @example "홍길동"
+*/
+@IsString()
   @IsNotEmpty({ message: "이름은 필수입니다."})
   nickname!: string;
 
@@ -22,6 +24,34 @@ export class SignUpReqDto {
   @IsString()
   @IsPhoneNumber("KR", { message: "형식에 맞지 않는 전화번호입니다. "})
   phone!: string;
+
+  /**
+   * @example ["id": 1, "agree": true],
+   * ["id": 2, "agree": true],
+   * ["id": 3, "agree": false]
+   */
+  @IsArray()
+  @IsNotEmpty({ message: "약관 카테고리는 필수입니다."})
+  @ValidateNested({ each: true }) 
+  @Type(() => TermDto) 
+  terms!: TermDto[];
+
+  /**
+   * @example { 
+   * "gameId": 1,
+   * "gameName": "League of Legends", 
+   * "gameNickname": "honggildong123", 
+   * "accountId": "example-account-id-12345", 
+   * "playStyle": "manner", 
+   * "positionId": "1", 
+   * "tierId": "5" 
+   * }
+   */
+  @IsNotEmpty({ message: "유저의 게임 정보는 필수입니다."})
+  @ValidateNested({ each: true }) 
+  @Type(() => GameInfoDto)
+  gameInfo!: GameInfoDto;
+
 }
 
 export class LoginReqDto {
