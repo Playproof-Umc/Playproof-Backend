@@ -16,91 +16,72 @@ export class HighlightCreateService {
 
   async createHighlight(
     userId: bigint,
-    azitId: bigint,
+    azitId: bigint | null,
     dto: HighlightCreateReqDto,
     files: Express.Multer.File[] | undefined,
   ): Promise<Result<HighlightCreateResDto>> {
-    // 1. 아지트 존재 및 멤버 권한 확인
-    const azitAccessError = await this.highlightValidator.validateAzitAccess<HighlightCreateResDto>(
-      userId,
-      azitId,
-      "생성",
-    );
-    if (azitAccessError) {
-      return azitAccessError;
+    
+    // 1. 아지트 유입인 경우에만 권한 확인
+    if (azitId) {
+      const azitAccessError = await this.highlightValidator.validateAzitAccess<HighlightCreateResDto>(
+        userId, azitId, "생성",
+      );
+      if (azitAccessError) return azitAccessError;
     }
 
-    // 2. 미디어 파일 검증
+    // 2. 미디어 파일 검증 (기존 로직 유지)
     const mediaValidationError = this.highlightValidator.validateMediaFiles(files);
-    if (mediaValidationError) {
-      return mediaValidationError;
-    }
+    if (mediaValidationError) return mediaValidationError;
 
-    // files는 위에서 검증되어 null이 아님을 보장
     const validatedFiles = files!;
 
     try {
-      // 3. S3에 파일 업로드
+      // 3. S3 파일 업로드 (기존 로직 유지)
       const mediaUrls: string[] = [];
-      for (let i = 0; i < validatedFiles.length; i++) {
-        const file = validatedFiles[i];
+      for (const file of validatedFiles) {
         const uploadResult = await uploadFileToS3(file, 'highlights');
-        if (uploadResult.error) {
-          return uploadResult;
-        }
+        if (uploadResult.error) return uploadResult;
         mediaUrls.push(uploadResult.data);
       }
 
-      // 4. 미디어 데이터 준비
-      const mediaData = mediaUrls.map((url, index) => ({
-        mediaUrl: url,
-        order: index,
-      }));
+      const mediaData = mediaUrls.map((url, index) => ({ mediaUrl: url, order: index }));
 
-      // 5. 트랜잭션 사용 - 하이라이트 생성 및 미디어 일괄 생성
-      const isPublic = dto.visibility === HighlightVisibility.PUBLIC;
+      // 4. 공개 범위 결정 
+      const isPublic = azitId ? (dto.visibility === HighlightVisibility.PUBLIC) : true;
+
+      // 5. DB 저장
       const { highlight, medias } = await this.highlightRepository.createHighlightWithMedias(
-        userId,
-        azitId,
-        dto.content,
-        isPublic,
-        mediaData,
+        userId, azitId, dto.content, isPublic, mediaData,
       );
 
-      // 6. 사용자 정보 조회
+      // 6. 생성 후 정보 조회 (Optional Chaining으로 아지트 미소속 대응)
       const highlightWithDetails = await this.highlightRepository.findHighlightById(highlight.id);
       
-      if (!highlightWithDetails || !highlightWithDetails.azit) {
+      if (!highlightWithDetails) {
         return internalServerError({
           message: "하이라이트 생성 후 조회에 실패했습니다.",
           errorCode: "HIGHLIGHT_CREATE_FAILED",
         });
       }
 
-      // 7. 좋아요 수, 댓글 수 조회 
-      const likeCount = 0;
-      const commentCount = 0;
-
-      // 8. 응답 DTO 변환
-      const mediaDtos: HighlightMediaResDto[] = medias.map((media) => ({
-        highlight_media_id: Number(media.id),
-        media_url: media.mediaUrl,
-        order: media.order,
-        upload_at: media.uploadAt,
-      }));
-
+      // 7. 응답 DTO 변환 (Safe Navigation 활용)
       const response: HighlightCreateResDto = {
         highlight_id: Number(highlight.id),
         user_id: Number(highlightWithDetails.userId),
         nickname: highlightWithDetails.user.nickname,
-        azit_id: Number(highlightWithDetails.azit.id),
-        azit_name: highlightWithDetails.azit.azitName,
+        azit_id: highlightWithDetails.azit ? Number(highlightWithDetails.azit.id) : undefined,
+        azit_name: highlightWithDetails.azit?.azitName,
         content: highlight.content,
-        visibility: dto.visibility,
+        visibility: isPublic ? HighlightVisibility.PUBLIC : HighlightVisibility.PRIVATE,
         media_count: medias.length,
-        medias: mediaDtos,
-        like_count: likeCount,
-        comment_count: commentCount,
+        medias: medias.map(m => ({
+          highlight_media_id: Number(m.id),
+          media_url: m.mediaUrl,
+          order: m.order,
+          upload_at: m.uploadAt,
+        })),
+        like_count: 0,
+        comment_count: 0,
         created_at: highlight.createdAt,
         updated_at: highlight.updatedAt,
       };

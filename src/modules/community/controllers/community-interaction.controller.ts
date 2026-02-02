@@ -53,11 +53,13 @@ export class CommunityInteractionController extends Controller {
 
   @SuccessResponse("200", "OK")
   @Get("comments")
+  @Security("jwt")
   public async getComments(
+    @Request() request: any,
     @Query() target_type: CommunityTargetType,
     @Query() target_id: number
   ): Promise<Result<CommunityCommentListResDto>> {
-    const result = await this.service.getComments(target_type, target_id);
+    const result = await this.service.getComments(target_type, target_id, BigInt(request.user.id));
     this.setStatus(result.statusCode);
     return result;
   }

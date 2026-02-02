@@ -49,13 +49,13 @@ export class HighlightCreateResDto {
    * 아지트 ID
    * @example 1
    */
-  azit_id!: number;
+  azit_id?: number;
 
   /**
    * 아지트 이름
    * @example "Playproof 공식 클랜"
    */
-  azit_name!: string;
+  azit_name?: string;
 
   /**
    * 하이라이트 설명

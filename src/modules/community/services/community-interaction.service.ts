@@ -1,7 +1,7 @@
 import { injectable, inject } from "tsyringe";
 import { CommunityLikeRepository } from "../repositories/community-like.repository";
 import { CommunityCommentRepository } from "../repositories/community-comment.repository";
-import { CommunityValidator } from "../utils/community-interaction.validator";
+import { CommunityInteractionValidator } from "../utils/community-interaction.validator";
 import { CommunityTargetType } from "../types/community-type";
 import { 
   CommunityLikeReqDto, 
@@ -20,7 +20,7 @@ export class CommunityInteractionService {
   constructor(
     @inject(CommunityLikeRepository) private likeRepository: CommunityLikeRepository,
     @inject(CommunityCommentRepository) private commentRepository: CommunityCommentRepository,
-    @inject(CommunityValidator) private validator: CommunityValidator
+    @inject(CommunityInteractionValidator) private validator: CommunityInteractionValidator
   ) {}
 
   /**
@@ -28,7 +28,7 @@ export class CommunityInteractionService {
    */
   async toggleLike(userId: bigint, dto: CommunityLikeReqDto): Promise<Result<CommunityLikeResDto>> {
     // 1. 대상 리소스 존재 여부 검증
-    const resourceCheck = await this.validator.validateTargetResource(dto.target_type, BigInt(dto.target_id));
+    const resourceCheck = await this.validator.validateTargetResource(dto.target_type, BigInt(dto.target_id), userId);
     if (resourceCheck.error) return resourceCheck;
 
     // 2. 기존 좋아요 여부 확인
@@ -57,7 +57,7 @@ export class CommunityInteractionService {
    */
   async createComment(userId: bigint, dto: CommunityCommentCreateReqDto): Promise<Result<CommunityCommentResDto>> {
     // 1. 대상 리소스 존재 여부 검증
-    const resourceCheck = await this.validator.validateTargetResource(dto.target_type, BigInt(dto.target_id));
+    const resourceCheck = await this.validator.validateTargetResource(dto.target_type, BigInt(dto.target_id), userId);
     if (resourceCheck.error) return resourceCheck;
 
     // 2. 답글인 경우 부모 댓글 존재 여부 검증
@@ -88,9 +88,9 @@ export class CommunityInteractionService {
   /**
    * 댓글 목록 조회 비즈니스 로직
    */
-  async getComments(targetType: CommunityTargetType, targetId: number): Promise<Result<CommunityCommentListResDto>> {
+  async getComments(targetType: CommunityTargetType, targetId: number, userId: bigint): Promise<Result<CommunityCommentListResDto>> {
     // 1. 대상 리소스 존재 여부 검증
-    const resourceCheck = await this.validator.validateTargetResource(targetType, BigInt(targetId));
+    const resourceCheck = await this.validator.validateTargetResource(targetType, BigInt(targetId), userId);
     if (resourceCheck.error) return resourceCheck;
 
     // 2. 댓글 목록 조회
