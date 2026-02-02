@@ -10,23 +10,32 @@ import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
   Result,
   created,
+  forbidden,
   internalServerError,
   isSuccess,
   ok,
 } from '../../../common/types/result.type';
 import {
   validateAzitMemberOnly,
+  validateIsRoomCreator,
   validateMessageContent,
   validateRoomAndMember,
 } from '../utils/chat.validator';
-import { ChatRoomCreateReqDto, ChatRoomUpdateReqDto, ChatType } from '../dtos/chat.req.dto';
-import { ChatRoom } from '.prisma/client';
+import {
+  ChatRoomCreateReqDto,
+  ChatRoomUpdateReqDto,
+  ChatType,
+} from '../dtos/chat.req.dto';
+import { ChatRoom, ChatRoomRole } from '.prisma/client';
 
 @injectable()
 export class ChatService {
   constructor(@inject(ChatRepository) private chatRepository: ChatRepository) {}
 
-  async getChatRooms(azitId: number, userId: number): Promise<Result<ChatRoomGetResDto[]>> {
+  async getChatRooms(
+    azitId: number,
+    userId: number,
+  ): Promise<Result<ChatRoomGetResDto[]>> {
     const memberAccess = await validateAzitMemberOnly(
       this.chatRepository,
       userId,
@@ -35,25 +44,29 @@ export class ChatService {
     if (!isSuccess(memberAccess)) return memberAccess;
 
     const chatRooms = await this.chatRepository.getChatRooms(azitId, userId);
-    return ok<ChatRoomGetResDto[]>(chatRooms.map((chatRoom: ChatRoom): ChatRoomGetResDto => ({
-      id: Number(chatRoom.id),
-      roomName: chatRoom.roomName,
-      chatType: chatRoom.roomType as ChatType,
-      isPrivate: chatRoom.isPrivate,
-      createdAt: chatRoom.createdAt.toISOString(),
-      updatedAt: chatRoom.updatedAt.toISOString(),
-    })));
-  }
-
-  public async getRoomAndMember(roomId: number, userId: number) {
-    return validateRoomAndMember(this.chatRepository, roomId, userId);
+    return ok<ChatRoomGetResDto[]>(
+      chatRooms.map(
+        (chatRoom: ChatRoom): ChatRoomGetResDto => ({
+          id: Number(chatRoom.id),
+          roomName: chatRoom.roomName,
+          chatType: chatRoom.roomType as ChatType,
+          isPrivate: chatRoom.isPrivate,
+          createdAt: chatRoom.createdAt.toISOString(),
+          updatedAt: chatRoom.updatedAt.toISOString(),
+        }),
+      ),
+    );
   }
 
   async joinRoom(
     roomId: number,
     userId: number,
   ): Promise<Result<{ roomId: number; azitId: number }>> {
-    const access = await this.getRoomAndMember(roomId, userId);
+    const access = await validateRoomAndMember(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
     if (!isSuccess(access)) return access;
 
     return ok({
@@ -70,7 +83,11 @@ export class ChatService {
     const contentResult = validateMessageContent(content);
     if (!isSuccess(contentResult)) return contentResult;
 
-    const access = await this.getRoomAndMember(roomId, userId);
+    const access = await validateRoomAndMember(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
     if (!isSuccess(access)) return access;
 
     try {
@@ -102,7 +119,11 @@ export class ChatService {
     userId: number,
     options: { size?: number; cursor?: number },
   ): Promise<Result<ChatMessageListResDto>> {
-    const access = await this.getRoomAndMember(roomId, userId);
+    const access = await validateRoomAndMember(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
     if (!isSuccess(access)) return access;
 
     const size = options.size ?? 50;
@@ -135,7 +156,11 @@ export class ChatService {
     userId: number,
     dto: ChatRoomCreateReqDto,
   ): Promise<Result<ChatRoomCreateResDto>> {
-    const chatRoom = await this.chatRepository.createChatRoom(azitId, userId, dto);
+    const chatRoom = await this.chatRepository.createChatRoom(
+      azitId,
+      userId,
+      dto,
+    );
     return created({
       roomId: Number(chatRoom.id),
     });
@@ -146,8 +171,19 @@ export class ChatService {
     userId: number,
     dto: ChatRoomUpdateReqDto,
   ): Promise<Result<ChatRoomGetResDto>> {
-    const access = await this.getRoomAndMember(roomId, userId);
+    const access = await validateRoomAndMember(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
     if (!isSuccess(access)) return access;
+
+    const isCreator = await validateIsRoomCreator(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
+    if (!isSuccess(isCreator)) return isCreator;
 
     const updateData: {
       roomName?: string;
@@ -169,7 +205,10 @@ export class ChatService {
       });
     }
 
-    const updatedRoom = await this.chatRepository.updateChatRoom(roomId, updateData);
+    const updatedRoom = await this.chatRepository.updateChatRoom(
+      roomId,
+      updateData,
+    );
     return ok({
       id: Number(updatedRoom.id),
       roomName: updatedRoom.roomName,
@@ -180,11 +219,24 @@ export class ChatService {
     });
   }
 
-  async deleteChatRoom(roomId: number, userId: number): Promise<Result<string>> {
-    
-    const access = await this.getRoomAndMember(roomId, userId);
+  async deleteChatRoom(
+    roomId: number,
+    userId: number,
+  ): Promise<Result<string>> {
+    const access = await validateRoomAndMember(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
     if (!isSuccess(access)) return access;
-    
+
+    const isCreator = await validateIsRoomCreator(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
+    if (!isSuccess(isCreator)) return isCreator;
+
     await this.chatRepository.deleteChatRoom(BigInt(roomId));
     return ok(`${roomId} 채팅방이 삭제되었습니다.`);
   }

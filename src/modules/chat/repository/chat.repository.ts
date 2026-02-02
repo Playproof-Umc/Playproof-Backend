@@ -117,4 +117,14 @@ export class ChatRepository {
       data,
     });
   }
+
+  async isRoomCreator(roomId: number, userId: number) {
+    const participation = await prisma.chatRoomParticipation.findFirst({
+      where: {
+        roomId: BigInt(roomId),
+        memberId: BigInt(userId),
+      },
+    });
+    return participation?.role === ChatRoomRole.CREATOR;
+  }
 }

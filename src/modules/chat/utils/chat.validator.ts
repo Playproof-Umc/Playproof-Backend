@@ -29,6 +29,21 @@ export async function validateRoomExists(
   return ok(room);
 }
 
+export async function validateIsRoomCreator(
+  chatRepository: ChatRepository,
+  roomId: number,
+  userId: number,
+): Promise<Result<true>> {
+  const isCreator = await chatRepository.isRoomCreator(roomId, userId);
+  if (!isCreator) {
+    return forbidden({
+      message: '채팅방 생성자만 접근할 수 있습니다.',
+      errorCode: ChatErrorCode.ROOM_CREATOR_ONLY,
+    });
+  }
+  return ok(true);
+}
+
 export async function validateAzitMemberOnly(
   chatRepository: ChatRepository,
   userId: number,
@@ -52,7 +67,9 @@ export async function validateRoomAndMember(
   chatRepository: ChatRepository,
   roomId: number,
   userId: number,
-): Promise<Result<{ room: NonNullable<ChatRoom>; member: NonNullable<AzitMember> }>> {
+): Promise<
+  Result<{ room: NonNullable<ChatRoom>; member: NonNullable<AzitMember> }>
+> {
   const roomResult = await validateRoomExists(chatRepository, roomId);
   if (roomResult.error) return roomResult;
 
@@ -66,7 +83,9 @@ export async function validateRoomAndMember(
   return ok({ room: roomResult.data, member: memberResult.data });
 }
 
-export function validateMessageContent(content?: string): Result<{ content: string }> {
+export function validateMessageContent(
+  content?: string,
+): Result<{ content: string }> {
   const trimmed = content?.trim();
   if (!trimmed) {
     return badRequest({
