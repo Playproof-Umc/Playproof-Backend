@@ -84,7 +84,7 @@ export class ChatRoomUpdateReqDto {
 
 export class ChatRoomInviteReqDto {
   /**
-   * @example ["1", "2", "3"]
+   * @example [1, 2, 3]
    */
   @IsNumber({}, { each: true })
   memberIds!: number[];
