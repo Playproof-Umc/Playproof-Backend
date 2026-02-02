@@ -103,3 +103,12 @@ export class ChatRoomGetResDto {
   @IsString()
   updatedAt!: string;
 }
+
+export class ChatRoomInviteResDto {
+  /**
+   * @example 1
+   * // 초대된 멤버 수
+   */
+  @IsNumber()
+  invitations!: number;
+}

@@ -168,6 +168,7 @@ export const ChatErrorCode = {
   MESSAGE_CREATE_FAILED: "CHAT_MESSAGE_CREATE_FAILED", // 메시지 저장 실패
   MESSAGE_INVALID: "CHAT_MESSAGE_INVALID", // 메시지 입력이 올바르지 않음
   MESSAGE_TOO_LONG: "CHAT_MESSAGE_TOO_LONG", // 메시지 길이 초과
+  ALREADY_PUBLIC_ROOM: "CHAT_ALREADY_PUBLIC_ROOM", // 비밀 채팅방이 아닙니다.
 } as const;
 
 // 나중에 다른 도메인이 생기면 추가

@@ -20,10 +20,12 @@ import {
   ChatMessageListResDto,
   ChatMessageResDto,
   ChatRoomGetResDto,
+  ChatRoomInviteResDto,
 } from '../dtos/chat.res.dto';
 import { ok, Result } from '../../../common/types/result.type';
 import {
   ChatMessageCreateReqDto,
+  ChatRoomInviteReqDto,
   ChatRoomUpdateReqDto,
 } from '../dtos/chat.req.dto';
 import { validationMiddleware } from '../../../common/middlewares/validation';
@@ -95,6 +97,21 @@ export class ChatController extends Controller {
   ): Promise<Result<ChatRoomGetResDto>> {
     const userId = Number(req.user.id);
     const result = await this.chatService.updateChatRoom(roomId, userId, dto);
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  @SuccessResponse('200', 'OK')
+  @Security('jwt')
+  @Middlewares(validationMiddleware(ChatRoomInviteReqDto))
+  @Post('{roomId}/invite')
+  public async inviteToChatRoom(
+    @Path() roomId: number,
+    @Request() req: any,
+    @Body() dto: ChatRoomInviteReqDto,
+  ): Promise<Result<ChatRoomInviteResDto>> {
+    const userId = Number(req.user.id);
+    const result = await this.chatService.inviteToChatRoom(roomId, userId, dto);
     this.setStatus(result.statusCode);
     return result;
   }

@@ -1,7 +1,7 @@
 import { singleton } from 'tsyringe';
 import { prisma } from '../../../common/config/database';
 import { ChatRoomCreateReqDto } from '../dtos/chat.req.dto';
-import { ChatRoomRole } from '@prisma/client/default';
+import { ChatRoomRole } from '@prisma/client';
 
 @singleton()
 export class ChatRepository {
@@ -20,8 +20,8 @@ export class ChatRepository {
           create: {
             memberId: BigInt(userId),
             role: ChatRoomRole.CREATOR,
-          }
-        }
+          },
+        },
       },
     });
   }
@@ -126,5 +126,14 @@ export class ChatRepository {
       },
     });
     return participation?.role === ChatRoomRole.CREATOR;
+  }
+
+  async inviteToChatRoom(roomId: number, memberIds: bigint[]) {
+    return prisma.chatRoomParticipation.createMany({
+      data: memberIds.map((memberId) => ({
+        roomId: BigInt(roomId),
+        memberId,
+      })),
+    });
   }
 }

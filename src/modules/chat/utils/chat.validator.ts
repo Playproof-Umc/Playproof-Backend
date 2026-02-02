@@ -83,6 +83,18 @@ export async function validateRoomAndMember(
   return ok({ room: roomResult.data, member: memberResult.data });
 }
 
+export function validateRoomIsPrivate(
+  room: NonNullable<ChatRoom>,
+): Result<true> {
+  if (!room.isPrivate) {
+    return badRequest({
+      message: '비밀 채팅방이 아닙니다.',
+      errorCode: ChatErrorCode.ALREADY_PUBLIC_ROOM,
+    });
+  }
+  return ok(true);
+}
+
 export function validateMessageContent(
   content?: string,
 ): Result<{ content: string }> {
