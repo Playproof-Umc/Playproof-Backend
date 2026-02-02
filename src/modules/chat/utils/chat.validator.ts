@@ -1,6 +1,7 @@
 import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
   badRequest,
+  conflict,
   forbidden,
   notFound,
   ok,
@@ -95,6 +96,24 @@ export async function validatePrivateRoomMember(
     return forbidden({
       message: '비밀 채팅방 멤버만 접근할 수 있습니다.',
       errorCode: ChatErrorCode.ROOM_MEMBER_ONLY,
+    });
+  }
+  return ok(true);
+}
+
+export async function validateMembersNotInRoom(
+  chatRepository: ChatRepository,
+  roomId: number,
+  memberIds: number[],
+): Promise<Result<true>> {
+  const existingMemberIds = await chatRepository.getExistingRoomMemberIds(
+    roomId,
+    memberIds,
+  );
+  if (existingMemberIds.length > 0) {
+    return conflict({
+      message: '이미 초대된 멤버가 포함되어 있습니다.',
+      errorCode: ChatErrorCode.ALREADY_INVITED_MEMBER,
     });
   }
   return ok(true);

@@ -138,6 +138,18 @@ export class ChatRepository {
     return Boolean(participation);
   }
 
+  async getExistingRoomMemberIds(roomId: number, memberIds: number[]) {
+    if (memberIds.length === 0) return [];
+    const existing = await prisma.chatRoomParticipation.findMany({
+      where: {
+        roomId: BigInt(roomId),
+        memberId: { in: memberIds.map((id) => BigInt(id)) },
+      },
+      select: { memberId: true },
+    });
+    return existing.map((item) => Number(item.memberId));
+  }
+
   async inviteToChatRoom(roomId: number, memberIds: bigint[]) {
     return prisma.chatRoomParticipation.createMany({
       data: memberIds.map((memberId) => ({

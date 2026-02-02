@@ -20,6 +20,7 @@ import {
   validateAzitMemberOnly,
   validateIsRoomCreator,
   validateMessageContent,
+  validateMembersNotInRoom,
   validateRoomAndMember,
   validateRoomIsPrivate,
   validatePrivateRoomMember,
@@ -266,6 +267,13 @@ export class ChatService {
       userId,
     );
     if (!isSuccess(isCreator)) return isCreator;
+
+    const notInvited = await validateMembersNotInRoom(
+      this.chatRepository,
+      roomId,
+      dto.memberIds,
+    );
+    if (!isSuccess(notInvited)) return notInvited;
 
     const memberIds = dto.memberIds.map((id) => BigInt(id));
     const invitations = await this.chatRepository.inviteToChatRoom(
