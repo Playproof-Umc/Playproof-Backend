@@ -165,6 +165,43 @@ export class AzitUserRepository {
     return members;
   }
 
+  /**
+   * 오프셋 기반 멤버 목록 조회 -> 파티와 동일
+   */
+  async findMembersByAzitId(
+    azitId: bigint,
+    page: number,
+    size: number,
+  ) {
+    const skip = (page - 1) * size;
+
+    const members = await prisma.azitUser.findMany({
+      where: { azitId },
+      include: {
+        user: {
+          include: {
+            userAvatars: {
+              where: {
+                isEquipped: true,
+              },
+              include: {
+                avatar: true,
+              },
+              take: 1,
+            },
+          },
+        },
+      },
+      orderBy: {
+        joinedAt: 'asc', // 가입 순서대로 정렬
+      },
+      skip,
+      take: size,
+    });
+
+    return members;
+  }
+
   async createAzitUserWithDetails(
     userId: bigint,
     azitId: bigint,
