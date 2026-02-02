@@ -146,4 +146,25 @@ export class ChatRepository {
       })),
     });
   }
+
+  async getRoomMembers(roomId: number) {
+    return prisma.chatRoomParticipation.findMany({
+      where: { roomId: BigInt(roomId) },
+      include: {
+        member: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                nickname: true,
+                userAvatars: {
+                  select: { avatar: { select: { avatarUrl: true } } },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }

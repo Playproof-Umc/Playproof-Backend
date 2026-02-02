@@ -6,12 +6,13 @@ import {
   ChatRoomCreateResDto,
   ChatRoomGetResDto,
   ChatRoomInviteResDto,
+  ChatRoomMemberResDto,
 } from '../dtos/chat.res.dto';
 import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
   Result,
   created,
-     internalServerError,
+  internalServerError,
   isSuccess,
   ok,
 } from '../../../common/types/result.type';
@@ -29,7 +30,7 @@ import {
   ChatRoomUpdateReqDto,
   ChatType,
 } from '../dtos/chat.req.dto';
-import { ChatRoom, ChatRoomRole } from '.prisma/client';
+import { ChatRoom, ChatRoomParticipation, ChatRoomRole } from '.prisma/client';
 
 @injectable()
 export class ChatService {
@@ -276,5 +277,36 @@ export class ChatService {
     return ok({
       invitations: invitations.count,
     });
+  }
+
+  async getPrivateRoomMembers(
+    roomId: number,
+    userId: number,
+  ): Promise<Result<ChatRoomMemberResDto[]>> {
+    const access = await this.getRoomAndMember(roomId, userId);
+    if (!isSuccess(access)) return access;
+
+    const privateRoom = validateRoomIsPrivate(access.data.room);
+    if (!isSuccess(privateRoom)) return privateRoom;
+
+    const privateAccess = await validatePrivateRoomMember(
+      this.chatRepository,
+      access.data.room,
+      userId,
+    );
+    if (!isSuccess(privateAccess)) return privateAccess;
+
+    const members = await this.chatRepository.getRoomMembers(roomId);
+    return ok(
+      members.map(
+        (member): ChatRoomMemberResDto => ({
+          id: Number(member.memberId),
+          nickname: member.member.user.nickname,
+          avatarUrl:
+            member.member.user.userAvatars[0]?.avatar?.avatarUrl ?? null,
+          role: member.role,
+        }),
+      ),
+    );
   }
 }
