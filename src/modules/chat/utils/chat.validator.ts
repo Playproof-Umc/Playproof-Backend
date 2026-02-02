@@ -83,6 +83,23 @@ export async function validateRoomAndMember(
   return ok({ room: roomResult.data, member: memberResult.data });
 }
 
+export async function validatePrivateRoomMember(
+  chatRepository: ChatRepository,
+  room: NonNullable<ChatRoom>,
+  userId: number,
+): Promise<Result<true>> {
+  if (!room.isPrivate) return ok(true);
+
+  const isMember = await chatRepository.isRoomMember(Number(room.id), userId);
+  if (!isMember) {
+    return forbidden({
+      message: '비밀 채팅방 멤버만 접근할 수 있습니다.',
+      errorCode: ChatErrorCode.ROOM_MEMBER_ONLY,
+    });
+  }
+  return ok(true);
+}
+
 export function validateRoomIsPrivate(
   room: NonNullable<ChatRoom>,
 ): Result<true> {

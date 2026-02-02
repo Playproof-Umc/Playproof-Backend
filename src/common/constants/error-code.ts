@@ -98,22 +98,22 @@ export const AzitErrorCode = {
 
 export const CommunityErrorCode = {
   // 리소스 관련
-  POST_NOT_FOUND: "COMMUNITY_POST_NOT_FOUND",       // 게시글을 찾을 수 없음
-  HIGHLIGHT_NOT_FOUND: "COMMUNITY_HIGHLIGHT_NOT_FOUND", // 하이라이트를 찾을 수 없음
-  GAME_NOT_FOUND: "COMMUNITY_GAME_NOT_FOUND",       // 게임 카테고리를 찾을 수 없음
-  
+  POST_NOT_FOUND: 'COMMUNITY_POST_NOT_FOUND', // 게시글을 찾을 수 없음
+  HIGHLIGHT_NOT_FOUND: 'COMMUNITY_HIGHLIGHT_NOT_FOUND', // 하이라이트를 찾을 수 없음
+  GAME_NOT_FOUND: 'COMMUNITY_GAME_NOT_FOUND', // 게임 카테고리를 찾을 수 없음
+
   // 권한 관련
-  FORBIDDEN: "COMMUNITY_FORBIDDEN",                 // 수정/삭제 권한 없음
-  
+  FORBIDDEN: 'COMMUNITY_FORBIDDEN', // 수정/삭제 권한 없음
+
   // 댓글 관련
-  COMMENT_NOT_FOUND: "COMMUNITY_COMMENT_NOT_FOUND", // 댓글을 찾을 수 없음
-  
+  COMMENT_NOT_FOUND: 'COMMUNITY_COMMENT_NOT_FOUND', // 댓글을 찾을 수 없음
+
   // 좋아요 관련
-  ALREADY_LIKED: "COMMUNITY_ALREADY_LIKED",         // 이미 좋아요를 누름
-  LIKE_NOT_FOUND: "COMMUNITY_LIKE_NOT_FOUND",       // 좋아요 기록 없음
-  
+  ALREADY_LIKED: 'COMMUNITY_ALREADY_LIKED', // 이미 좋아요를 누름
+  LIKE_NOT_FOUND: 'COMMUNITY_LIKE_NOT_FOUND', // 좋아요 기록 없음
+
   // 공통
-  INVALID_TARGET_TYPE: "COMMUNITY_INVALID_TARGET_TYPE", // 잘못된 타겟 타입 (HIGHLIGHT/POST 외)
+  INVALID_TARGET_TYPE: 'COMMUNITY_INVALID_TARGET_TYPE', // 잘못된 타겟 타입 (HIGHLIGHT/POST 외)
 } as const;
 
 // 피드백 관련 에러 코드
@@ -162,13 +162,14 @@ export const CommonErrorCode = {
 } as const;
 
 export const ChatErrorCode = {
-  ROOM_NOT_FOUND: "CHAT_ROOM_NOT_FOUND", // 채팅방을 찾을 수 없음
-  ROOM_CREATOR_ONLY: "CHAT_ROOM_CREATOR_ONLY", // 채팅방 생성자만 접근 가능
-  AZIT_MEMBER_ONLY: "CHAT_AZIT_MEMBER_ONLY", // 아지트 멤버만 접근 가능
-  MESSAGE_CREATE_FAILED: "CHAT_MESSAGE_CREATE_FAILED", // 메시지 저장 실패
-  MESSAGE_INVALID: "CHAT_MESSAGE_INVALID", // 메시지 입력이 올바르지 않음
-  MESSAGE_TOO_LONG: "CHAT_MESSAGE_TOO_LONG", // 메시지 길이 초과
-  ALREADY_PUBLIC_ROOM: "CHAT_ALREADY_PUBLIC_ROOM", // 비밀 채팅방이 아닙니다.
+  ROOM_NOT_FOUND: 'CHAT_ROOM_NOT_FOUND', // 채팅방을 찾을 수 없음
+  ROOM_CREATOR_ONLY: 'CHAT_ROOM_CREATOR_ONLY', // 채팅방 생성자만 접근 가능
+  ROOM_MEMBER_ONLY: 'CHAT_ROOM_MEMBER_ONLY', // 채팅방 멤버만 접근 가능
+  AZIT_MEMBER_ONLY: 'CHAT_AZIT_MEMBER_ONLY', // 아지트 멤버만 접근 가능
+  MESSAGE_CREATE_FAILED: 'CHAT_MESSAGE_CREATE_FAILED', // 메시지 저장 실패
+  MESSAGE_INVALID: 'CHAT_MESSAGE_INVALID', // 메시지 입력이 올바르지 않음
+  MESSAGE_TOO_LONG: 'CHAT_MESSAGE_TOO_LONG', // 메시지 길이 초과
+  ALREADY_PUBLIC_ROOM: 'CHAT_ALREADY_PUBLIC_ROOM', // 비밀 채팅방이 아닙니다.
 } as const;
 
 // 나중에 다른 도메인이 생기면 추가

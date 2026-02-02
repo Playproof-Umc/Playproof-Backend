@@ -11,7 +11,7 @@ import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
   Result,
   created,
-  internalServerError,
+     internalServerError,
   isSuccess,
   ok,
 } from '../../../common/types/result.type';
@@ -21,6 +21,7 @@ import {
   validateMessageContent,
   validateRoomAndMember,
   validateRoomIsPrivate,
+  validatePrivateRoomMember,
 } from '../utils/chat.validator';
 import {
   ChatRoomCreateReqDto,
@@ -46,8 +47,22 @@ export class ChatService {
     if (!isSuccess(memberAccess)) return memberAccess;
 
     const chatRooms = await this.chatRepository.getChatRooms(azitId, userId);
+    const accessibleRooms = await Promise.all(
+      chatRooms.map(async (chatRoom) => {
+        if (!chatRoom.isPrivate) return chatRoom;
+        const isMember = await this.chatRepository.isRoomMember(
+          Number(chatRoom.id),
+          userId,
+        );
+        return isMember ? chatRoom : null;
+      }),
+    );
+    const filteredRooms = accessibleRooms.filter(
+      (chatRoom): chatRoom is ChatRoom => chatRoom !== null,
+    );
+
     return ok<ChatRoomGetResDto[]>(
-      chatRooms.map(
+      filteredRooms.map(
         (chatRoom: ChatRoom): ChatRoomGetResDto => ({
           id: Number(chatRoom.id),
           roomName: chatRoom.roomName,
@@ -119,6 +134,12 @@ export class ChatService {
   ): Promise<Result<ChatMessageListResDto>> {
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
+    const privateAccess = await validatePrivateRoomMember(
+      this.chatRepository,
+      access.data.room,
+      userId,
+    );
+    if (!isSuccess(privateAccess)) return privateAccess;
 
     const size = options.size ?? 50;
     const cursor = options.cursor;

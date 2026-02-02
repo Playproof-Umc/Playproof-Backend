@@ -128,6 +128,16 @@ export class ChatRepository {
     return participation?.role === ChatRoomRole.CREATOR;
   }
 
+  async isRoomMember(roomId: number, userId: number) {
+    const participation = await prisma.chatRoomParticipation.findFirst({
+      where: {
+        roomId: BigInt(roomId),
+        memberId: BigInt(userId),
+      },
+    });
+    return Boolean(participation);
+  }
+
   async inviteToChatRoom(roomId: number, memberIds: bigint[]) {
     return prisma.chatRoomParticipation.createMany({
       data: memberIds.map((memberId) => ({
