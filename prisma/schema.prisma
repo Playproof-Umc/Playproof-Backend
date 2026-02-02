@@ -458,6 +458,7 @@ model AzitUser {
   user     User         @relation(fields: [userId], references: [id])
   azit     Azit         @relation(fields: [azitId], references: [id], onDelete: Cascade)
   scheduleParticipations AzitScheduleParticipation[]
+  chatRoomParticipation  ChatRoomParticipation[]
   chats    Chat[]
 
   @@map("azit_user")
@@ -505,8 +506,27 @@ model ChatRoom {
 
   azit      Azit         @relation(fields: [azitId], references: [id], onDelete: Cascade)
   chats     Chat[]
+  chatRoomParticipation  ChatRoomParticipation[]
 
   @@map("chat_rooms")
+}
+
+model ChatRoomParticipation {
+  memberId        BigInt        @map("member_id")
+  roomId          BigInt        @map("room_id")
+  role            ChatRoomRole  @default(PARTICIPANT)
+  participationAt DateTime      @default(now()) @map("participation_at")
+
+  member          AzitUser      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  room            ChatRoom      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@id([memberId, roomId])
+  @@map("chat_room_member")
+}
+
+enum ChatRoomRole {
+  CREATOR     @map("creator")
+  PARTICIPANT @map("participant")
 }
 
 model Chat {
