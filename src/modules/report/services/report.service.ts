@@ -1,0 +1,293 @@
+// src/modules/report/services/report.service.ts
+import { injectable, inject } from "tsyringe";
+import { ReportRepository } from "../repositories/report.repository";
+import { ReportValidator } from "../utils/report.validator";
+import { ReportCreateReqDto, ReportListReqDto, ReportUpdateReqDto } from "../dtos/report.req.dto";
+import { ReportCreateResDto, ReportListResDto, ReportListItemDto, ReportDetailResDto, ReportMediaDto, ReportDeleteResDto } from "../dtos/report.res.dto";
+import {
+  Result,
+  ok,
+  created,
+  internalServerError,
+  notFound,
+  forbidden,
+} from "../../../common/types/result.type";
+import { uploadFileToS3 } from "../../../common/utils/file-util";
+import { ReportType } from "@prisma/client";
+
+@injectable()
+export class ReportService {
+  constructor(
+    @inject(ReportRepository) private reportRepository: ReportRepository,
+    @inject(ReportValidator) private reportValidator: ReportValidator,
+  ) {}
+
+  async createReport(
+    userId: bigint,
+    dto: ReportCreateReqDto,
+    files: Express.Multer.File[] | undefined,
+  ): Promise<Result<ReportCreateResDto>> {
+    const targetId = BigInt(dto.target_id);
+
+    // 1. 자기 자신 신고 방지
+    const selfReportError = this.reportValidator.validateNotSelfReport<ReportCreateResDto>(
+      userId,
+      targetId,
+    );
+    if (selfReportError) {
+      return selfReportError;
+    }
+
+    // 2. 신고 대상 사용자 존재 확인
+    const targetUserError = await this.reportValidator.validateTargetUser<ReportCreateResDto>(
+      targetId,
+    );
+    if (targetUserError) {
+      return targetUserError;
+    }
+
+    // 3. 미디어 파일 검증
+    const mediaValidationError = this.reportValidator.validateMediaFiles(files);
+    if (mediaValidationError) {
+      return mediaValidationError;
+    }
+
+    // 4. S3에 파일 업로드
+    const mediaUrls: string[] = [];
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const uploadResult = await uploadFileToS3(file, 'reports');
+        if (uploadResult.error) {
+          return uploadResult;
+        }
+        mediaUrls.push(uploadResult.data);
+      }
+    }
+
+    // 5. ReportType 변환
+    const reportType: ReportType = dto.report_type as ReportType;
+
+    // 6. 신고 생성 및 미디어 일괄 생성 
+    const report = await this.reportRepository.createReportWithMedias(
+      userId,
+      targetId,
+      dto.name,
+      dto.email || null,
+      reportType,
+      dto.title,
+      dto.content,
+      mediaUrls,
+    );
+
+    // 7. 응답 DTO 변환
+    const response: ReportCreateResDto = {
+      report_id: Number(report.id),
+      report_status: report.reportStatus,
+      created_at: report.createdAt,
+    };
+
+    return created(response);
+  }
+
+  /**
+   * 신고 전체 조회 
+   */
+  async getReportList(
+    userId: bigint,
+    dto: ReportListReqDto,
+  ): Promise<Result<ReportListResDto>> {
+    const { page, size, sort } = dto;
+    const [reports, totalCount] = await Promise.all([
+      this.reportRepository.findReportsByUserId(userId, page, size, sort),
+      this.reportRepository.countReportsByUserId(userId),
+    ]);
+
+    const hasNext = page * size < totalCount;
+    const items: ReportListItemDto[] = reports.map((r) => ({
+      report_id: Number(r.id),
+      target_name: r.name,
+      type: r.reportType,
+      status: r.reportStatus,
+      title: r.title,
+      created_at: r.createdAt,
+    }));
+
+    return ok({
+      reports: items,
+      nextCursor: hasNext ? page + 1 : null,
+      hasNext,
+    });
+  }
+
+  /**
+   * 신고 상세 조회
+   */
+  async getReportDetail(
+    userId: bigint,
+    reportId: number,
+  ): Promise<Result<ReportDetailResDto>> {
+    const report = await this.reportRepository.findReportById(BigInt(reportId));
+
+    // 1. 신고가 존재하지 않는 경우
+    if (!report) {
+      return notFound({
+        message: "신고를 찾을 수 없습니다.",
+        errorCode: "REPORT_NOT_FOUND",
+      });
+    }
+
+    // 2. 본인이 작성한 신고가 아닌 경우
+    if (report.userId !== userId) {
+      return forbidden({
+        message: "본인이 작성한 신고만 조회할 수 있습니다.",
+        errorCode: "REPORT_ACCESS_FORBIDDEN",
+      });
+    }
+
+    // 3. 응답 DTO 변환
+    const medias: ReportMediaDto[] = report.medias.map((m) => ({
+      media_id: Number(m.id),
+      media_url: m.mediaUrl,
+      upload_at: m.uploadAt,
+    }));
+
+    const response: ReportDetailResDto = {
+      report_id: Number(report.id),
+      target_name: report.name,
+      email: report.email || undefined,
+      type: report.reportType,
+      status: report.reportStatus,
+      title: report.title,
+      content: report.content,
+      medias,
+      created_at: report.createdAt,
+    };
+
+    return ok(response);
+  }
+
+  /**
+   * 신고 수정
+   */
+  async updateReport(
+    userId: bigint,
+    reportId: number,
+    dto: ReportUpdateReqDto,
+    files: Express.Multer.File[] | undefined,
+  ): Promise<Result<ReportDetailResDto>> {
+    const report = await this.reportRepository.findReportById(BigInt(reportId));
+
+    // 1. 신고가 존재하지 않는 경우
+    if (!report) {
+      return notFound({
+        message: "신고를 찾을 수 없습니다.",
+        errorCode: "REPORT_NOT_FOUND",
+      });
+    }
+
+    // 2. 본인이 작성한 신고가 아닌 경우
+    if (report.userId !== userId) {
+      return forbidden({
+        message: "본인이 작성한 신고만 수정할 수 있습니다.",
+        errorCode: "REPORT_ACCESS_FORBIDDEN",
+      });
+    }
+
+    // 3. 미디어 파일 검증 (새로운 파일이 있는 경우)
+    if (files && files.length > 0) {
+      const mediaValidationError = this.reportValidator.validateMediaFiles(files);
+      if (mediaValidationError) {
+        return mediaValidationError;
+      }
+    }
+
+    // 4. S3에 새 파일 업로드
+    const mediaUrls: string[] = [];
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const uploadResult = await uploadFileToS3(file, 'reports');
+        if (uploadResult.error) {
+          return uploadResult;
+        }
+        mediaUrls.push(uploadResult.data);
+      }
+
+      // 5. 기존 미디어 삭제 후 새 미디어 추가
+      await this.reportRepository.deleteReportMedias(BigInt(reportId));
+      await this.reportRepository.createReportMedias(BigInt(reportId), mediaUrls);
+    }
+
+    // 6. 신고 정보 업데이트
+    const updateData: any = {};
+    if (dto.title !== undefined) updateData.title = dto.title;
+    if (dto.content !== undefined) updateData.content = dto.content;
+    if (dto.email !== undefined) updateData.email = dto.email || null;
+
+    const updatedReport = await this.reportRepository.updateReport(
+      BigInt(reportId),
+      updateData,
+    );
+
+    // 7. 응답 DTO 변환
+    const medias: ReportMediaDto[] = updatedReport.medias.map((m) => ({
+      media_id: Number(m.id),
+      media_url: m.mediaUrl,
+      upload_at: m.uploadAt,
+    }));
+
+    const response: ReportDetailResDto = {
+      report_id: Number(updatedReport.id),
+      target_name: updatedReport.name,
+      email: updatedReport.email || undefined,
+      type: updatedReport.reportType,
+      status: updatedReport.reportStatus,
+      title: updatedReport.title,
+      content: updatedReport.content,
+      medias,
+      created_at: updatedReport.createdAt,
+    };
+
+    return ok(response);
+  }
+
+  /**
+   * 신고 삭제
+   */
+  async deleteReport(
+    userId: bigint,
+    reportId: number,
+  ): Promise<Result<ReportDeleteResDto>> {
+    const report = await this.reportRepository.findReportById(BigInt(reportId));
+
+    // 1. 신고가 존재하지 않는 경우
+    if (!report) {
+      return notFound({
+        message: "신고를 찾을 수 없습니다.",
+        errorCode: "REPORT_NOT_FOUND",
+      });
+    }
+
+    // 2. 본인이 작성한 신고가 아닌 경우
+    if (report.userId !== userId) {
+      return forbidden({
+        message: "본인이 작성한 신고만 삭제할 수 있습니다.",
+        errorCode: "REPORT_ACCESS_FORBIDDEN",
+      });
+    }
+
+    // 3. 관련 미디어 삭제
+    await this.reportRepository.deleteReportMedias(BigInt(reportId));
+
+    // 4. 신고 삭제
+    await this.reportRepository.deleteReport(BigInt(reportId));
+
+    // 5. 응답 DTO 생성
+    const response: ReportDeleteResDto = {
+      report_id: reportId,
+      message: "성공적으로 삭제되었습니다.",
+      deleted_at: new Date(),
+    };
+
+    return ok(response);
+  }
+}

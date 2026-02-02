@@ -169,5 +169,17 @@ export const ChatErrorCode = {
   MESSAGE_TOO_LONG: "CHAT_MESSAGE_TOO_LONG", // 메시지 길이 초과
 } as const;
 
+// 신고 관련 에러 코드
+export const ReportErrorCode = {
+  BAD_REQUEST: {
+    SELF_REPORT_NOT_ALLOWED: 'REPORT_SELF_NOT_ALLOWED', // 자기 자신 신고 불가
+    INVALID_MEDIA: 'REPORT_INVALID_MEDIA', // 유효하지 않은 미디어 파일
+  },
+
+  NOT_FOUND: {
+    TARGET_USER_NOT_FOUND: 'REPORT_TARGET_USER_NOT_FOUND', // 신고 대상 사용자를 찾을 수 없음
+  },
+} as const;
+
 // 나중에 다른 도메인이 생기면 추가
 // export const OrderErrorCode = { ... } as const;
