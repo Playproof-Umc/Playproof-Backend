@@ -1,6 +1,7 @@
 import { singleton } from 'tsyringe';
 import { prisma } from '../../../common/config/database';
 import { ChatRoomCreateReqDto } from '../dtos/chat.req.dto';
+import { ChatRoomRole } from '@prisma/client/default';
 
 @singleton()
 export class ChatRepository {
@@ -15,6 +16,12 @@ export class ChatRepository {
         roomName: dto.roomName,
         roomType: dto.chatType,
         isPrivate: dto.isPrivate ?? false,
+        chatRoomParticipation: {
+          create: {
+            memberId: BigInt(userId),
+            role: ChatRoomRole.CREATOR,
+          }
+        }
       },
     });
   }
