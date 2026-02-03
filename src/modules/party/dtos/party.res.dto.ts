@@ -215,7 +215,37 @@ export class PartyDeleteResDto {
 
 export class PartyListResDto {
   /**
-   * @example []
+   * @example [
+   *  {
+   *    partyId: 1,
+   *    host: {
+   *      id: 1,
+   *      nickname: "닉네임",
+   *      trustScore: 50,
+   *      avatarUrl: "https://example.com/avatar.png",
+   *    },
+   *    title: "파티 제목",
+   *    memo: "파티 내용",
+   *    tierName: "골드",
+   *    azitName: "아지트 이름",
+   *    participants: 5,
+   *    currentParticipants: 2,
+   *    isMic: true,
+   *    status: "active",
+   *    viewCount: 100,
+   *    tags: [
+   *      { id: 1, name: "태그명" },
+   *      { id: 2, name: "태그명2" },
+   *    ],
+   *    positions: [
+   *      { positionId: 1, positionName: "포지션명" },
+   *      { positionId: 2, positionName: "포지션명2" },
+   *    ],
+   *    createdAt: "2026-01-05 15:30:00",
+   *    updatedAt: "2026-01-05 15:30:00",
+   *  },
+   * ...
+   * ]
    */
   @IsObject({ each: true })
   parties!: PartyGetResDto[];

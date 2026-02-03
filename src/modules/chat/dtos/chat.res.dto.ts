@@ -1,5 +1,6 @@
 import { IsNumber, IsOptional, IsString, IsArray, IsEnum, IsBoolean } from 'class-validator';
 import { ChatType } from './chat.req.dto';
+import { ChatRoomRole } from '@prisma/client';
 
 export class ChatMessageResDto {
   /**
@@ -102,4 +103,39 @@ export class ChatRoomGetResDto {
    */
   @IsString()
   updatedAt!: string;
+}
+
+export class ChatRoomInviteResDto {
+  /**
+   * @example 1
+   * // 초대된 멤버 수
+   */
+  @IsNumber()
+  invitations!: number;
+}
+
+export class ChatRoomMemberResDto {
+  /**
+   * @example 1
+   */
+  @IsNumber()
+  id!: number;
+
+  /**
+   * @example "채나"
+   */
+  @IsString()
+  nickname!: string | null;
+
+  /**
+   * @example "https://example.com/avatar/1.png"
+   */
+  @IsString()
+  avatarUrl!: string | null;
+
+  /**
+   * @example "MEMBER"
+   */
+  @IsEnum(ChatRoomRole)
+  role!: ChatRoomRole;
 }
