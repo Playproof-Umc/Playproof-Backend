@@ -19,7 +19,7 @@ export class AzitMemberService {
 
     async getAzitMembers(
         azitId: bigint,
-        cursor: string | undefined,
+        page: number,
         size: number,
     ): Promise<Result<GetAzitMembersResDto>> {
         // 아지트 존재 여부 확인
@@ -32,19 +32,14 @@ export class AzitMemberService {
             });
         }
 
-        // 커서 기반 멤버 목록 조회 (size + 1개 조회)
-        const membersData = await this.azitUserRepository.findMembersByAzitIdWithCursor(
-            azitId,
-            cursor || null,
-            size,
-        );
-
-        // has_next 판단 및 실제 반환할 데이터 분리
-        const hasNext = membersData.length > size;
-        const actualMembers = hasNext ? membersData.slice(0, size) : membersData;
+        // 오프셋 기반 멤버 목록 조회 및 총 개수 조회 
+        const [membersData, totalCount] = await Promise.all([
+            this.azitUserRepository.findMembersByAzitId(azitId, page, size),
+            this.azitUserRepository.countMembersByAzitId(azitId),
+        ]);
 
         // 응답 DTO 변환
-        const members: AzitMemberResDto[] = actualMembers.map((azitUser) => {
+        const members: AzitMemberResDto[] = membersData.map((azitUser) => {
             const equippedAvatar = azitUser.user.userAvatars[0];
             const avatarUrl = equippedAvatar?.avatar?.avatarUrl || null;
 
@@ -56,18 +51,15 @@ export class AzitMemberService {
             };
         });
 
-        // next_cursor 계산 (마지막 항목의 닉네임, null이면 null)
-        const lastMember = actualMembers[actualMembers.length - 1];
-        const nextCursor = hasNext && lastMember && lastMember.user.nickname
-            ? lastMember.user.nickname
-            : null;
+        // nextCursor 및 hasNext 계산 
+        const hasNext = page * size < totalCount;
 
         const response: GetAzitMembersResDto = {
             azit_id: Number(azit.id),
             azit_name: azit.azitName,
             members,
-            next_cursor: nextCursor,
-            has_next: hasNext,
+            nextCursor: hasNext ? page + 1 : null,
+            hasNext,
         };
 
         return ok(response);

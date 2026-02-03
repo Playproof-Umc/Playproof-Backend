@@ -39,15 +39,17 @@ export class AzitUpdateReqDto {
 
 export class GetAzitMembersReqDto {
   /**
-   * 커서 (마지막으로 받은 닉네임, 첫 요청 시 생략)
-   * @example "채나"
+   * 페이지 번호 (1부터 시작)
+   * @example 1
    */
   @IsOptional()
-  @IsString()
-  cursor?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
 
   /**
-   * 가져올 항목 수 (최소 1, 최대 100)
+   * 가져올 항목 수 (최소 1)
    * @example 20
    */
   @IsOptional()

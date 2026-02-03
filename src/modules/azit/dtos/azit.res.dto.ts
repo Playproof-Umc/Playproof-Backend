@@ -97,16 +97,16 @@ export class GetAzitMembersResDto {
   members!: AzitMemberResDto[];
 
   /**
-   * 다음 커서 (마지막 멤버의 닉네임, 더 이상 데이터가 없으면 null)
-   * @example "채나"
+   * 다음 페이지 번호 (더 이상 데이터가 없으면 null)
+   * @example 2
    */
-  next_cursor!: string | null;
+  nextCursor!: number | null;
 
   /**
    * 다음 페이지 존재 여부
    * @example true
    */
-  has_next!: boolean;
+  hasNext!: boolean;
 }
 
 export class AddAzitMemberResDto {
