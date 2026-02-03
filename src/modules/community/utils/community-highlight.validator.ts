@@ -53,8 +53,11 @@ export class CommunityHighlightValidator {
     const { highlight, error } = await this.validateHighlight(repository, highlightId, userId);
     if (error) return { error };
 
-    // 비공개 글인데 작성자가 아닌 경우 접근 거부
-    if (!highlight.isPublic && highlight.userId !== userId) {
+    // 🚩 1단계: 전체 공개글이라면 로그인 여부 상관없이 통과
+    if (highlight.isPublic) return { highlight };
+
+    // 🚩 2단계: 비공개글인데 로그인을 안 했다면 접근 거부
+    if (!userId) {
       return {
         error: forbidden({
           message: "비공개 게시글에 접근 권한이 없습니다.",
@@ -63,6 +66,21 @@ export class CommunityHighlightValidator {
       };
     }
 
-    return { highlight };
+    // 🚩 3단계: 본인이 작성한 글이라면 통과
+    if (highlight.userId === userId) return { highlight };
+
+    // 🚩 4단계: 아지트 귀속 글인 경우, 사용자가 해당 아지트 멤버인지 확인
+    if (highlight.azitId) {
+      const isMember = await repository.isAzitMember(highlight.azitId, userId);
+      if (isMember) return { highlight };
+    }
+
+    // 🚩 5단계: 위 조건에 모두 해당하지 않는 타인의 비공개 글은 접근 거부
+    return {
+      error: forbidden({
+        message: "아지트 멤버 또는 작성자만 볼 수 있는 게시글입니다.",
+        errorCode: HighlightErrorCode.LIST_FORBIDDEN
+      })
+    };
   }
 }
