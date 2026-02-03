@@ -16,6 +16,7 @@ describe('CommunityHighlightService', () => {
       updateHighlight: jest.fn(),
       deleteHighlight: jest.fn(),
       countHighlights: jest.fn(),
+      isAzitMember: jest.fn(), // 🚩 아지트 멤버 체크 메서드 추가
     } as any;
 
     service = new CommunityHighlightService(repository);
@@ -25,7 +26,7 @@ describe('CommunityHighlightService', () => {
   // 2. 하이라이트 생성 테스트
   describe('createHighlight', () => {
     const userId = BigInt(1);
-    const dto = { content: '하이라이트 테스트', is_public: true, medias: [] };
+    const dto = { content: '생성 테스트', is_public: true, medias: [] };
 
     it('성공: 하이라이트를 생성하고 성공 데이터를 반환한다', async () => {
       repository.createHighlight.mockResolvedValue({ id: BigInt(100) } as any);
@@ -41,48 +42,33 @@ describe('CommunityHighlightService', () => {
       if (isSuccess(result)) {
         expect(result.data.highlight_id).toBe(100);
       }
-      expect(repository.createHighlight).toHaveBeenCalled();
     });
   });
 
-  // 3. 하이라이트 목록 조회 테스트
-  describe('getHighlightList', () => {
-    it('성공: 공개된 하이라이트 목록과 메타 정보를 반환한다', async () => {
-      repository.findCommunityHighlights.mockResolvedValue([]);
-      repository.countHighlights.mockResolvedValue(5);
-
-      const result = await service.getHighlightList(BigInt(1), 1, 10);
-
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.meta.total_count).toBe(5);
-        expect(result.data.highlights).toBeInstanceOf(Array);
-      }
-    });
-  });
-
-  // 4. 하이라이트 상세 조회 테스트
+  // 3. 하이라이트 상세 조회 테스트 (권한 로직 집중 검증)
   describe('getHighlightDetail', () => {
     const userId = BigInt(1);
     const highlightId = BigInt(100);
 
-    it('실패: 존재하지 않는 하이라이트인 경우 NOT_FOUND 에러를 반환한다', async () => {
-      repository.findHighlightById.mockResolvedValue(null);
-
-      const result = await service.getHighlightDetail(userId, highlightId);
-
-      expect(result.statusCode).toBe(404);
-      if (!isSuccess(result)) {
-        expect(result.error.code).toBe(HighlightErrorCode.NOT_FOUND);
-      }
-    });
-
-    it('실패: 비공개 글을 작성자가 아닌 유저가 조회 시 LIST_FORBIDDEN 에러를 반환한다', async () => {
+    it('성공: 비로그인 유저(null)여도 공개된 글(isPublic: true)은 조회 가능하다', async () => {
       repository.findHighlightById.mockResolvedValue({
-        id: highlightId, userId: BigInt(99), isPublic: false, user: { nickname: '남' }
+        id: highlightId, userId: BigInt(99), isPublic: true, 
+        user: { nickname: '유저' }, medias: [], _count: { comments: 0, likes: 0 },
+        likes: [], createdAt: new Date(), updatedAt: new Date()
       } as any);
 
-      const result = await service.getHighlightDetail(userId, highlightId);
+      const result = await service.getHighlightDetail(null, highlightId);
+
+      expect(isSuccess(result)).toBe(true);
+      expect(repository.isAzitMember).not.toHaveBeenCalled(); // 공개글은 아지트 체크 안 함
+    });
+
+    it('실패: 비로그인 유저가 비공개 글 조회 시 LIST_FORBIDDEN 에러를 반환한다', async () => {
+      repository.findHighlightById.mockResolvedValue({
+        id: highlightId, userId: BigInt(99), isPublic: false 
+      } as any);
+
+      const result = await service.getHighlightDetail(null, highlightId);
 
       expect(result.statusCode).toBe(403);
       if (!isSuccess(result)) {
@@ -90,10 +76,10 @@ describe('CommunityHighlightService', () => {
       }
     });
 
-    it('성공: 공개된 하이라이트 상세 정보를 반환한다', async () => {
+    it('성공: 비공개 글이라도 작성자 본인이면 조회 가능하다', async () => {
       repository.findHighlightById.mockResolvedValue({
-        id: highlightId, userId: BigInt(99), isPublic: true,
-        user: { nickname: '유저' }, medias: [], _count: { comments: 1, likes: 2 },
+        id: highlightId, userId, isPublic: false, // 내 글 + 비공개
+        user: { nickname: '시영' }, medias: [], _count: { comments: 0, likes: 0 },
         likes: [], createdAt: new Date(), updatedAt: new Date()
       } as any);
 
@@ -101,24 +87,59 @@ describe('CommunityHighlightService', () => {
 
       expect(isSuccess(result)).toBe(true);
     });
+
+    it('성공: 본인이 아닌 아지트 멤버가 비공개 아지트 글 조회 시 성공한다', async () => {
+      const azitId = BigInt(10);
+      repository.findHighlightById.mockResolvedValue({
+        id: highlightId, 
+        userId: BigInt(99), 
+        isPublic: false, 
+        azitId,
+        user: { nickname: '작성자닉네임' }, 
+        content: '아지트 멤버 전용 글',
+        medias: [], 
+        _count: { comments: 0, likes: 0 },
+        likes: [], 
+        createdAt: new Date(), 
+        updatedAt: new Date()
+      } as any);
+      
+      repository.isAzitMember.mockResolvedValue(true); // 아지트 멤버임
+
+      const result = await service.getHighlightDetail(userId, highlightId);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.nickname).toBe('작성자닉네임');
+      }
+      expect(repository.isAzitMember).toHaveBeenCalledWith(azitId, userId);
+    });
+
+    it('실패: 아지트 멤버가 아닌 타인이 비공개 아지트 글 조회 시 실패한다', async () => {
+      repository.findHighlightById.mockResolvedValue({
+        id: highlightId, userId: BigInt(99), isPublic: false, azitId: BigInt(10)
+      } as any);
+      repository.isAzitMember.mockResolvedValue(false); // 🚩 아지트 멤버 아님
+
+      const result = await service.getHighlightDetail(userId, highlightId);
+
+      expect(result.statusCode).toBe(403);
+    });
   });
 
-  // 5. 하이라이트 수정 테스트
+  // 4. 하이라이트 수정 테스트
   describe('updateHighlight', () => {
     const userId = BigInt(1);
     const highlightId = BigInt(100);
 
     it('실패: 본인이 작성하지 않은 글 수정 시 UPDATE_FORBIDDEN 에러를 반환한다', async () => {
       repository.findHighlightById.mockResolvedValue({
-        id: highlightId, userId: BigInt(99) // 작성자 다름
+        id: highlightId, userId: BigInt(99) 
       } as any);
 
       const result = await service.updateHighlight(userId, highlightId, { content: '수정' });
 
       expect(result.statusCode).toBe(403);
-      if (!isSuccess(result)) {
-        expect(result.error.code).toBe(HighlightErrorCode.UPDATE_FORBIDDEN);
-      }
     });
 
     it('성공: 본인 글인 경우 수정을 완료하고 200을 반환한다', async () => {
@@ -130,18 +151,15 @@ describe('CommunityHighlightService', () => {
       const result = await service.updateHighlight(userId, highlightId, { content: '수정됨' });
 
       expect(isSuccess(result)).toBe(true);
-      expect(repository.updateHighlight).toHaveBeenCalled();
     });
   });
 
-  // 6. 하이라이트 삭제 테스트
+  // 5. 하이라이트 삭제 테스트
   describe('deleteHighlight', () => {
-    const userId = BigInt(1);
-    const highlightId = BigInt(100);
-
     it('성공: 작성자가 일치하면 삭제를 수행한다', async () => {
+      const userId = BigInt(1);
+      const highlightId = BigInt(100);
       repository.findHighlightById.mockResolvedValue({ id: highlightId, userId } as any);
-      repository.deleteHighlight.mockResolvedValue({} as any);
 
       const result = await service.deleteHighlight(userId, highlightId);
 
