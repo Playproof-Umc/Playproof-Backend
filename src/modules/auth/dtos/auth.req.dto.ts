@@ -25,10 +25,12 @@ export class SignUpReqDto {
   @IsPhoneNumber("KR", { message: "형식에 맞지 않는 전화번호입니다. "})
   phone!: string;
 
-  /**
-   * @example ["id": 1, "agree": true],
-   * ["id": 2, "agree": true],
-   * ["id": 3, "agree": false]
+/**
+   * @example [
+   * { "id": 1, "agree": true },
+   * { "id": 2, "agree": true },
+   * { "id": 3, "agree": false }
+   * ]
    */
   @IsArray()
   @IsNotEmpty({ message: "약관 카테고리는 필수입니다."})
@@ -43,8 +45,8 @@ export class SignUpReqDto {
    * "gameNickname": "honggildong123", 
    * "accountId": "example-account-id-12345", 
    * "playStyle": "manner", 
-   * "positionId": "1", 
-   * "tierId": "5" 
+   * "positionId": "101", 
+   * "tierId": "101" 
    * }
    */
   @IsNotEmpty({ message: "유저의 게임 정보는 필수입니다."})
