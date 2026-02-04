@@ -39,7 +39,7 @@ export class AuthController extends Controller {
 
   @SuccessResponse("200", "OK")
   @Response<BadRequestError>(400, "Bad Request")
-  @Response<BadRequestError>(409, "Conflict") 
+  @Response<ConflictError>(409, "Conflict") 
   @Response<InternalServerError>(500, "Internal Server Error")
   @Middlewares(validationMiddleware(SendCertificationReqDto))
   @Post("/phone/send-certification")
