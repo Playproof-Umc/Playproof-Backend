@@ -41,15 +41,14 @@ export class GameInfoDto {
     playStyle!: string;
 
     /**
-    * @example "1"
+    * @example 1
     */
-    @IsString()
-    positionId!: string;
-
+    @IsNumber()
+    positionId!: number;
     /**
-    * @example "5"
+    * @example 5
     */
-    @IsString()
-    tierId!: string;
+    @IsNumber()
+    tierId!: number;
 
 }
