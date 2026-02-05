@@ -19,7 +19,10 @@ import { upload } from "./common/config/multer";
 
 export const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // 임시 프론트엔드 주소 허용
+  credentials: true
+}));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
