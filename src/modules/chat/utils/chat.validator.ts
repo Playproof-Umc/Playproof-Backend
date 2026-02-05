@@ -1,6 +1,7 @@
 import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
   badRequest,
+  conflict,
   forbidden,
   notFound,
   ok,
@@ -29,6 +30,21 @@ export async function validateRoomExists(
   return ok(room);
 }
 
+export async function validateIsRoomCreator(
+  chatRepository: ChatRepository,
+  roomId: number,
+  userId: number,
+): Promise<Result<true>> {
+  const isCreator = await chatRepository.isRoomCreator(roomId, userId);
+  if (!isCreator) {
+    return forbidden({
+      message: '채팅방 생성자만 접근할 수 있습니다.',
+      errorCode: ChatErrorCode.ROOM_CREATOR_ONLY,
+    });
+  }
+  return ok(true);
+}
+
 export async function validateAzitMemberOnly(
   chatRepository: ChatRepository,
   userId: number,
@@ -52,7 +68,9 @@ export async function validateRoomAndMember(
   chatRepository: ChatRepository,
   roomId: number,
   userId: number,
-): Promise<Result<{ room: NonNullable<ChatRoom>; member: NonNullable<AzitMember> }>> {
+): Promise<
+  Result<{ room: NonNullable<ChatRoom>; member: NonNullable<AzitMember> }>
+> {
   const roomResult = await validateRoomExists(chatRepository, roomId);
   if (roomResult.error) return roomResult;
 
@@ -66,7 +84,56 @@ export async function validateRoomAndMember(
   return ok({ room: roomResult.data, member: memberResult.data });
 }
 
-export function validateMessageContent(content?: string): Result<{ content: string }> {
+export async function validatePrivateRoomMember(
+  chatRepository: ChatRepository,
+  room: NonNullable<ChatRoom>,
+  userId: number,
+): Promise<Result<true>> {
+  if (!room.isPrivate) return ok(true);
+
+  const isMember = await chatRepository.isRoomMember(Number(room.id), userId);
+  if (!isMember) {
+    return forbidden({
+      message: '비밀 채팅방 멤버만 접근할 수 있습니다.',
+      errorCode: ChatErrorCode.ROOM_MEMBER_ONLY,
+    });
+  }
+  return ok(true);
+}
+
+export async function validateMembersNotInRoom(
+  chatRepository: ChatRepository,
+  roomId: number,
+  memberIds: number[],
+): Promise<Result<true>> {
+  const existingMemberIds = await chatRepository.getExistingRoomMemberIds(
+    roomId,
+    memberIds,
+  );
+  if (existingMemberIds.length > 0) {
+    return conflict({
+      message: '이미 초대된 멤버가 포함되어 있습니다.',
+      errorCode: ChatErrorCode.ALREADY_INVITED_MEMBER,
+    });
+  }
+  return ok(true);
+}
+
+export function validateRoomIsPrivate(
+  room: NonNullable<ChatRoom>,
+): Result<true> {
+  if (!room.isPrivate) {
+    return badRequest({
+      message: '비밀 채팅방이 아닙니다.',
+      errorCode: ChatErrorCode.ALREADY_PUBLIC_ROOM,
+    });
+  }
+  return ok(true);
+}
+
+export function validateMessageContent(
+  content?: string,
+): Result<{ content: string }> {
   const trimmed = content?.trim();
   if (!trimmed) {
     return badRequest({

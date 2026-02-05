@@ -81,3 +81,11 @@ export class ChatRoomUpdateReqDto {
   @IsBoolean()
   isPrivate?: boolean;
 }
+
+export class ChatRoomInviteReqDto {
+  /**
+   * @example [1, 2, 3]
+   */
+  @IsNumber({}, { each: true })
+  memberIds!: number[];
+}

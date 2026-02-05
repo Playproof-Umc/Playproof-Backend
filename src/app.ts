@@ -6,7 +6,8 @@ import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import path from "path";
 import { RegisterRoutes } from "./build/routes"; 
-import swaggerDocument from "./build/swagger.json"; 
+import * as swaggerJson from "./build/swagger.json";
+//import swaggerDocument from "./build/swagger.json"; 
 import { globalErrorHandler } from "./common/middlewares/error.handler";
 import { upload } from "./common/config/multer";
 
@@ -18,13 +19,17 @@ import { upload } from "./common/config/multer";
 
 export const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // 임시 프론트엔드 주소 허용
+  credentials: true
+}));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const asyncapiSpecPath = path.resolve(process.cwd(), "asyncapi.yaml");
 const asyncapiHtmlPath = path.resolve(process.cwd(), "public", "asyncapi.html");
+const swaggerDocument = "default" in swaggerJson ? (swaggerJson as any).default : swaggerJson;
 
 // Swagger UI
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));

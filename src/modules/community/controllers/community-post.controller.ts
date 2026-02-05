@@ -24,7 +24,7 @@ export class CommunityPostController extends Controller {
     this.setStatus(result.statusCode);
     return result;
   }
-
+  
   @SuccessResponse("200", "OK")
   @Get("posts/best")
   public async getBestPosts(@Query() game_id?: number): Promise<Result<CommunityPostListResDto>> {
@@ -70,19 +70,19 @@ export class CommunityPostController extends Controller {
     return result;
   }
 
-  @Get("highlights")
-  @SuccessResponse("200", "OK")
-  public async getCommunityHighlights(
-    @Request() request: any,
-    @Query() cursor?: number,
-    @Query() limit: number = 10
-  ): Promise<Result<any>> {
-    const userId = request.user ? BigInt(request.user.id) : null;
+  // @Get("highlights")
+  // @SuccessResponse("200", "OK")
+  // public async getCommunityHighlights(
+  //   @Request() request: any,
+  //   @Query() cursor?: number,
+  //   @Query() limit: number = 10
+  // ): Promise<Result<any>> {
+  //   const userId = request.user ? BigInt(request.user.id) : null;
     
-    return await this.highlightListService.getCommunityHighlightList(
-      cursor ? BigInt(cursor) : null,
-      limit,
-      userId
-    );
-  }
+  //   return await this.highlightListService.getCommunityHighlightList(
+  //     cursor ? BigInt(cursor) : null,
+  //     limit,
+  //     userId
+  //   );
+  // }
 }

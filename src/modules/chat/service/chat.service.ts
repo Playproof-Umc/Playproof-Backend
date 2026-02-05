@@ -5,6 +5,8 @@ import {
   ChatMessageResDto,
   ChatRoomCreateResDto,
   ChatRoomGetResDto,
+  ChatRoomInviteResDto,
+  ChatRoomMemberResDto,
 } from '../dtos/chat.res.dto';
 import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
@@ -16,17 +18,29 @@ import {
 } from '../../../common/types/result.type';
 import {
   validateAzitMemberOnly,
+  validateIsRoomCreator,
   validateMessageContent,
+  validateMembersNotInRoom,
   validateRoomAndMember,
+  validateRoomIsPrivate,
+  validatePrivateRoomMember,
 } from '../utils/chat.validator';
-import { ChatRoomCreateReqDto, ChatRoomUpdateReqDto, ChatType } from '../dtos/chat.req.dto';
-import { ChatRoom } from '.prisma/client';
+import {
+  ChatRoomCreateReqDto,
+  ChatRoomInviteReqDto,
+  ChatRoomUpdateReqDto,
+  ChatType,
+} from '../dtos/chat.req.dto';
+import { ChatRoom, ChatRoomParticipation, ChatRoomRole } from '.prisma/client';
 
 @injectable()
 export class ChatService {
   constructor(@inject(ChatRepository) private chatRepository: ChatRepository) {}
 
-  async getChatRooms(azitId: number, userId: number): Promise<Result<ChatRoomGetResDto[]>> {
+  async getChatRooms(
+    azitId: number,
+    userId: number,
+  ): Promise<Result<ChatRoomGetResDto[]>> {
     const memberAccess = await validateAzitMemberOnly(
       this.chatRepository,
       userId,
@@ -35,14 +49,32 @@ export class ChatService {
     if (!isSuccess(memberAccess)) return memberAccess;
 
     const chatRooms = await this.chatRepository.getChatRooms(azitId, userId);
-    return ok<ChatRoomGetResDto[]>(chatRooms.map((chatRoom: ChatRoom): ChatRoomGetResDto => ({
-      id: Number(chatRoom.id),
-      roomName: chatRoom.roomName,
-      chatType: chatRoom.roomType as ChatType,
-      isPrivate: chatRoom.isPrivate,
-      createdAt: chatRoom.createdAt.toISOString(),
-      updatedAt: chatRoom.updatedAt.toISOString(),
-    })));
+    const accessibleRooms = await Promise.all(
+      chatRooms.map(async (chatRoom) => {
+        if (!chatRoom.isPrivate) return chatRoom;
+        const isMember = await this.chatRepository.isRoomMember(
+          Number(chatRoom.id),
+          userId,
+        );
+        return isMember ? chatRoom : null;
+      }),
+    );
+    const filteredRooms = accessibleRooms.filter(
+      (chatRoom): chatRoom is ChatRoom => chatRoom !== null,
+    );
+
+    return ok<ChatRoomGetResDto[]>(
+      filteredRooms.map(
+        (chatRoom: ChatRoom): ChatRoomGetResDto => ({
+          id: Number(chatRoom.id),
+          roomName: chatRoom.roomName,
+          chatType: chatRoom.roomType as ChatType,
+          isPrivate: chatRoom.isPrivate,
+          createdAt: chatRoom.createdAt.toISOString(),
+          updatedAt: chatRoom.updatedAt.toISOString(),
+        }),
+      ),
+    );
   }
 
   public async getRoomAndMember(roomId: number, userId: number) {
@@ -104,6 +136,12 @@ export class ChatService {
   ): Promise<Result<ChatMessageListResDto>> {
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
+    const privateAccess = await validatePrivateRoomMember(
+      this.chatRepository,
+      access.data.room,
+      userId,
+    );
+    if (!isSuccess(privateAccess)) return privateAccess;
 
     const size = options.size ?? 50;
     const cursor = options.cursor;
@@ -135,7 +173,11 @@ export class ChatService {
     userId: number,
     dto: ChatRoomCreateReqDto,
   ): Promise<Result<ChatRoomCreateResDto>> {
-    const chatRoom = await this.chatRepository.createChatRoom(azitId, userId, dto);
+    const chatRoom = await this.chatRepository.createChatRoom(
+      azitId,
+      userId,
+      dto,
+    );
     return created({
       roomId: Number(chatRoom.id),
     });
@@ -148,6 +190,13 @@ export class ChatService {
   ): Promise<Result<ChatRoomGetResDto>> {
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
+
+    const isCreator = await validateIsRoomCreator(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
+    if (!isSuccess(isCreator)) return isCreator;
 
     const updateData: {
       roomName?: string;
@@ -169,7 +218,10 @@ export class ChatService {
       });
     }
 
-    const updatedRoom = await this.chatRepository.updateChatRoom(roomId, updateData);
+    const updatedRoom = await this.chatRepository.updateChatRoom(
+      roomId,
+      updateData,
+    );
     return ok({
       id: Number(updatedRoom.id),
       roomName: updatedRoom.roomName,
@@ -180,12 +232,89 @@ export class ChatService {
     });
   }
 
-  async deleteChatRoom(roomId: number, userId: number): Promise<Result<string>> {
-    
+  async deleteChatRoom(
+    roomId: number,
+    userId: number,
+  ): Promise<Result<string>> {
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
-    
+
+    const isCreator = await validateIsRoomCreator(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
+    if (!isSuccess(isCreator)) return isCreator;
+
     await this.chatRepository.deleteChatRoom(BigInt(roomId));
     return ok(`${roomId} 채팅방이 삭제되었습니다.`);
+  }
+
+  async inviteToChatRoom(
+    roomId: number,
+    userId: number,
+    dto: ChatRoomInviteReqDto,
+  ): Promise<Result<ChatRoomInviteResDto>> {
+    const access = await this.getRoomAndMember(roomId, userId);
+    if (!isSuccess(access)) return access;
+
+    const privateRoom = validateRoomIsPrivate(access.data.room);
+    if (!isSuccess(privateRoom)) return privateRoom;
+
+    const isCreator = await validateIsRoomCreator(
+      this.chatRepository,
+      roomId,
+      userId,
+    );
+    if (!isSuccess(isCreator)) return isCreator;
+
+    const notInvited = await validateMembersNotInRoom(
+      this.chatRepository,
+      roomId,
+      dto.memberIds,
+    );
+    if (!isSuccess(notInvited)) return notInvited;
+
+    const memberIds = dto.memberIds.map((id) => BigInt(id));
+    const invitations = await this.chatRepository.inviteToChatRoom(
+      roomId,
+      memberIds,
+    );
+
+    // 초대된 멤버 수 반환
+    return ok({
+      invitations: invitations.count,
+    });
+  }
+
+  async getPrivateRoomMembers(
+    roomId: number,
+    userId: number,
+  ): Promise<Result<ChatRoomMemberResDto[]>> {
+    const access = await this.getRoomAndMember(roomId, userId);
+    if (!isSuccess(access)) return access;
+
+    const privateRoom = validateRoomIsPrivate(access.data.room);
+    if (!isSuccess(privateRoom)) return privateRoom;
+
+    const privateAccess = await validatePrivateRoomMember(
+      this.chatRepository,
+      access.data.room,
+      userId,
+    );
+    if (!isSuccess(privateAccess)) return privateAccess;
+
+    const members = await this.chatRepository.getRoomMembers(roomId);
+    return ok(
+      members.map(
+        (member): ChatRoomMemberResDto => ({
+          id: Number(member.memberId),
+          nickname: member.member.user.nickname,
+          avatarUrl:
+            member.member.user.userAvatars[0]?.avatar?.avatarUrl ?? null,
+          role: member.role,
+        }),
+      ),
+    );
   }
 }

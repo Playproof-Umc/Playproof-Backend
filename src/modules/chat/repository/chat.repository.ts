@@ -1,6 +1,7 @@
 import { singleton } from 'tsyringe';
 import { prisma } from '../../../common/config/database';
 import { ChatRoomCreateReqDto } from '../dtos/chat.req.dto';
+import { ChatRoomRole } from '@prisma/client';
 
 @singleton()
 export class ChatRepository {
@@ -15,6 +16,12 @@ export class ChatRepository {
         roomName: dto.roomName,
         roomType: dto.chatType,
         isPrivate: dto.isPrivate ?? false,
+        chatRoomParticipation: {
+          create: {
+            memberId: BigInt(userId),
+            role: ChatRoomRole.CREATOR,
+          },
+        },
       },
     });
   }
@@ -108,6 +115,68 @@ export class ChatRepository {
     return prisma.chatRoom.update({
       where: { id: BigInt(roomId) },
       data,
+    });
+  }
+
+  async isRoomCreator(roomId: number, userId: number) {
+    const participation = await prisma.chatRoomParticipation.findFirst({
+      where: {
+        roomId: BigInt(roomId),
+        memberId: BigInt(userId),
+      },
+    });
+    return participation?.role === ChatRoomRole.CREATOR;
+  }
+
+  async isRoomMember(roomId: number, userId: number) {
+    const participation = await prisma.chatRoomParticipation.findFirst({
+      where: {
+        roomId: BigInt(roomId),
+        memberId: BigInt(userId),
+      },
+    });
+    return Boolean(participation);
+  }
+
+  async getExistingRoomMemberIds(roomId: number, memberIds: number[]) {
+    if (memberIds.length === 0) return [];
+    const existing = await prisma.chatRoomParticipation.findMany({
+      where: {
+        roomId: BigInt(roomId),
+        memberId: { in: memberIds.map((id) => BigInt(id)) },
+      },
+      select: { memberId: true },
+    });
+    return existing.map((item) => Number(item.memberId));
+  }
+
+  async inviteToChatRoom(roomId: number, memberIds: bigint[]) {
+    return prisma.chatRoomParticipation.createMany({
+      data: memberIds.map((memberId) => ({
+        roomId: BigInt(roomId),
+        memberId,
+      })),
+    });
+  }
+
+  async getRoomMembers(roomId: number) {
+    return prisma.chatRoomParticipation.findMany({
+      where: { roomId: BigInt(roomId) },
+      include: {
+        member: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                nickname: true,
+                userAvatars: {
+                  select: { avatar: { select: { avatarUrl: true } } },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   }
 }

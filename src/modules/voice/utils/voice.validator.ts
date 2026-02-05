@@ -1,10 +1,13 @@
 import { User } from '.prisma/client';
 import { UserErrorCode } from '../../../common/constants/error-code';
-import { notFound, ok, Result } from '../../../common/types/result.type';
+import {
+  isSuccess,
+  notFound,
+  ok,
+  Result,
+} from '../../../common/types/result.type';
 import { ChatService } from '../../chat/service/chat.service';
 import { UserRepository } from '../../user/user.repository';
-
-type RoomAccessResult = Awaited<ReturnType<ChatService['getRoomAndMember']>>;
 
 export async function validateUserExists(
   userId: number,
@@ -24,6 +27,8 @@ export async function validateRoomAccess(
   chatService: ChatService,
   roomId: number,
   userId: number,
-): Promise<RoomAccessResult> {
-  return chatService.getRoomAndMember(roomId, userId);
+): Promise<Result<true>> {
+  const access = await chatService.getRoomAndMember(roomId, userId);
+  if (!isSuccess(access)) return access;
+  return ok(true);
 }
