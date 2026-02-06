@@ -38,6 +38,7 @@ model User {
   trustScore      Int       @default(50) @map("trust_score")
   playStyle       PlayStyle @default(MANNER) @map("play_style")
   coin            Int       @default(0)
+  statusMessage   String?
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @default(now()) @map("updated_at")
 
