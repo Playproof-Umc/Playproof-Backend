@@ -15,6 +15,10 @@ export class UserRepository{
     return prisma.user.findUnique({ where: { id } });
   }
 
+  async findByName(nickname: string) {
+    return prisma.user.findUnique({ where: { nickname } }); 
+  }
+
   async getUserTsRank(userTrustScore: number) {
     const higherScores = await prisma.user.groupBy({
       by: ['trustScore'],
@@ -81,8 +85,91 @@ export class UserRepository{
     return result.map((item) => Number(item.categoryId));
   }
 
-  async findByName(nickname: string) {
-    const userInfo = await prisma.user.findUnique({ where: { nickname } }); 
+  async getTop3FeedbackTags(userId: number) {
+    const targetId = BigInt(userId);
+
+    const [posGroup, negGroup] = await Promise.all([
+      prisma.feedbackPositiveCategory.groupBy({
+        by: ['positiveId'],
+        where: { feedback: { targetId } },
+        _count: { positiveId: true },
+        orderBy: { _count: { positiveId: 'desc' } },
+        take: 3,
+      }),
+      prisma.feedbackNegativeCategory.groupBy({
+        by: ['negativeId'],
+        where: { feedback: { targetId } },
+        _count: { negativeId: true },
+        orderBy: { _count: { negativeId: 'desc' } },
+        take: 3,
+      }),
+    ]);
+
+    const mergedTags = [
+      ...posGroup.map((t) => ({
+        id: Number(t.positiveId),
+        type: 'POSITIVE',
+        count: t._count.positiveId,
+      })),
+      ...negGroup.map((t) => ({
+        id: Number(t.negativeId),
+        type: 'NEGATIVE',
+        count: t._count.negativeId,
+      })),
+    ];
+
+    return mergedTags
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+      .map((tag) => ({
+        id: tag.id,
+        type: tag.type, 
+      }));
+  }
+
+  async getVerifiedGameAccounts(userId: number) {
+    const targetId = BigInt(userId);
+
+    const records = await prisma.userGameInfo.findMany({
+      where: {
+        userId: targetId,
+        isVerified: true, 
+      },
+      select: {
+        accountId: true,
+        gameInfo: { 
+          select: {
+            gameId: true, 
+          },
+        },
+      },
+    });
+
+    return records.map((record) => ({
+      gameId: Number(record.gameInfo.gameId), 
+      accountId: record.accountId,
+    }));
+  }
+
+  async getUserPreferredGameIds(userId: number): Promise<number[]> {
+    const targetId = BigInt(userId);
+
+    const records = await prisma.userGameInfo.findMany({
+      where: {
+        userId: targetId,
+      },
+      select: {
+        gameInfo: {
+          select: {
+            gameId: true,
+          },
+        },
+      },
+    });
+
+    const gameIds = records.map((record) => Number(record.gameInfo.gameId));
+    
+    return [...new Set(gameIds)];
   }
 
   async createUser(dto: SignUpReqDto) {
