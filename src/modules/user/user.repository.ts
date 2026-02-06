@@ -68,6 +68,19 @@ export class UserRepository{
     };
   }
 
+  async getUserCategoryIds(userId: number): Promise<number[]> {
+    const result = await prisma.userCategoryInfo.findMany({
+      where: { 
+        userId: BigInt(userId)
+      },
+      select: { 
+        categoryId: true
+      }
+    });
+
+    return result.map((item) => Number(item.categoryId));
+  }
+
   async findByName(nickname: string) {
     const userInfo = await prisma.user.findUnique({ where: { nickname } }); 
   }
