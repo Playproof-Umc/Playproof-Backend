@@ -16,17 +16,57 @@ export class UserRepository{
   }
 
   async getUserTsRank(userTrustScore: number) {
-  const higherScores = await prisma.user.groupBy({
-    by: ['trustScore'],
-    where: {
-      trustScore: {
-        gt: userTrustScore,
+    const higherScores = await prisma.user.groupBy({
+      by: ['trustScore'],
+      where: {
+        trustScore: {
+          gt: userTrustScore,
+        },
       },
-    },
-  });
+    });
 
-  return higherScores.length + 1;
-}
+    return higherScores.length + 1;
+  }
+
+  async getPositiveFeedbackPercentage(userId: number) {
+    const targetId = BigInt(userId);
+
+    const positiveCount = await prisma.feedbackPositiveCategory.count({
+      where: {
+        feedback: {
+          targetId: targetId,
+        },
+      },
+    });
+
+    const negativeCount = await prisma.feedbackNegativeCategory.count({
+      where: {
+        feedback: {
+          targetId: targetId,
+        },
+      },
+    });
+
+    const totalCount = positiveCount + negativeCount;
+
+    if (totalCount === 0) {
+      return {
+        positiveCount: 0,
+        negativeCount: 0,
+        totalCount: 0,
+        percentage: 0,
+      };
+    }
+
+    const percentage = (positiveCount / totalCount) * 100;
+
+    return {
+      positiveCount,
+      negativeCount,
+      totalCount,
+      percentage: Math.round(percentage * 10) / 10, 
+    };
+  }
 
   async findByName(nickname: string) {
     const userInfo = await prisma.user.findUnique({ where: { nickname } }); 
