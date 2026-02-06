@@ -22,7 +22,7 @@ export class UserController extends Controller {
   @Response<ConflictError>(409, "Conflict")
   @Response<InternalServerError>(500, "Internal Server Error")
   @Security("jwt")
-  @Get("/me")
+  @Get("/my-profile")
   public async getMyProfile(
     @Request() req: any
   ): Promise<Result<UserGetResDto>> {

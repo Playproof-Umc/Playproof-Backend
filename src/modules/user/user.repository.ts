@@ -12,7 +12,17 @@ export class UserRepository{
   }
 
   async findById(id: number) {
-    return prisma.user.findUnique({ where: { id } });
+    return prisma.user.findUnique({ 
+      where: { id },
+      include: {
+        userAvatars: {
+          where: { isEquipped: true }, 
+          include: {
+            avatar: true 
+          }
+        }
+      }
+    });
   }
 
   async findByName(nickname: string) {
