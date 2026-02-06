@@ -15,8 +15,21 @@ export class UserRepository{
     return prisma.user.findUnique({ where: { id } });
   }
 
+  async getUserTsRank(userTrustScore: number) {
+  const higherScores = await prisma.user.groupBy({
+    by: ['trustScore'],
+    where: {
+      trustScore: {
+        gt: userTrustScore,
+      },
+    },
+  });
+
+  return higherScores.length + 1;
+}
+
   async findByName(nickname: string) {
-    return prisma.user.findUnique({ where: { nickname } });
+    const userInfo = await prisma.user.findUnique({ where: { nickname } }); 
   }
 
   async createUser(dto: SignUpReqDto) {
