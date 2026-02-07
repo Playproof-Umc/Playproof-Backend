@@ -14,6 +14,7 @@ import {
 import {
   validateIsPendingRequest,
   validateIsReceivedRequest,
+  validateNoExistingFriendRequest,
   validateRequest,
   validateUserExists,
 } from '../utils/friend.validator';
@@ -78,7 +79,16 @@ export class FriendService {
     if (toUserCheckResult.error) {
       return toUserCheckResult;
     }
-    // 이미 친구 추가 눌렀는지 검증 => 이미 추가했으면 400 반환
+    const duplicateCheckResult = await validateNoExistingFriendRequest(
+      userId,
+      dto.toUserId,
+      this.friendRepository,
+    );
+    if (duplicateCheckResult.error) {
+      return duplicateCheckResult;
+    }
+
+    // 이미 요청/친구 관계인지 검증 => 중복이면 409 반환
     const result = await this.friendRepository.friendRequest(userId, dto);
     return created({
       toUserId: dto.toUserId,

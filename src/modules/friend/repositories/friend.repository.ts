@@ -36,6 +36,20 @@ export class FriendRepository {
     };
   }
 
+  async findExistingRelation(
+    userId: number,
+    targetUserId: number,
+  ): Promise<Friend | null> {
+    return await prisma.friend.findFirst({
+      where: {
+        OR: [
+          { fromUserId: BigInt(userId), toUserId: BigInt(targetUserId) },
+          { fromUserId: BigInt(targetUserId), toUserId: BigInt(userId) },
+        ],
+      },
+    });
+  }
+
   // 내가 신청했던 것과 내가 받은 것 중 accepted인 것을 모두 조회
   async getFriendList(userId: number): Promise<FriendWithUsers[]> {
     return await prisma.friend.findMany({
