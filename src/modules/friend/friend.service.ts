@@ -48,6 +48,20 @@ export class FriendService {
     dto: FriendRequestReqDto,
   ): Promise<Result<FriendRequestResDto>> {
     // 있는 사람인지 검증 => 없으면 404 반환
+    const userCheckResult = await validateUserExists(
+      userId,
+      this.userRepository,
+    );
+    if (userCheckResult.error) {
+      return userCheckResult;
+    }
+    const toUserCheckResult = await validateUserExists(
+      dto.toUserId,
+      this.userRepository,
+    );
+    if (toUserCheckResult.error) {
+      return toUserCheckResult;
+    }
     // 이미 친구 추가 눌렀는지 검증 => 이미 추가했으면 400 반환
     const result = await this.friendRepository.friendRequest(userId, dto);
     return created({
