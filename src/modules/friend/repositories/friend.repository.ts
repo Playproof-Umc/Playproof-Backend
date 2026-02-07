@@ -8,7 +8,7 @@ import {
   FriendListResDto,
   FriendRequestResDto,
 } from '../dto/friend.res.dto';
-import { Friend } from '@prisma/client/default';
+import { Friend, Prisma } from '@prisma/client/default';
 
 @singleton()
 export class FriendRepository {
@@ -36,15 +36,13 @@ export class FriendRepository {
     };
   }
 
-  // 내가 신청했던 것을 조회하거나, 내가 받은 것을 조회
-  async getFriendList(
-    userId: number,
-    isSent: boolean,
-  ): Promise<FriendItemResDto[]> {
-    const results = await prisma.friend.findMany({
-      where: isSent
-        ? { fromUserId: BigInt(userId) }
-        : { toUserId: BigInt(userId) },
+  // 내가 신청했던 것과 내가 받은 것 중 accepted인 것을 모두 조회
+  async getFriendList(userId: number): Promise<FriendWithUsers[]> {
+    return await prisma.friend.findMany({
+      where: {
+        friendStatus: 'ACCEPTED',
+        OR: [{ fromUserId: BigInt(userId) }, { toUserId: BigInt(userId) }],
+      },
       include: {
         fromUser: {
           select: {
@@ -54,9 +52,24 @@ export class FriendRepository {
           },
           include: {
             userAvatars: {
-              where: {
-                isEquipped: true,
+              select: {
+                avatar: {
+                  select: {
+                    avatarUrl: true,
+                  },
+                },
               },
+            },
+          },
+        },
+        toUser: {
+          select: {
+            id: true,
+            nickname: true,
+            trustScore: true,
+          },
+          include: {
+            userAvatars: {
               select: {
                 avatar: {
                   select: {
@@ -68,19 +81,7 @@ export class FriendRepository {
           },
         },
       },
-      orderBy: {
-        friendAt: 'desc',
-      },
     });
-
-    return results.map((result) => ({
-      userId: Number(result.fromUser.id),
-      nickname: result.fromUser.nickname,
-      avatarUrl: result.fromUser.userAvatars[0].avatar.avatarUrl,
-      statusMessage: null,
-      trustScore: result.fromUser.trustScore,
-      friendAt: result.friendAt,
-    }));
   }
 
   async acceptFriendRequest(
@@ -183,3 +184,44 @@ export class FriendRepository {
     }));
   }
 }
+
+export type FriendWithUsers = Prisma.FriendGetPayload<{
+  include: {
+    fromUser: {
+      select: {
+        id: true;
+        nickname: true;
+        trustScore: true;
+      };
+      include: {
+        userAvatars: {
+          select: {
+            avatar: {
+              select: {
+                avatarUrl: true;
+              };
+            };
+          };
+        };
+      };
+    };
+    toUser: {
+      select: {
+        id: true;
+        nickname: true;
+        trustScore: true;
+      };
+      include: {
+        userAvatars: {
+          select: {
+            avatar: {
+              select: {
+                avatarUrl: true;
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+}>;
