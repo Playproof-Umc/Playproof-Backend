@@ -103,13 +103,26 @@ export class FriendRepository {
     return Number(result.id);
   }
 
-  async searchFriendByNickname(nickname: string): Promise<FriendItemResDto[]> {
+  async searchFriendByNickname(
+    userId: number,
+    nickname: string,
+  ): Promise<FriendItemResDto[]> {
     const result = await prisma.friend.findMany({
       where: {
         friendStatus: 'ACCEPTED',
-        OR: [
-          { fromUser: { nickname: { contains: nickname } } },
-          { toUser: { nickname: { contains: nickname } } },
+        AND: [
+          {
+            OR: [
+              { fromUserId: BigInt(userId) },
+              { toUserId: BigInt(userId) },
+            ],
+          },
+          {
+            OR: [
+              { fromUser: { nickname: { contains: nickname } } },
+              { toUser: { nickname: { contains: nickname } } },
+            ],
+          },
         ],
       },
       include: {
@@ -131,14 +144,44 @@ export class FriendRepository {
             },
           },
         },
+        toUser: {
+          select: {
+            id: true,
+            nickname: true,
+            trustScore: true,
+          },
+          include: {
+            userAvatars: {
+              select: {
+                avatar: {
+                  select: {
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
     return result.map((result) => ({
-      userId: Number(result.fromUserId),
-      nickname: result.fromUser?.nickname,
-      avatarUrl: result.fromUser?.userAvatars[0]?.avatar.avatarUrl ?? null,
+      userId:
+        Number(result.fromUserId) === userId
+          ? Number(result.toUserId)
+          : Number(result.fromUserId),
+      nickname:
+        Number(result.fromUserId) === userId
+          ? result.toUser?.nickname
+          : result.fromUser?.nickname,
+      avatarUrl:
+        Number(result.fromUserId) === userId
+          ? result.toUser?.userAvatars[0]?.avatar.avatarUrl ?? null
+          : result.fromUser?.userAvatars[0]?.avatar.avatarUrl ?? null,
       statusMessage: null,
-      trustScore: result.fromUser?.trustScore,
+      trustScore:
+        Number(result.fromUserId) === userId
+          ? result.toUser?.trustScore
+          : result.fromUser?.trustScore,
       friendAt: result.friendAt ?? null,
     }));
   }
