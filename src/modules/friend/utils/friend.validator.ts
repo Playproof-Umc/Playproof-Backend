@@ -3,7 +3,7 @@ import {
   FriendErrorCode,
   UserErrorCode,
 } from '../../../common/constants/error-code';
-import { notFound, ok, Result } from '../../../common/types/result.type';
+import { conflict, notFound, ok, Result } from '../../../common/types/result.type';
 import { Friend, User } from '@prisma/client/default';
 import { FriendRepository } from '../repositories/friend.repository';
 
@@ -72,6 +72,41 @@ export async function validateIsPendingRequest(
     });
   }
   return ok(request);
+}
+
+export async function validateNoExistingFriendRequest(
+  userId: number,
+  targetUserId: number,
+  friendRepository: FriendRepository,
+): Promise<Result<null>> {
+  const existing = await friendRepository.findExistingRelation(
+    userId,
+    targetUserId,
+  );
+
+  if (!existing) {
+    return ok(null);
+  }
+
+  if (existing.friendStatus === 'ACCEPTED') {
+    return conflict({
+      message: '이미 친구입니다.',
+      errorCode: FriendErrorCode.ALREADY_FRIEND,
+    });
+  }
+
+  const isSender = Number(existing.fromUserId) === userId;
+  if (isSender) {
+    return conflict({
+      message: '이미 친구 요청을 보냈습니다.',
+      errorCode: FriendErrorCode.ALREADY_REQUESTED,
+    });
+  }
+
+  return conflict({
+    message: '이미 받은 친구 요청이 있습니다.',
+    errorCode: FriendErrorCode.ALREADY_RECEIVED,
+  });
 }
 
 // 차단 상태인 경우 수락 금지 (아직 구현 X)
