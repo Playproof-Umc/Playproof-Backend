@@ -88,6 +88,13 @@ describe('CommunityPostService', () => {
         expect(result.data.meta.total_pages).toBe(2);
       }
     });
+
+    it('실패: 페이지 파라미터가 유효하지 않으면 400을 반환한다', async () => {
+      const result = await communityPostService.getAllPostList(0, 10);
+
+      expect(result.statusCode).toBe(400);
+      expect(isSuccess(result)).toBe(false);
+    });
   });
 
   // 4. 베스트 게시글 조회 테스트
