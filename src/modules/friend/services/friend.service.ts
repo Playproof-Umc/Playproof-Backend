@@ -56,7 +56,7 @@ export class FriendService {
       return userCheckResult;
     }
     // 내가 보낸 것과 받은 것 중 accepted 모두 조회 후 서비스에서 분리
-    const friends = await this.friendRepository.getFriendList(userId);
+    const friends = await this.friendRepository.getSentRequestList(userId);
     return ok(friends.map((friend) => this.mapFriendToItem(userId, friend)));
   }
 
@@ -108,7 +108,7 @@ export class FriendService {
       return userCheckResult;
     }
 
-    const friends = await this.friendRepository.getFriendList(userId);
+    const friends = await this.friendRepository.getSentRequestList(userId);
     const result = friends
       .filter((friend) => Number(friend.fromUserId) === userId)
       .map((friend) => this.mapFriendToItem(userId, friend));
@@ -128,7 +128,7 @@ export class FriendService {
       return userCheckResult;
     }
 
-    const friends = await this.friendRepository.getFriendList(userId);
+    const friends = await this.friendRepository.getReceivedRequestList(userId);
     const result = friends
       .filter((friend) => Number(friend.toUserId) === userId)
       .map((friend) => this.mapFriendToItem(userId, friend));

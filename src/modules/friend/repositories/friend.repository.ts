@@ -97,6 +97,98 @@ export class FriendRepository {
     });
   }
 
+  async getSentRequestList(userId: number): Promise<FriendWithUsers[]> {
+    return await prisma.friend.findMany({
+      where: {
+        fromUserId: BigInt(userId),
+        friendStatus: { in: ['PENDING', 'ACCEPTED'] },
+      },
+      select: {
+        fromUserId: true,
+        toUserId: true,
+        friendAt: true,
+        fromUser: {
+          select: {
+            id: true,
+            nickname: true,
+            trustScore: true,
+            userAvatars: {
+              select: {
+                avatar: {
+                  select: {
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        toUser: {
+          select: {
+            id: true,
+            nickname: true,
+            trustScore: true,
+            userAvatars: {
+              select: {
+                avatar: {
+                  select: {
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async getReceivedRequestList(userId: number): Promise<FriendWithUsers[]> {
+    return await prisma.friend.findMany({
+      where: {
+        toUserId: BigInt(userId),
+        friendStatus: 'PENDING',
+      },
+      select: {
+        fromUserId: true,
+        toUserId: true,
+        friendAt: true,
+        fromUser: {
+          select: {
+            id: true,
+            nickname: true,
+            trustScore: true,
+            userAvatars: {
+              select: {
+                avatar: {
+                  select: {
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        toUser: {
+          select: {
+            id: true,
+            nickname: true,
+            trustScore: true,
+            userAvatars: {
+              select: {
+                avatar: {
+                  select: {
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async acceptFriendRequest(
     userId: number,
     requestId: number,
