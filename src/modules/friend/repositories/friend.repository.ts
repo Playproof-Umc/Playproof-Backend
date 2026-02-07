@@ -43,14 +43,15 @@ export class FriendRepository {
         friendStatus: 'ACCEPTED',
         OR: [{ fromUserId: BigInt(userId) }, { toUserId: BigInt(userId) }],
       },
-      include: {
+      select: {
+        fromUserId: true,
+        toUserId: true,
+        friendAt: true,
         fromUser: {
           select: {
             id: true,
             nickname: true,
             trustScore: true,
-          },
-          include: {
             userAvatars: {
               select: {
                 avatar: {
@@ -67,8 +68,6 @@ export class FriendRepository {
             id: true,
             nickname: true,
             trustScore: true,
-          },
-          include: {
             userAvatars: {
               select: {
                 avatar: {
@@ -123,14 +122,15 @@ export class FriendRepository {
           },
         ],
       },
-      include: {
+      select: {
+        fromUserId: true,
+        toUserId: true,
+        friendAt: true,
         fromUser: {
           select: {
             id: true,
             nickname: true,
             trustScore: true,
-          },
-          include: {
             userAvatars: {
               select: {
                 avatar: {
@@ -147,8 +147,6 @@ export class FriendRepository {
             id: true,
             nickname: true,
             trustScore: true,
-          },
-          include: {
             userAvatars: {
               select: {
                 avatar: {
@@ -186,14 +184,15 @@ export class FriendRepository {
 }
 
 export type FriendWithUsers = Prisma.FriendGetPayload<{
-  include: {
+  select: {
+    fromUserId: true;
+    toUserId: true;
+    friendAt: true;
     fromUser: {
       select: {
         id: true;
         nickname: true;
         trustScore: true;
-      };
-      include: {
         userAvatars: {
           select: {
             avatar: {
@@ -210,8 +209,6 @@ export type FriendWithUsers = Prisma.FriendGetPayload<{
         id: true;
         nickname: true;
         trustScore: true;
-      };
-      include: {
         userAvatars: {
           select: {
             avatar: {
