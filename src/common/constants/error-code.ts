@@ -185,5 +185,9 @@ export const ReportErrorCode = {
   },
 } as const;
 
+export const FriendErrorCode = {
+  NOT_FOUND: 'FRIEND_NOT_FOUND', // 요청을 찾을 수 없음
+} as const;
+
 // 나중에 다른 도메인이 생기면 추가
 // export const OrderErrorCode = { ... } as const;

@@ -89,3 +89,9 @@ export class FriendListResDto {
   @IsArray()
   friends!: FriendItemResDto[];
 }
+
+export class FriendAcceptResDto {
+  requestId!: number;
+}
+
+
