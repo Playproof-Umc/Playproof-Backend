@@ -47,7 +47,7 @@ export class FriendController extends Controller {
   // 내가 신청했던 친구들의 목록을 조회(Pending, Accepted 모두 포함)
   @SuccessResponse('200', 'OK')
   @Security('jwt')
-  @Get('/list')
+  @Get('/sent/list')
   async getSentFriendList(
     @Request() req: any,
   ): Promise<Result<FriendListResDto>> {
@@ -60,7 +60,7 @@ export class FriendController extends Controller {
   // 나에게 온 친구 신청자 목록을 조회
   @SuccessResponse('200', 'OK')
   @Security('jwt')
-  @Get('/request/list')
+  @Get('/received/list')
   async getReceivedFriendList(
     @Request() req: any,
   ): Promise<Result<FriendListResDto>> {
