@@ -50,6 +50,9 @@ export class CommunityPostService {
 
   // 5. 게시글 목록 조회
   async getPostList(gameId: number, page: number, size: number): Promise<Result<CommunityPostListResDto>> {
+    const paginationError = CommunityPostValidator.validatePagination(page, size);
+    if (paginationError) return paginationError;
+
     const skip = (page - 1) * size;
     const [posts, total] = await Promise.all([
       this.repository.findByGameId(gameId, skip, size),
@@ -68,6 +71,9 @@ export class CommunityPostService {
 
   // 5-1. 전체 게시글 목록 조회
   async getAllPostList(page: number, size: number): Promise<Result<CommunityPostListResDto>> {
+    const paginationError = CommunityPostValidator.validatePagination(page, size);
+    if (paginationError) return paginationError;
+
     const skip = (page - 1) * size;
     const [posts, total] = await Promise.all([
       this.repository.findAll(skip, size),
