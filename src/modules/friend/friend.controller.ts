@@ -10,6 +10,8 @@ import {
   Get,
   Path,
   Query,
+  Patch,
+  Delete,
 } from 'tsoa/dist';
 import { inject, injectable } from 'tsyringe';
 import { FriendService } from './friend.service';
@@ -86,7 +88,7 @@ export class FriendController extends Controller {
   // 친구 수락하기
   @SuccessResponse('200', 'OK')
   @Security('jwt')
-  @Post('/request/{requestId}/accept')
+  @Patch('/request/{requestId}/accept')
   async acceptFriendRequest(
     @Request() req: any,
     @Path() requestId: number,
@@ -103,7 +105,7 @@ export class FriendController extends Controller {
   // 친구 삭제
   @SuccessResponse('200', 'OK')
   @Security('jwt')
-  @Post('/{friendId}/delete')
+  @Delete('/{friendId}')
   async deleteFriend(
     @Request() req: any,
     @Path() friendId: number,
