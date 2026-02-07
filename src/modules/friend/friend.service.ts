@@ -137,18 +137,45 @@ export class FriendService {
     });
   }
 
-  async deleteFriend(userId: number, friendId: number): Promise<Result<number>> {
+  async deleteFriend(
+    userId: number,
+    friendId: number,
+  ): Promise<Result<number>> {
     // 본인이 존재하는지 검증
-    const userCheckResult = await validateUserExists(userId, this.userRepository);
+    const userCheckResult = await validateUserExists(
+      userId,
+      this.userRepository,
+    );
     if (userCheckResult.error) {
       return userCheckResult;
     }
     // 해당 관계가 존재하는지 검증
-    const friendCheckResult = await validateRequest(friendId, this.friendRepository);
+    const friendCheckResult = await validateRequest(
+      friendId,
+      this.friendRepository,
+    );
     if (friendCheckResult.error) {
       return friendCheckResult;
     }
     const result = await this.friendRepository.deleteFriend(userId, friendId);
     return ok(result);
+  }
+
+  async searchFriendByNickname(
+    userId: number,
+    nickname: string,
+  ): Promise<Result<FriendItemResDto[]>> {
+    const userCheckResult = await validateUserExists(
+      userId,
+      this.userRepository,
+    );
+    if (userCheckResult.error) {
+      return userCheckResult;
+    }
+    // 닉네임으로 friend 리스트에서 검색
+    const friendListResult =
+      await this.friendRepository.searchFriendByNickname(nickname);
+      
+    return ok(friendListResult);
   }
 }
