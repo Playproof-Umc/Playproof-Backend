@@ -95,4 +95,11 @@ export class FriendRepository {
       requestId: Number(result.id),
     };
   }
+
+  async deleteFriend(userId: number, friendId: number): Promise<number> {
+    const result = await prisma.friend.delete({
+      where: { id: BigInt(friendId) },
+    });
+    return Number(result.id);
+  }
 }

@@ -136,4 +136,19 @@ export class FriendService {
       requestId: result.requestId,
     });
   }
+
+  async deleteFriend(userId: number, friendId: number): Promise<Result<number>> {
+    // 본인이 존재하는지 검증
+    const userCheckResult = await validateUserExists(userId, this.userRepository);
+    if (userCheckResult.error) {
+      return userCheckResult;
+    }
+    // 해당 관계가 존재하는지 검증
+    const friendCheckResult = await validateRequest(friendId, this.friendRepository);
+    if (friendCheckResult.error) {
+      return friendCheckResult;
+    }
+    const result = await this.friendRepository.deleteFriend(userId, friendId);
+    return ok(result);
+  }
 }

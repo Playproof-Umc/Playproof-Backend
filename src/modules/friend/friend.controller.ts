@@ -98,4 +98,18 @@ export class FriendController extends Controller {
     this.setStatus(result.statusCode);
     return result;
   }
+
+  // 친구 삭제
+  @SuccessResponse('200', 'OK')
+  @Security('jwt')
+  @Post('/{friendId}/delete')
+  async deleteFriend(
+    @Request() req: any,
+    @Path() friendId: number,
+  ): Promise<Result<number>> {
+    const userId = req.user.id;
+    const result = await this.friendService.deleteFriend(userId, friendId);
+    this.setStatus(result.statusCode);
+    return result;
+  }
 }
