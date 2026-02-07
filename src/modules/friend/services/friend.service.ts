@@ -1,5 +1,8 @@
 import { inject, injectable } from 'tsyringe';
-import { FriendRepository } from '../repositories/friend.repository';
+import {
+  FriendRepository,
+  FriendWithUsers,
+} from '../repositories/friend.repository';
 import { FriendRequestReqDto } from '../dto/friend.req.dto';
 import { created, ok, Result } from '../../../common/types/result.type';
 import {
@@ -25,6 +28,24 @@ export class FriendService {
     private readonly userRepository: UserRepository,
   ) {}
 
+  private mapFriendToItem(
+    userId: number,
+    friend: FriendWithUsers,
+  ): FriendItemResDto {
+    const isSender = Number(friend.fromUserId) === userId;
+    const targetUser = isSender ? friend.toUser : friend.fromUser;
+    const targetUserId = isSender ? friend.toUserId : friend.fromUserId;
+
+    return {
+      userId: Number(targetUserId),
+      nickname: targetUser?.nickname ?? null,
+      avatarUrl: targetUser?.userAvatars[0]?.avatar.avatarUrl ?? null,
+      statusMessage: null,
+      trustScore: targetUser?.trustScore,
+      friendAt: friend.friendAt ?? null,
+    };
+  }
+
   async getFriendList(userId: number): Promise<Result<FriendItemResDto[]>> {
     const userCheckResult = await validateUserExists(
       userId,
@@ -33,14 +54,9 @@ export class FriendService {
     if (userCheckResult.error) {
       return userCheckResult;
     }
-    // 내가 받은것 중 accept랑 내가 보낸것중 accept 둘다 조회
-    const receivedResult = await this.friendRepository.getFriendList(
-      userId,
-      false,
-    );
-    const sentResult = await this.friendRepository.getFriendList(userId, true);
-    const result = [...receivedResult, ...sentResult];
-    return ok(result);
+    // 내가 보낸 것과 받은 것 중 accepted 모두 조회 후 서비스에서 분리
+    const friends = await this.friendRepository.getFriendList(userId);
+    return ok(friends.map((friend) => this.mapFriendToItem(userId, friend)));
   }
 
   async friendRequest(
@@ -82,7 +98,10 @@ export class FriendService {
       return userCheckResult;
     }
 
-    const result = await this.friendRepository.getFriendList(userId, true);
+    const friends = await this.friendRepository.getFriendList(userId);
+    const result = friends
+      .filter((friend) => Number(friend.fromUserId) === userId)
+      .map((friend) => this.mapFriendToItem(userId, friend));
     return ok({
       friends: result,
     });
@@ -99,7 +118,10 @@ export class FriendService {
       return userCheckResult;
     }
 
-    const result = await this.friendRepository.getFriendList(userId, false);
+    const friends = await this.friendRepository.getFriendList(userId);
+    const result = friends
+      .filter((friend) => Number(friend.toUserId) === userId)
+      .map((friend) => this.mapFriendToItem(userId, friend));
     return ok({
       friends: result,
     });
