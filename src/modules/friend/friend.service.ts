@@ -173,8 +173,10 @@ export class FriendService {
       return userCheckResult;
     }
     // 닉네임으로 friend 리스트에서 검색
-    const friendListResult =
-      await this.friendRepository.searchFriendByNickname(nickname);
+    const friendListResult = await this.friendRepository.searchFriendByNickname(
+      userId,
+      nickname,
+    );
       
     return ok(friendListResult);
   }
