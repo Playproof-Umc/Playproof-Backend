@@ -93,5 +93,3 @@ export class FriendListResDto {
 export class FriendAcceptResDto {
   requestId!: number;
 }
-
-
