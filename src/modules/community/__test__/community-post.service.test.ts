@@ -11,12 +11,14 @@ describe('CommunityPostService', () => {
     // 1. 레포지토리 Mock 초기화
     communityPostRepository = {
       findByGameId: jest.fn(),
+      findAll: jest.fn(),
       findBestPosts: jest.fn(),
       findById: jest.fn(),
       save: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       countByGameId: jest.fn(),
+      countAll: jest.fn(),
       findGameById: jest.fn(),
     } as any;
 
@@ -69,6 +71,29 @@ describe('CommunityPostService', () => {
         expect(result.data.meta.total_count).toBe(10);
         expect(result.data.meta.total_pages).toBe(1);
       }
+    });
+  });
+
+  // 3-1. 전체 목록 조회 테스트
+  describe('getAllPostList', () => {
+    it('성공: 페이징된 전체 게시글 목록과 메타 정보를 반환한다', async () => {
+      communityPostRepository.findAll.mockResolvedValue([]);
+      communityPostRepository.countAll.mockResolvedValue(15);
+
+      const result = await communityPostService.getAllPostList(1, 10);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.meta.total_count).toBe(15);
+        expect(result.data.meta.total_pages).toBe(2);
+      }
+    });
+
+    it('실패: 페이지 파라미터가 유효하지 않으면 400을 반환한다', async () => {
+      const result = await communityPostService.getAllPostList(0, 10);
+
+      expect(result.statusCode).toBe(400);
+      expect(isSuccess(result)).toBe(false);
     });
   });
 
