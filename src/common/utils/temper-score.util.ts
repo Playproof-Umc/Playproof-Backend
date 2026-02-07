@@ -36,12 +36,20 @@ export const PROTECTION_LOW = 60;
 // EMA 완충 계수 (감쇠 등 완만 반영용)
 export const EMA_ALPHA = 0.2;
 
-// 부정 카테고리 id → 감점. DB negative_categories·seed 순서와 매핑 (4개)
-export const NEGATIVE_PENALTIES: Record<number, number> = {
-  1: 15, // 과도한 욕설
-  2: 20, // 계정 도용 행위
-  3: 20, // 고의 트롤, 어뷰징
-  4: 25, // 핵, 치트 의심
+// 부정 카테고리 id. DB negative_categories.seed 순서와 매핑 (4개)
+export enum NegativeCategoryId {
+  ExcessiveProfanity = 1, // 과도한 욕설
+  AccountTheft = 2, // 계정 도용 행위
+  TrollingAbuse = 3, // 고의 트롤, 어뷰징
+  CheatSuspected = 4, // 핵, 치트 의심
+}
+
+// 부정 카테고리 id → 감점
+export const NEGATIVE_PENALTIES: Record<NegativeCategoryId, number> = {
+  [NegativeCategoryId.ExcessiveProfanity]: 15,
+  [NegativeCategoryId.AccountTheft]: 20,
+  [NegativeCategoryId.TrollingAbuse]: 20,
+  [NegativeCategoryId.CheatSuspected]: 25,
 };
 
 // W_diversity: 지금까지 target에게 칭찬한 고유 유저 수별 배수 (다양한 유저에게 받을수록 강화)
@@ -111,7 +119,9 @@ export function computePraiseScoreWithWeights(
 /** 부정 카테고리 중 제일 높은 감점 하나만 반영 */
 export function getMaxNegativePenalty(categoryIds: number[]): number {
   if (categoryIds.length === 0) return 0;
-  return Math.max(...categoryIds.map((id) => NEGATIVE_PENALTIES[id] ?? 15));
+  return Math.max(
+    ...categoryIds.map((id) => NEGATIVE_PENALTIES[id as NegativeCategoryId] ?? 15),
+  );
 }
 
 // ---------------------------------------------------------------------------
