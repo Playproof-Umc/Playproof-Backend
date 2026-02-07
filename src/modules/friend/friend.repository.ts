@@ -102,4 +102,44 @@ export class FriendRepository {
     });
     return Number(result.id);
   }
+
+  async searchFriendByNickname(nickname: string): Promise<FriendItemResDto[]> {
+    const result = await prisma.friend.findMany({
+      where: {
+        friendStatus: 'ACCEPTED',
+        OR: [
+          { fromUser: { nickname: { contains: nickname } } },
+          { toUser: { nickname: { contains: nickname } } },
+        ],
+      },
+      include: {
+        fromUser: {
+          select: {
+            id: true,
+            nickname: true,
+            trustScore: true,
+          },
+          include: {
+            userAvatars: {
+              select: {
+                avatar: {
+                  select: {
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    return result.map((result) => ({
+      userId: Number(result.fromUserId),
+      nickname: result.fromUser?.nickname,
+      avatarUrl: result.fromUser?.userAvatars[0]?.avatar.avatarUrl ?? null,
+      statusMessage: null,
+      trustScore: result.fromUser?.trustScore,
+      friendAt: result.friendAt ?? null,
+    }));
+  }
 }

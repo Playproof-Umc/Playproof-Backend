@@ -9,6 +9,7 @@ import {
   Body,
   Get,
   Path,
+  Query,
 } from 'tsoa/dist';
 import { inject, injectable } from 'tsyringe';
 import { FriendService } from './friend.service';
@@ -109,6 +110,20 @@ export class FriendController extends Controller {
   ): Promise<Result<number>> {
     const userId = req.user.id;
     const result = await this.friendService.deleteFriend(userId, friendId);
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  // 친구 닉네임으로 검색하기
+  @SuccessResponse('200', 'OK')
+  @Security('jwt')
+  @Get('/search')
+  async searchFriendByNickname(
+    @Request() req: any,
+    @Query() nickname: string,
+  ): Promise<Result<FriendItemResDto[]>> {
+    const userId = req.user.id;
+    const result = await this.friendService.searchFriendByNickname(userId, nickname);
     this.setStatus(result.statusCode);
     return result;
   }
