@@ -30,6 +30,18 @@ export class FriendController extends Controller {
   ) {
     super();
   }
+  // 내 친구들 목록 조회
+  @SuccessResponse('200', 'OK')
+  @Security('jwt')
+  @Get('/list')
+  async getFriendList(
+    @Request() req: any,
+  ): Promise<Result<FriendItemResDto[]>> {
+    const userId = req.user.id;
+    const result = await this.friendService.getFriendList(userId);
+    this.setStatus(result.statusCode);
+    return result;
+  }
 
   @SuccessResponse('200', 'OK')
   @Security('jwt')
