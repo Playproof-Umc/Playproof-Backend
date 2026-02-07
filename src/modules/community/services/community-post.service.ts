@@ -41,8 +41,8 @@ export class CommunityPostService {
   }
 
   // 4. 게시글 상세 조회
-  async getPostDetail(postId: number): Promise<Result<CommunityPostResDto>> {
-    const { post, error } = await CommunityPostValidator.validatePost(this.repository, postId);
+  async getPostDetail(postId: number, userId?: number | null): Promise<Result<CommunityPostResDto>> {
+    const { post, error } = await CommunityPostValidator.validatePost(this.repository, postId, userId ?? null);
     if (error) return error;
 
     return ok(this.formatPostResponse(post));
@@ -119,6 +119,7 @@ export class CommunityPostService {
       })),
       comment_count: p._count.comments,
       like_count: p._count.likes,
+      is_liked: Array.isArray(p.likes) ? p.likes.length > 0 : false,
       created_at: p.createdAt.toISOString(),
       updated_at: p.updatedAt.toISOString()
     };

@@ -88,6 +88,21 @@ describe('CommunityHighlightService', () => {
       expect(isSuccess(result)).toBe(true);
     });
 
+    it('성공: 로그인 유저가 좋아요한 글이면 is_liked=true를 반환한다', async () => {
+      repository.findHighlightById.mockResolvedValue({
+        id: highlightId, userId: BigInt(99), isPublic: true,
+        user: { nickname: '유저' }, medias: [], _count: { comments: 0, likes: 1 },
+        likes: [{ userId }], createdAt: new Date(), updatedAt: new Date()
+      } as any);
+
+      const result = await service.getHighlightDetail(userId, highlightId);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.is_liked).toBe(true);
+      }
+    });
+
     it('성공: 본인이 아닌 아지트 멤버가 비공개 아지트 글 조회 시 성공한다', async () => {
       const azitId = BigInt(10);
       repository.findHighlightById.mockResolvedValue({

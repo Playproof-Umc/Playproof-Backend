@@ -43,8 +43,9 @@ export class CommunityPostController extends Controller {
 
   @SuccessResponse("200", "OK")
   @Get("posts/{post_id}")
-  public async getPostDetail(@Path() post_id: number): Promise<Result<CommunityPostResDto>> {
-    const result = await this.service.getPostDetail(post_id);
+  public async getPostDetail(@Path() post_id: number, @Request() req: any): Promise<Result<CommunityPostResDto>> {
+    const userId = req.user?.id ? Number(req.user.id) : null;
+    const result = await this.service.getPostDetail(post_id, userId);
     this.setStatus(result.statusCode);
     return result;
   }
