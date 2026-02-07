@@ -3,13 +3,20 @@ import { FriendRequestReqDto } from './dto/friend.req.dto';
 import { prisma } from '../../common/config/database';
 import { created, Result } from '../../common/types/result.type';
 import {
+  FriendAcceptResDto,
   FriendItemResDto,
   FriendListResDto,
   FriendRequestResDto,
 } from './dto/friend.res.dto';
+import { Friend } from '@prisma/client/default';
 
 @singleton()
 export class FriendRepository {
+  async findById(id: number): Promise<Friend | null> {
+    return await prisma.friend.findUnique({
+      where: { id: BigInt(id) },
+    });
+  }
   async friendRequest(
     userId: number,
     dto: FriendRequestReqDto,
@@ -74,5 +81,18 @@ export class FriendRepository {
       trustScore: result.fromUser.trustScore,
       friendAt: result.friendAt,
     }));
+  }
+
+  async acceptFriendRequest(
+    userId: number,
+    requestId: number,
+  ): Promise<FriendAcceptResDto> {
+    const result = await prisma.friend.update({
+      where: { id: requestId },
+      data: { friendStatus: 'ACCEPTED' },
+    });
+    return {
+      requestId: Number(result.id),
+    };
   }
 }
