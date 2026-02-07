@@ -5,7 +5,7 @@ import {
 } from '../../../common/constants/error-code';
 import { notFound, ok, Result } from '../../../common/types/result.type';
 import { Friend, User } from '@prisma/client/default';
-import { FriendRepository } from '../friend.repository';
+import { FriendRepository } from '../repositories/friend.repository';
 
 export async function validateUserExists(
   userId: number,

@@ -1,13 +1,13 @@
 import { singleton } from 'tsyringe';
-import { FriendRequestReqDto } from './dto/friend.req.dto';
-import { prisma } from '../../common/config/database';
-import { created, Result } from '../../common/types/result.type';
+import { FriendRequestReqDto } from '../dto/friend.req.dto';
+import { prisma } from '../../../common/config/database';
+import { created, Result } from '../../../common/types/result.type';
 import {
   FriendAcceptResDto,
   FriendItemResDto,
   FriendListResDto,
   FriendRequestResDto,
-} from './dto/friend.res.dto';
+} from '../dto/friend.res.dto';
 import { Friend } from '@prisma/client/default';
 
 @singleton()
@@ -112,10 +112,7 @@ export class FriendRepository {
         friendStatus: 'ACCEPTED',
         AND: [
           {
-            OR: [
-              { fromUserId: BigInt(userId) },
-              { toUserId: BigInt(userId) },
-            ],
+            OR: [{ fromUserId: BigInt(userId) }, { toUserId: BigInt(userId) }],
           },
           {
             OR: [
@@ -175,8 +172,8 @@ export class FriendRepository {
           : result.fromUser?.nickname,
       avatarUrl:
         Number(result.fromUserId) === userId
-          ? result.toUser?.userAvatars[0]?.avatar.avatarUrl ?? null
-          : result.fromUser?.userAvatars[0]?.avatar.avatarUrl ?? null,
+          ? (result.toUser?.userAvatars[0]?.avatar.avatarUrl ?? null)
+          : (result.fromUser?.userAvatars[0]?.avatar.avatarUrl ?? null),
       statusMessage: null,
       trustScore:
         Number(result.fromUserId) === userId

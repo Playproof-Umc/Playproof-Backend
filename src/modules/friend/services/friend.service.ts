@@ -1,20 +1,20 @@
 import { inject, injectable } from 'tsyringe';
-import { FriendRepository } from './friend.repository';
-import { FriendRequestReqDto } from './dto/friend.req.dto';
-import { created, ok, Result } from '../../common/types/result.type';
+import { FriendRepository } from '../repositories/friend.repository';
+import { FriendRequestReqDto } from '../dto/friend.req.dto';
+import { created, ok, Result } from '../../../common/types/result.type';
 import {
   FriendAcceptResDto,
   FriendItemResDto,
   FriendListResDto,
   FriendRequestResDto,
-} from './dto/friend.res.dto';
+} from '../dto/friend.res.dto';
 import {
   validateIsPendingRequest,
   validateIsReceivedRequest,
   validateRequest,
   validateUserExists,
-} from './utils/friend.validator';
-import { UserRepository } from '../user/user.repository';
+} from '../utils/friend.validator';
+import { UserRepository } from '../../user/user.repository';
 
 @injectable()
 export class FriendService {
@@ -191,7 +191,7 @@ export class FriendService {
       userId,
       nickname,
     );
-      
+
     return ok(friendListResult);
   }
 }
