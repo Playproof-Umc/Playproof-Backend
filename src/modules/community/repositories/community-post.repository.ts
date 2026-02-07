@@ -61,13 +61,14 @@ export class CommunityPostRepository extends PrismaClient {
   }
 
   // 4. 상세 조회
-  async findById(postId: number) {
+  async findById(postId: number, userId?: number | null) {
     return await this.communityPost.findUnique({
       where: { id: BigInt(postId) },
       include: {
         user: true,
         medias: true,
-        _count: { select: { comments: true, likes: true } }
+        _count: { select: { comments: true, likes: true } },
+        likes: userId ? { where: { userId: BigInt(userId) }, select: { userId: true } } : false,
       }
     });
   }

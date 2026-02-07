@@ -6,9 +6,10 @@ export class CommunityPostValidator {
   // 1. 게시글 존재 여부 검증
   static async validatePost(
     repository: CommunityPostRepository, 
-    postId: number
+    postId: number,
+    userId?: number | null
   ): Promise<{ post?: any; error?: Result<any> }> {
-    const post = await repository.findById(postId);
+    const post = await repository.findById(postId, userId);
     
     if (!post) {
       return { 
