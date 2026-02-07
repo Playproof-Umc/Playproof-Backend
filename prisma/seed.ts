@@ -169,6 +169,24 @@ async function seedMasterDataByEnum(params: {
   console.log(`✅ ${logName} 시드 완료 (${entries.length}개)`);
 }
 
+async function seedMasterDataByIdAndName(params: {
+  model: any; // Prisma 모델 (예: prisma.tier)
+  rows: { id: number; name: string }[]; // 시드할 데이터 배열
+  logName: string; // 로그에 표시할 이름
+}): Promise<void> {
+  const { model, rows, logName } = params;
+
+  for (const row of rows) {
+    await model.upsert({
+      where: { id: BigInt(row.id) }, // id로 찾기
+      update: { name: row.name }, // 이름 변경 반영
+      create: { id: BigInt(row.id), name: row.name }, // 없으면 생성
+    });
+  }
+
+  console.log(`✅ ${logName} 시드 완료 (${rows.length}개)`);
+}
+
 async function seedTerms(params: {
   model: any; // Prisma 모델 (예: prisma.term)
   terms: { name: string; content: string; isRequired: boolean }[];
@@ -246,6 +264,13 @@ async function main() {
     model: prisma.term,
     terms: TERMS,
     logName: '약관',
+  });
+
+  // 티어
+  await seedMasterDataByIdAndName({
+    model: prisma.tier,
+    rows: TIERS,
+    logName: '티어',
   });
 
   console.log('\n✅ 모든 마스터 데이터 시드 완료');
