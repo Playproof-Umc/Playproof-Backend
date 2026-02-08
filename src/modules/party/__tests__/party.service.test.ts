@@ -45,10 +45,9 @@ describe('PartyService', () => {
       memo: 'Test Memo',
       recruitmentPeople: 5,
       isMicUse: true,
-      azitName: 'Test Azit',
-      azitIconUrl: 'test-icon.png',
       positionIds: [1, 2],
       tierId: 1,
+      azitId: 1,
     };
 
     it('게임을 찾을 수 없으면 404 에러를 반환해야 한다', async () => {
