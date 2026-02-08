@@ -34,7 +34,7 @@ describe('CommunityPostService', () => {
     it('실패: 존재하지 않는 게임 카테고리인 경우 GAME_NOT_FOUND 에러를 반환한다', async () => {
       communityPostRepository.findGameById.mockResolvedValue(null);
 
-      const result = await communityPostService.createPost(userId, dto as any);
+      const result = await communityPostService.createPost(userId, dto as any, undefined);
 
       expect(result.statusCode).toBe(404);
       if (!isSuccess(result)) {
@@ -51,7 +51,7 @@ describe('CommunityPostService', () => {
         createdAt: new Date(), updatedAt: new Date()
       } as any);
 
-      const result = await communityPostService.createPost(userId, dto as any);
+      const result = await communityPostService.createPost(userId, dto as any, undefined);
 
       expect(result.statusCode).toBe(201);
       expect(isSuccess(result)).toBe(true);
