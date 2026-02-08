@@ -185,5 +185,12 @@ export const ReportErrorCode = {
   },
 } as const;
 
+export const FriendErrorCode = {
+  NOT_FOUND: 'FRIEND_NOT_FOUND', // 요청을 찾을 수 없음
+  ALREADY_REQUESTED: 'FRIEND_ALREADY_REQUESTED', // 이미 요청을 보냄
+  ALREADY_RECEIVED: 'FRIEND_ALREADY_RECEIVED', // 이미 받은 요청이 있음
+  ALREADY_FRIEND: 'FRIEND_ALREADY_FRIEND', // 이미 친구 관계임
+} as const;
+
 // 나중에 다른 도메인이 생기면 추가
 // export const OrderErrorCode = { ... } as const;
