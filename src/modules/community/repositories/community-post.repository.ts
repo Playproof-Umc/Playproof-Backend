@@ -32,6 +32,20 @@ export class CommunityPostRepository extends PrismaClient {
     });
   }
 
+  // 2-1. 전체 목록 조회
+  async findAll(skip: number, take: number) {
+    return await this.communityPost.findMany({
+      skip,
+      take,
+      include: {
+        user: true,
+        medias: true,
+        _count: { select: { comments: true, likes: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
   // 3. 베스트 목록 조회
   async findBestPosts(gameId?: number, limit: number = 5) {
     return await this.communityPost.findMany({
@@ -47,13 +61,14 @@ export class CommunityPostRepository extends PrismaClient {
   }
 
   // 4. 상세 조회
-  async findById(postId: number) {
+  async findById(postId: number, userId?: number | null) {
     return await this.communityPost.findUnique({
       where: { id: BigInt(postId) },
       include: {
         user: true,
         medias: true,
-        _count: { select: { comments: true, likes: true } }
+        _count: { select: { comments: true, likes: true } },
+        likes: userId ? { where: { userId: BigInt(userId) }, select: { userId: true } } : false,
       }
     });
   }
@@ -124,5 +139,10 @@ export class CommunityPostRepository extends PrismaClient {
     return await this.communityPost.count({
       where: { gameId: BigInt(gameId) }
     });
+  }
+
+  // 9. 전체 개수 조회
+  async countAll() {
+    return await this.communityPost.count();
   }
 }

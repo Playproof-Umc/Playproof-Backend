@@ -9,13 +9,34 @@ import {
 import { CommunityHighlightCreateReqDto, CommunityHighlightUpdateReqDto } from "../dtos/community-highlight.req.dto";
 import { CommunityHighlightValidator } from "../utils/community-highlight.validator";
 import { Result, success } from "../../../common/types/result.type";
+import { uploadFileToS3 } from "../../../common/utils/file-util";
 
 @singleton()
 export class CommunityHighlightService {
   constructor(private readonly highlightRepository: CommunityHighlightRepository) {}
 
   // 1. 하이라이트 생성 서비스
-  async createHighlight(userId: bigint, dto: CommunityHighlightCreateReqDto): Promise<Result<CommunityHighlightUpdateResDto>> {
+  async createHighlight(
+    userId: bigint,
+    dto: CommunityHighlightCreateReqDto,
+    files?: Express.Multer.File[],
+  ): Promise<Result<CommunityHighlightUpdateResDto>> {
+    if (files && files.length > 0) {
+      const mediaUrls: string[] = [];
+      for (const file of files) {
+        const uploadResult = await uploadFileToS3(file, "community-highlights");
+        if (uploadResult.error) return uploadResult;
+        mediaUrls.push(uploadResult.data);
+      }
+
+      dto.medias = mediaUrls.map((url, index) => ({
+        media_url: url,
+        order: index,
+      }));
+    } else {
+      dto.medias = undefined;
+    }
+
     const highlight = await this.highlightRepository.createHighlight(userId, dto);
     const result = await this.highlightRepository.findHighlightById(highlight.id, userId);
     

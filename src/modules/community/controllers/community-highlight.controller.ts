@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Route, Tags, Body, Path, Query, Request, Security, SuccessResponse, Middlewares } from "tsoa";
+import { Controller, Get, Post, Patch, Delete, Route, Tags, Body, Path, Query, Request, Security, SuccessResponse, Middlewares, UploadedFiles, FormField } from "tsoa";
 import { injectable, singleton } from "tsyringe";
 import { CommunityHighlightService } from "../services/community-highlight.service";
 import { CommunityHighlightCreateReqDto, CommunityHighlightUpdateReqDto } from "../dtos/community-highlight.req.dto";
@@ -53,11 +53,19 @@ export class CommunityHighlightController extends Controller {
   @Middlewares(validationMiddleware(CommunityHighlightCreateReqDto))
   @Post("")
   public async createHighlight(
-    @Body() body: CommunityHighlightCreateReqDto,
-    @Request() request: any
+    @Request() request: any,
+    @FormField() azit_id?: number,
+    @FormField() content?: string,
+    @FormField() is_public?: boolean,
+    @UploadedFiles() medias?: Express.Multer.File[],
   ): Promise<Result<CommunityHighlightUpdateResDto>> {
     const userId = BigInt(request.user.id);
-    const result = await this.highlightService.createHighlight(userId, body);
+    const dto: CommunityHighlightCreateReqDto = {
+      azit_id: request.body.azit_id ? Number(request.body.azit_id) : undefined,
+      content: request.body.content,
+      is_public: request.body.is_public === "true" || request.body.is_public === true,
+    };
+    const result = await this.highlightService.createHighlight(userId, dto, medias);
     this.setStatus(result.statusCode);
     return result;
   }
