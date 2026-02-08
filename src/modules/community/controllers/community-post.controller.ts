@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Route, Tags, SuccessResponse, Get, Path, Security, Middlewares, Request, Patch, Delete, Query } from "tsoa";
+import { Controller, Post, Body, Route, Tags, SuccessResponse, Get, Path, Security, Middlewares, Request, Patch, Delete, Query, UploadedFiles, FormField } from "tsoa";
 import { injectable, inject } from "tsyringe";
 import { CommunityPostService } from "../services/community-post.service";
 import { HighlightListService } from "../../highlight/services/highlight-list.service"; 
@@ -54,8 +54,19 @@ export class CommunityPostController extends Controller {
   @Security("jwt")
   @Middlewares(validationMiddleware(CommunityPostCreateReqDto))
   @Post("posts")
-  public async createPost(@Body() body: CommunityPostCreateReqDto, @Request() req: any): Promise<Result<CommunityPostResDto>> {
-    const result = await this.service.createPost(req.user.id, body);
+  public async createPost(
+    @Request() req: any,
+    @FormField() game_id?: number,
+    @FormField() title?: string,
+    @FormField() content?: string,
+    @UploadedFiles() medias?: Express.Multer.File[],
+  ): Promise<Result<CommunityPostResDto>> {
+    const dto: CommunityPostCreateReqDto = {
+      game_id: Number(req.body.game_id),
+      title: req.body.title,
+      content: req.body.content,
+    };
+    const result = await this.service.createPost(req.user.id, dto, medias);
     this.setStatus(result.statusCode);
     return result;
   }

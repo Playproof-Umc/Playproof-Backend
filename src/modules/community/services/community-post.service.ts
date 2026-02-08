@@ -4,6 +4,7 @@ import { CommunityPostCreateReqDto, CommunityPostUpdateReqDto } from "../dtos/co
 import { CommunityPostResDto, CommunityPostListResDto, CommunityPostDeleteResDto } from "../dtos/community-post.res.dto";
 import { Result, ok, created, internalServerError } from "../../../common/types/result.type";
 import { CommunityPostValidator } from "../utils/community-post.validator";
+import { uploadFileToS3 } from "../../../common/utils/file-util";
 
 @injectable()
 export class CommunityPostService {
@@ -12,9 +13,31 @@ export class CommunityPostService {
   ) {}
 
   // 1. 게시글 등록
-  async createPost(userId: number, dto: CommunityPostCreateReqDto): Promise<Result<CommunityPostResDto>> {
+  async createPost(
+    userId: number,
+    dto: CommunityPostCreateReqDto,
+    files?: Express.Multer.File[],
+  ): Promise<Result<CommunityPostResDto>> {
     const error = await CommunityPostValidator.validateMasterData(this.repository, dto.game_id);
     if (error) return error;
+
+    if (files && files.length > 0) {
+      const mediaUrls: string[] = [];
+      for (const file of files) {
+        const uploadResult = await uploadFileToS3(file, "community-posts");
+        if (uploadResult.error) {
+          return uploadResult;
+        }
+        mediaUrls.push(uploadResult.data);
+      }
+
+      dto.medias = mediaUrls.map((url, index) => ({
+        media_url: url,
+        order: index,
+      }));
+    } else {
+      dto.medias = undefined;
+    }
 
     const post = await this.repository.save(userId, dto);
     if (!post) return internalServerError({ message: "게시글 등록에 실패했습니다." });

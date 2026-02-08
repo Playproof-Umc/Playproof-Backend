@@ -36,7 +36,7 @@ describe('CommunityHighlightService', () => {
         updatedAt: new Date()
       } as any);
 
-      const result = await service.createHighlight(userId, dto as any);
+      const result = await service.createHighlight(userId, dto as any, undefined);
 
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
