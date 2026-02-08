@@ -4,6 +4,7 @@ import { CommunityPostCreateReqDto, CommunityPostUpdateReqDto } from "../dtos/co
 import { CommunityPostResDto, CommunityPostListResDto, CommunityPostDeleteResDto } from "../dtos/community-post.res.dto";
 import { Result, ok, created, internalServerError } from "../../../common/types/result.type";
 import { CommunityPostValidator } from "../utils/community-post.validator";
+import { uploadFileToS3 } from "../../../common/utils/file-util";
 
 @injectable()
 export class CommunityPostService {
@@ -12,9 +13,31 @@ export class CommunityPostService {
   ) {}
 
   // 1. 게시글 등록
-  async createPost(userId: number, dto: CommunityPostCreateReqDto): Promise<Result<CommunityPostResDto>> {
+  async createPost(
+    userId: number,
+    dto: CommunityPostCreateReqDto,
+    files?: Express.Multer.File[],
+  ): Promise<Result<CommunityPostResDto>> {
     const error = await CommunityPostValidator.validateMasterData(this.repository, dto.game_id);
     if (error) return error;
+
+    if (files && files.length > 0) {
+      const mediaUrls: string[] = [];
+      for (const file of files) {
+        const uploadResult = await uploadFileToS3(file, "community-posts");
+        if (uploadResult.error) {
+          return uploadResult;
+        }
+        mediaUrls.push(uploadResult.data);
+      }
+
+      dto.medias = mediaUrls.map((url, index) => ({
+        media_url: url,
+        order: index,
+      }));
+    } else {
+      dto.medias = undefined;
+    }
 
     const post = await this.repository.save(userId, dto);
     if (!post) return internalServerError({ message: "게시글 등록에 실패했습니다." });
@@ -41,8 +64,8 @@ export class CommunityPostService {
   }
 
   // 4. 게시글 상세 조회
-  async getPostDetail(postId: number): Promise<Result<CommunityPostResDto>> {
-    const { post, error } = await CommunityPostValidator.validatePost(this.repository, postId);
+  async getPostDetail(postId: number, userId?: number | null): Promise<Result<CommunityPostResDto>> {
+    const { post, error } = await CommunityPostValidator.validatePost(this.repository, postId, userId ?? null);
     if (error) return error;
 
     return ok(this.formatPostResponse(post));
@@ -50,10 +73,34 @@ export class CommunityPostService {
 
   // 5. 게시글 목록 조회
   async getPostList(gameId: number, page: number, size: number): Promise<Result<CommunityPostListResDto>> {
+    const paginationError = CommunityPostValidator.validatePagination(page, size);
+    if (paginationError) return paginationError;
+
     const skip = (page - 1) * size;
     const [posts, total] = await Promise.all([
       this.repository.findByGameId(gameId, skip, size),
       this.repository.countByGameId(gameId)
+    ]);
+
+    return ok({
+      posts: posts.map((p) => this.formatPostResponse(p)),
+      meta: {
+        total_count: total,
+        current_page: page,
+        total_pages: Math.ceil(total / size)
+      }
+    });
+  }
+
+  // 5-1. 전체 게시글 목록 조회
+  async getAllPostList(page: number, size: number): Promise<Result<CommunityPostListResDto>> {
+    const paginationError = CommunityPostValidator.validatePagination(page, size);
+    if (paginationError) return paginationError;
+
+    const skip = (page - 1) * size;
+    const [posts, total] = await Promise.all([
+      this.repository.findAll(skip, size),
+      this.repository.countAll()
     ]);
 
     return ok({
@@ -95,6 +142,7 @@ export class CommunityPostService {
       })),
       comment_count: p._count.comments,
       like_count: p._count.likes,
+      is_liked: Array.isArray(p.likes) ? p.likes.length > 0 : false,
       created_at: p.createdAt.toISOString(),
       updated_at: p.updatedAt.toISOString()
     };

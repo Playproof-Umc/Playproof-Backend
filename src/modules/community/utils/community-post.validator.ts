@@ -1,14 +1,15 @@
 import { CommunityPostRepository } from "../repositories/community-post.repository";
-import { notFound, forbidden, Result } from "../../../common/types/result.type";
+import { notFound, forbidden, badRequest, Result } from "../../../common/types/result.type";
 import { CommunityErrorCode } from "../../../common/constants/error-code";
 
 export class CommunityPostValidator {
   // 1. 게시글 존재 여부 검증
   static async validatePost(
     repository: CommunityPostRepository, 
-    postId: number
+    postId: number,
+    userId?: number | null
   ): Promise<{ post?: any; error?: Result<any> }> {
-    const post = await repository.findById(postId);
+    const post = await repository.findById(postId, userId);
     
     if (!post) {
       return { 
@@ -57,6 +58,37 @@ export class CommunityPostValidator {
       });
     }
     
+    return null;
+  }
+
+  // 4. 페이지네이션 파라미터 검증
+  static validatePagination(page: number, size: number): Result<any> | null {
+    const errors = [] as { field: string; value: number; reason: string }[];
+
+    if (page < 1) {
+      errors.push({
+        field: "page",
+        value: page,
+        reason: "page는 1 이상이어야 합니다.",
+      });
+    }
+
+    if (size < 1) {
+      errors.push({
+        field: "size",
+        value: size,
+        reason: "size는 1 이상이어야 합니다.",
+      });
+    }
+
+    if (errors.length > 0) {
+      return badRequest({
+        message: "요청 파라미터가 잘못되었습니다.",
+        errorCode: "COMMON_INVALID_PARAMETER",
+        errors,
+      });
+    }
+
     return null;
   }
 }
