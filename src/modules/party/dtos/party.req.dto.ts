@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsNumber, IsOptional, IsString, ValidateIf } from "class-validator";
 
 export class PartyCreateReqDto {
   /**
@@ -46,23 +46,8 @@ export class PartyCreateReqDto {
   /**
    * @example 1
    */
-  @IsOptional()
   @IsNumber()
-  azitId?: number;
-
-  /**
-   * @example "아지트 이름"
-   */
-  @IsOptional()
-  @IsString()
-  azitName?: string;
-
-  /**
-   * @example "아지트 아이콘 URL"
-   */
-  @IsOptional()
-  @IsString()
-  azitIconUrl?: string;
+  azitId!: number;
 }
 
 export class PartyUpdateReqDto {
@@ -118,23 +103,9 @@ export class PartyUpdateReqDto {
   /**
    * @example 1
    */
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
   @IsNumber()
   azitId?: number;
-
-  /**
-   * @example "수정된 아지트 이름"
-   */
-  @IsOptional()
-  @IsString()
-  azitName?: string;
-
-  /**
-   * @example "수정된 아지트 아이콘 URL"
-   */
-  @IsOptional()
-  @IsString()
-  azitIconUrl?: string;
 }
 
 export class PartyListReqDto {

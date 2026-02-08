@@ -1,11 +1,28 @@
-import { injectable, inject } from "tsyringe";
-import { PartyRepository } from "../repository/party.repository";
-import { Result, created, notFound, ok, forbidden, internalServerError } from "../../../common/types/result.type";
-import { PartyCreateReqDto, PartyUpdateReqDto, PartyListReqDto } from "../dtos/party.req.dto";
-import { PartyCreateResDto, PartyGetResDto, PartyDeleteResDto, PartyListResDto } from "../dtos/party.res.dto";
-import { PartyErrorCode } from "../../../common/constants/error-code";
-import { prisma } from "../../../common/config/database";
-import { PartyValidator } from "../utils/party.validator";
+import { injectable, inject } from 'tsyringe';
+import { PartyRepository } from '../repository/party.repository';
+import {
+  Result,
+  created,
+  notFound,
+  ok,
+  forbidden,
+  internalServerError,
+  badRequest,
+} from '../../../common/types/result.type';
+import {
+  PartyCreateReqDto,
+  PartyUpdateReqDto,
+  PartyListReqDto,
+} from '../dtos/party.req.dto';
+import {
+  PartyCreateResDto,
+  PartyGetResDto,
+  PartyDeleteResDto,
+  PartyListResDto,
+} from '../dtos/party.res.dto';
+import { PartyErrorCode } from '../../../common/constants/error-code';
+import { prisma } from '../../../common/config/database';
+import { PartyValidator } from '../utils/party.validator';
 
 @injectable()
 export class PartyService {
@@ -14,28 +31,54 @@ export class PartyService {
   ) {}
 
   // 1. 파티 생성 (createParty)
-  async createParty(dto: PartyCreateReqDto, userId: number): Promise<Result<PartyCreateResDto>> {  
+  async createParty(
+    dto: PartyCreateReqDto,
+    userId: number,
+  ): Promise<Result<PartyCreateResDto>> {
     // 1-1. 마스터 데이터 검증 (Validator 활용)
-    const masterError = await PartyValidator.validateMasterData(this.partyRepository, dto);
+    const masterError = await PartyValidator.validateMasterData(
+      this.partyRepository,
+      dto,
+    );
     if (masterError) return masterError;
+    console.log('here1');
 
     // 1-2. 아지트 정보 검증 및 설정
     const { azitId } = dto;
+    if (azitId == null) {
+      return badRequest({
+        message: '아지트 아이디는 필수입니다.',
+        errorCode: PartyErrorCode.INVALID_AZIT_ID,
+      });
+    }
     let azitName: string | null = null;
     let azitIconUrl: string | null = null;
+    console.log('here2');
 
-    if (azitId) {
-      const azit = await this.partyRepository.findAzitById(azitId);
-      if (!azit) return notFound({ message: "아지트를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND_AZIT });
-      azitName = azit.azitName;
-      azitIconUrl = azit.imageUrl ?? null;
-    }
+    const azit = await this.partyRepository.findAzitById(azitId);
+    if (!azit)
+      return notFound({
+        message: '아지트를 찾을 수 없습니다.',
+        errorCode: PartyErrorCode.NOT_FOUND_AZIT,
+      });
+    azitName = azit.azitName;
+    azitIconUrl = azit.imageUrl ?? null;
+
+    console.log('here3');
 
     // 1-3. 파티 생성
-    const party = await this.partyRepository.createParty(dto, userId, azitId ?? null);
+    const party = await this.partyRepository.createParty(
+      dto,
+      userId,
+      azitId ?? null,
+    );
 
+    console.log('here4');
     if (!party) {
-      return internalServerError({ message: "파티 생성에 실패했습니다.", errorCode: PartyErrorCode.INTERNAL_SERVER_ERROR });
+      return internalServerError({
+        message: '파티 생성에 실패했습니다.',
+        errorCode: PartyErrorCode.INTERNAL_SERVER_ERROR,
+      });
     }
 
     // 1-4. 응답 DTO 반환
@@ -57,27 +100,59 @@ export class PartyService {
   }
 
   // 2. 파티 수정 (updateParty)
-  async updateParty(id: number, dto: PartyUpdateReqDto, userId: number): Promise<Result<PartyCreateResDto>> {
+  async updateParty(
+    id: number,
+    dto: PartyUpdateReqDto,
+    userId: number,
+  ): Promise<Result<PartyCreateResDto>> {
     // 2-1. 존재 여부 및 방장 권한 검증 (공통 메소드 활용)
     const party = await this.partyRepository.findPartyPostByPostId(id);
-    if (!party) return notFound({ message: "파티를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND });
-    if (Number(party.userId) !== userId) return forbidden({ message: "수정 권한이 없습니다.", errorCode: PartyErrorCode.FORBIDDEN });
+    if (!party)
+      return notFound({
+        message: '파티를 찾을 수 없습니다.',
+        errorCode: PartyErrorCode.NOT_FOUND,
+      });
+    if (Number(party.userId) !== userId)
+      return forbidden({
+        message: '수정 권한이 없습니다.',
+        errorCode: PartyErrorCode.FORBIDDEN,
+      });
 
     // 2-2. 마스터 데이터 검증
-    const masterError = await PartyValidator.validateMasterData(this.partyRepository, dto);
+    const masterError = await PartyValidator.validateMasterData(
+      this.partyRepository,
+      dto,
+    );
     if (masterError) return masterError;
 
-    // 2-3. 아지트 및 파티 정보 업데이트
+    // 2-2.5. 아지트 아이디 검증 (null 금지, 존재 여부 확인)
+    if (dto.azitId === null) {
+      return badRequest({
+        message: '아지트 아이디는 null일 수 없습니다.',
+        errorCode: PartyErrorCode.INVALID_AZIT_ID,
+      });
+    }
+    if (dto.azitId !== undefined) {
+      const azit = await this.partyRepository.findAzitById(dto.azitId);
+      if (!azit)
+        return notFound({
+          message: '아지트를 찾을 수 없습니다.',
+          errorCode: PartyErrorCode.NOT_FOUND_AZIT,
+        });
+    }
+
+    // 2-3. 파티 정보 업데이트
     await prisma.$transaction(async (tx) => {
-      if (!dto.azitId && (dto.azitName || dto.azitIconUrl)) {
-        await this.partyRepository.updateAzit(Number(party.azitId), dto.azitName, dto.azitIconUrl, tx);
-      }
       return await this.partyRepository.updateParty(id, dto, tx);
     });
 
     // 2-4. 결과 조회 및 반환
     const updated = await this.partyRepository.findById(id);
-    if (!updated) return notFound({ message: "업데이트 후 파티를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND });
+    if (!updated)
+      return notFound({
+        message: '업데이트 후 파티를 찾을 수 없습니다.',
+        errorCode: PartyErrorCode.NOT_FOUND,
+      });
 
     return ok({
       partyId: Number(updated.id),
@@ -87,7 +162,9 @@ export class PartyService {
       memo: updated.memo,
       recruitmentPeople: updated.recruitmentPeople,
       tierId: updated.tierId ? Number(updated.tierId) : null,
-      positionIds: dto.positionIds || updated.postPositions.map((pp: any) => Number(pp.positionId)),
+      positionIds:
+        dto.positionIds ||
+        updated.postPositions.map((pp: any) => Number(pp.positionId)),
       isMicUse: updated.isMicUse,
       azitId: Number(updated.azitId),
       azitName: updated.azit.azitName,
@@ -97,22 +174,37 @@ export class PartyService {
   }
 
   // 3. 파티 삭제 (deleteParty)
-  async deleteParty(id: number, userId: number): Promise<Result<PartyDeleteResDto>> {
+  async deleteParty(
+    id: number,
+    userId: number,
+  ): Promise<Result<PartyDeleteResDto>> {
     // 3-1. 권한 검증 (공통 메소드 활용)
     const party = await this.partyRepository.findPartyPostByPostId(id);
-    if (!party) return notFound({ message: "파티를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND });
-    if (Number(party.userId) !== userId) return forbidden({ message: "삭제 권한이 없습니다.", errorCode: PartyErrorCode.FORBIDDEN });
+    if (!party)
+      return notFound({
+        message: '파티를 찾을 수 없습니다.',
+        errorCode: PartyErrorCode.NOT_FOUND,
+      });
+    if (Number(party.userId) !== userId)
+      return forbidden({
+        message: '삭제 권한이 없습니다.',
+        errorCode: PartyErrorCode.FORBIDDEN,
+      });
 
     // 3-2. 파티 삭제 및 아지트 정리
     await prisma.$transaction(async (tx) => {
       await this.partyRepository.deleteParty(id, tx);
-      const partyCount = await this.partyRepository.countPartiesByAzitId(Number(party.azitId), tx);
-      if (partyCount === 0) await this.partyRepository.deleteAzit(Number(party.azitId), tx);
+      const partyCount = await this.partyRepository.countPartiesByAzitId(
+        Number(party.azitId),
+        tx,
+      );
+      if (partyCount === 0)
+        await this.partyRepository.deleteAzit(Number(party.azitId), tx);
     });
 
     return ok({
       partyId: id,
-      message: "파티가 삭제되었습니다.",
+      message: '파티가 삭제되었습니다.',
       deletedAt: new Date(),
     } as PartyDeleteResDto);
   }
@@ -120,7 +212,11 @@ export class PartyService {
   // 4. 파티 단건 조회 (getParty)
   async getParty(id: number): Promise<Result<PartyGetResDto>> {
     const party = await this.partyRepository.findById(id);
-    if (!party) return notFound({ message: "파티를 찾을 수 없습니다.", errorCode: PartyErrorCode.NOT_FOUND });
+    if (!party)
+      return notFound({
+        message: '파티를 찾을 수 없습니다.',
+        errorCode: PartyErrorCode.NOT_FOUND,
+      });
 
     return ok(this.mapToGetResDto(party));
   }
@@ -130,12 +226,12 @@ export class PartyService {
     const { page, size, sort } = dto;
     const [parties, totalCount] = await Promise.all([
       this.partyRepository.findParties(page, size, sort),
-      this.partyRepository.countAll()
+      this.partyRepository.countAll(),
     ]);
 
     const hasNext = page * size < totalCount;
     return ok({
-      parties: parties.map(p => this.mapToGetResDto(p)),
+      parties: parties.map((p) => this.mapToGetResDto(p)),
       nextCursor: hasNext ? page + 1 : null,
       hasNext,
     } as PartyListResDto);
@@ -160,8 +256,14 @@ export class PartyService {
       isMic: party.isMicUse,
       status: party.recruitmentStatus,
       viewCount: Number(party.viewCount),
-      tags: party.postCategories.map((pc: any) => ({ id: Number(pc.category.id), name: pc.category.name })),
-      positions: party.postPositions.map((pp: any) => ({ positionId: Number(pp.position.id), positionName: pp.position.name })),
+      tags: party.postCategories.map((pc: any) => ({
+        id: Number(pc.category.id),
+        name: pc.category.name,
+      })),
+      positions: party.postPositions.map((pp: any) => ({
+        positionId: Number(pp.position.id),
+        positionName: pp.position.name,
+      })),
       createdAt: party.createdAt,
       updatedAt: party.updatedAt,
     };

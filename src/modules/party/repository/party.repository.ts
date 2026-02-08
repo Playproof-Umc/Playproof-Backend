@@ -14,17 +14,18 @@ export class PartyRepository {
   // 2. 파티 생성
   async createParty(data: any, userId: number, azitId?: number | null, tx?: any) {
     const client = tx || prisma;
-    const { positionIds, gameId, tierId, ...rest } = data;
+    const { positionIds, gameId, tierId, azitId: _azitId, ...rest } = data;
     return client.partyPost.create({
       data: {
         ...rest,
+        recruitmentStatus: rest.recruitmentStatus ?? "active",
         postPositions: {
           create: positionIds.map((id: number) => ({ positionId: BigInt(id) })),
         },
-        user: { connect: { id: userId } },
-        game: { connect: { id: gameId } },
+        user: { connect: { id: BigInt(userId) } },
+        game: { connect: { id: BigInt(gameId) } },
         tier: tierId ? { connect: { id: BigInt(tierId) } } : undefined,
-        azit: azitId ? { connect: { id: azitId } } : undefined,
+        azit: azitId ? { connect: { id: BigInt(azitId) } } : undefined,
       },
     });
   }
@@ -44,6 +45,7 @@ export class PartyRepository {
         },
         tier: true,
         azit: true,
+        postCategories: { include: { category: true } },
         postPositions: { include: { position: true } },
         applications: { where: { isAccepted: true } },
       },
@@ -126,6 +128,7 @@ export class PartyRepository {
       include: {
         user: { include: { userAvatars: { where: { isEquipped: true }, include: { avatar: true } } } },
         tier: true, azit: true,
+        postCategories: { include: { category: true } },
         postPositions: { include: { position: true } },
         applications: { where: { isAccepted: true } },
       },
