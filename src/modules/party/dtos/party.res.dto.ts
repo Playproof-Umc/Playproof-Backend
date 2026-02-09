@@ -91,6 +91,12 @@ export class PartyGetResDto {
   azitName!: string | null;
 
   /**
+   * @example 1
+   */
+  @IsNumber()
+  azitId!: number | null;
+
+  /**
    * @example 5
    */
   @IsNumber()

@@ -252,6 +252,7 @@ export class PartyService {
       memo: party.memo,
       tierName: party.tier?.name || null,
       azitName: party.azit?.azitName ?? null,
+      azitId: party.azitId ? Number(party.azitId) : null,
       participants: party.recruitmentPeople,
       currentParticipants: party.applications.length + 1,
       isMic: party.isMicUse,
