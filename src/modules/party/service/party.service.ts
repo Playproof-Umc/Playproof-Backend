@@ -211,7 +211,7 @@ export class PartyService {
 
   // 4. 파티 단건 조회 (getParty)
   async getParty(id: number): Promise<Result<PartyGetResDto>> {
-    const party = await this.partyRepository.findById(id);
+    const party = await this.partyRepository.incrementViewCount(id);
     if (!party)
       return notFound({
         message: '파티를 찾을 수 없습니다.',
@@ -241,6 +241,7 @@ export class PartyService {
   private mapToGetResDto(party: any): PartyGetResDto {
     return {
       partyId: Number(party.id),
+      gameId: Number(party.gameId),
       host: {
         id: Number(party.user.id),
         nickname: party.user.nickname,
@@ -251,11 +252,14 @@ export class PartyService {
       memo: party.memo,
       tierName: party.tier?.name || null,
       azitName: party.azit?.azitName ?? null,
+      azitId: party.azitId ? Number(party.azitId) : null,
       participants: party.recruitmentPeople,
       currentParticipants: party.applications.length + 1,
       isMic: party.isMicUse,
       status: party.recruitmentStatus,
       viewCount: Number(party.viewCount),
+      likeCount: party._count?.postLikes ?? 0,
+      commentCount: party._count?.postComments ?? 0,
       tags: party.postCategories.map((pc: any) => ({
         id: Number(pc.category.id),
         name: pc.category.name,
