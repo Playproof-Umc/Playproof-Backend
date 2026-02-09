@@ -56,6 +56,12 @@ export class PartyGetResDto {
   @IsNumber()
   partyId!: number;
 
+  /**
+   * @example 1
+   */
+  @IsNumber()
+  gameId!: number;
+
   @IsObject()
   host!: PartyHostDto;
 
@@ -83,6 +89,12 @@ export class PartyGetResDto {
   @IsOptional()
   @IsString()
   azitName!: string | null;
+
+  /**
+   * @example 1
+   */
+  @IsNumber()
+  azitId!: number | null;
 
   /**
    * @example 5
@@ -113,6 +125,18 @@ export class PartyGetResDto {
    */
   @IsNumber()
   viewCount!: number;
+
+  /**
+   * @example 10
+   */
+  @IsNumber()
+  likeCount!: number;
+
+  /**
+   * @example 3
+   */
+  @IsNumber()
+  commentCount!: number;
 
   @IsObject({ each: true })
   tags!: PartyTagDto[];

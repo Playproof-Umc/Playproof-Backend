@@ -48,8 +48,36 @@ export class PartyRepository {
         postCategories: { include: { category: true } },
         postPositions: { include: { position: true } },
         applications: { where: { isAccepted: true } },
+        _count: { select: { postLikes: true, postComments: true } },
       },
     });
+  }
+
+  async incrementViewCount(id: number) {
+    try {
+      return await prisma.partyPost.update({
+        where: { id: BigInt(id) },
+        data: { viewCount: { increment: 1 } },
+        include: {
+          user: {
+            include: {
+              userAvatars: {
+                where: { isEquipped: true },
+                include: { avatar: true },
+              },
+            },
+          },
+          tier: true,
+          azit: true,
+          postCategories: { include: { category: true } },
+          postPositions: { include: { position: true } },
+          applications: { where: { isAccepted: true } },
+          _count: { select: { postLikes: true, postComments: true } },
+        },
+      });
+    } catch {
+      return null;
+    }
   }
 
   // 4. 파티 수정
@@ -131,6 +159,7 @@ export class PartyRepository {
         postCategories: { include: { category: true } },
         postPositions: { include: { position: true } },
         applications: { where: { isAccepted: true } },
+        _count: { select: { postLikes: true, postComments: true } },
       },
     });
   }
