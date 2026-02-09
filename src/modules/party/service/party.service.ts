@@ -211,7 +211,7 @@ export class PartyService {
 
   // 4. 파티 단건 조회 (getParty)
   async getParty(id: number): Promise<Result<PartyGetResDto>> {
-    const party = await this.partyRepository.findById(id);
+    const party = await this.partyRepository.incrementViewCount(id);
     if (!party)
       return notFound({
         message: '파티를 찾을 수 없습니다.',
