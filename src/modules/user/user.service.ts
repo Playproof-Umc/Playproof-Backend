@@ -43,6 +43,11 @@ export class UserService {
       this.userRepository.getUserPreferredGameIds(Number(user.id))
     ]);
 
+    // 피드백이 없으면 디폴트 50% 설정
+    if ( positivePercentage.percentage === 0) {
+      positivePercentage.percentage = 50;
+    }
+
     return success({
       user,
       tsRank,
