@@ -638,18 +638,19 @@ model CommunityMedia {
 
 // 13. 피드백 관련 테이블
 model Feedback {
-  id          BigInt        @id @default(autoincrement())
-  userId      BigInt        @map("user_id")
-  targetId    BigInt        @map("target_id")
-  scheduleId  BigInt        @map("schedule_id")
-  content     String?       @db.Text
-  isBan       Boolean       @default(false) @map("is_ban")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at")
-  user        User          @relation("FeedbackUser", fields: [userId], references: [id])
-  target      User          @relation("FeedbackTarget", fields: [targetId], references: [id])
-  schedule    AzitSchedule  @relation(fields: [scheduleId], references: [id])
-  
+  id             BigInt        @id @default(autoincrement())
+  userId         BigInt        @map("user_id")
+  targetId       BigInt        @map("target_id")
+  scheduleId     BigInt        @map("schedule_id")
+  content        String?       @db.Text
+  isBan          Boolean       @default(false) @map("is_ban")
+  tsScoreChange  Int           @default(0) @map("ts_score_change")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @default(now()) @updatedAt @map("updated_at")
+  user           User          @relation("FeedbackUser", fields: [userId], references: [id])
+  target         User          @relation("FeedbackTarget", fields: [targetId], references: [id])
+  schedule       AzitSchedule  @relation(fields: [scheduleId], references: [id])
+
   positiveCategories FeedbackPositiveCategory[]
   negativeCategories FeedbackNegativeCategory[]
 

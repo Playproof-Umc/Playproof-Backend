@@ -5,8 +5,7 @@ import { PlayStyle, Provider } from "@prisma/client";
 import { SignUpReqDto } from '../auth/dtos/auth.req.dto';
 
 @singleton()
-export class UserRepository{
-    
+export class UserRepository {
   async findByPhoneNumber(phone: string) {
     return prisma.user.findUnique({ where: { phone } });
   }
@@ -235,5 +234,26 @@ export class UserRepository{
 
   async deleteUser(id: number) {
     return prisma.user.delete({ where: { id } });
+  }
+
+  async findTrustScoreById(userId: bigint, tx?: any): Promise<number | null> {
+    const client = tx ?? prisma;
+    const user = await client.user.findUnique({
+      where: { id: userId },
+      select: { trustScore: true },
+    });
+    return user?.trustScore ?? null;
+  }
+
+  async updateTrustScore(
+    userId: bigint,
+    trustScore: number,
+    tx?: any,
+  ): Promise<void> {
+    const client = tx ?? prisma;
+    await client.user.update({
+      where: { id: userId },
+      data: { trustScore },
+    });
   }
 }

@@ -17,6 +17,7 @@ export class FeedbackRepository {
     scheduleId: bigint,
     content: string | null,
     isBan: boolean,
+    tsScoreChange: number,
     tx?: any,
   ): Promise<Feedback> {
     const client = tx || prisma;
@@ -27,6 +28,7 @@ export class FeedbackRepository {
         scheduleId,
         content,
         isBan,
+        tsScoreChange,
       },
     });
   }
@@ -74,7 +76,8 @@ export class FeedbackRepository {
 
     // 커서 존재할 때
     if (cursor) {
-      const { createdAt: cursorCreatedAt, feedbackId: cursorId } = parseFeedbackCursor(cursor);
+      const { createdAt: cursorCreatedAt, feedbackId: cursorId } =
+        parseFeedbackCursor(cursor);
 
       where.OR = [
         {
@@ -155,7 +158,7 @@ export class FeedbackRepository {
     userId: bigint, // 피드백을 작성할 사용자
   ): Promise<any[]> {
     const now = new Date();
-    
+
     // 사용자가 참여한 종료된 일정들의 참여자 조회
     const participants = await prisma.azitScheduleParticipation.findMany({
       where: {
@@ -241,5 +244,28 @@ export class FeedbackRepository {
     );
 
     return filteredParticipants;
+  }
+
+  /** 동일 유저가 target에게 남긴 긍정 피드백 건수 (W_relation용) */
+  async countWRelation(userId: bigint, targetId: bigint): Promise<number> {
+    return prisma.feedback.count({
+      where: {
+        userId,
+        targetId,
+        positiveCategories: { some: {} },
+      },
+    });
+  }
+
+  /** target에게 긍정 피드백을 남긴 고유 유저 수 (W_diversity용) */
+  async countWDiversity(targetId: bigint): Promise<number> {
+    const result = await prisma.feedback.groupBy({
+      by: ['userId'],
+      where: {
+        targetId,
+        positiveCategories: { some: {} },
+      },
+    });
+    return result.length;
   }
 }
