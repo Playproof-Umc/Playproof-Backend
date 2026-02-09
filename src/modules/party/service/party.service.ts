@@ -241,6 +241,7 @@ export class PartyService {
   private mapToGetResDto(party: any): PartyGetResDto {
     return {
       partyId: Number(party.id),
+      gameId: Number(party.gameId),
       host: {
         id: Number(party.user.id),
         nickname: party.user.nickname,

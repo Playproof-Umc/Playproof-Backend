@@ -56,6 +56,12 @@ export class PartyGetResDto {
   @IsNumber()
   partyId!: number;
 
+  /**
+   * @example 1
+   */
+  @IsNumber()
+  gameId!: number;
+
   @IsObject()
   host!: PartyHostDto;
 
