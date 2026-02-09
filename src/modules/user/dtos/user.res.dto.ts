@@ -119,7 +119,7 @@ export class UserGetResDto {
   feedbackTags!: FeedbackTagResDto[];
 
   /**
-   * @example [{ "gameId": 1, "accountId": "rena#KR1", "tierId": 5, "positionId": 2 }]
+   * @example [{ "gameId": 1, "accountId": "TestAccountId" }]
    */
   verifiedAccounts!: VerifiedAccountResDto[];
 
