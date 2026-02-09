@@ -1,6 +1,6 @@
 // src/modules/azit/services/azit.service.ts
 import { injectable, inject } from 'tsyringe';
-import { AzitUserRole } from '@prisma/client';
+import { AzitUserRole, ChatRoomRole, ChatRoomType } from '@prisma/client';
 
 import { AzitCreateReqDto, AzitUpdateReqDto } from '../dtos/azit.req.dto';
 import { AzitResDto, AzitListResDto } from '../dtos/azit.res.dto';
@@ -62,12 +62,28 @@ export class AzitService {
       );
 
       // 생성자를 방장(HOST)으로 멤버 추가
-      await this.azitUserRepository.createAzitUser(
+      const createdMember = await this.azitUserRepository.createAzitUser(
         userId,
         createdAzit.id,
         AzitUserRole.HOST,
         tx,
       );
+
+      // 기본 텍스트 채팅방 생성
+      await tx.chatRoom.create({
+        data: {
+          azitId: createdAzit.id,
+          roomName: '팀 채팅',
+          roomType: ChatRoomType.TEXT,
+          isPrivate: false,
+          chatRoomParticipation: {
+            create: {
+              memberId: createdMember.id,
+              role: ChatRoomRole.CREATOR,
+            },
+          },
+        },
+      });
 
       return createdAzit;
     });
