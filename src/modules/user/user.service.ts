@@ -59,6 +59,7 @@ export class UserService {
     return {
       id: Number(stats.user.id),
       nickname: stats.user.nickname,
+      statusMessage: stats.user.statusMessage,
       profileImageUrl: equippedAvatar,
       tsRank: stats.tsRank,
       trustScore: stats.user.trustScore,

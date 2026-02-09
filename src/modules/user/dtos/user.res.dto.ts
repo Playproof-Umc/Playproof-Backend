@@ -79,6 +79,11 @@ export class UserGetResDto {
   nickname!: string | null;
 
   /**
+   * @example "같이 게임해요!!!"
+   */
+  statusMessage!: string | null;
+
+  /**
    * @example "https://example.com/avatar.png"
    */
   profileImageUrl!: string | null;
