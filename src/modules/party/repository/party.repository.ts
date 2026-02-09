@@ -48,6 +48,7 @@ export class PartyRepository {
         postCategories: { include: { category: true } },
         postPositions: { include: { position: true } },
         applications: { where: { isAccepted: true } },
+        _count: { select: { postLikes: true, postComments: true } },
       },
     });
   }
@@ -131,6 +132,7 @@ export class PartyRepository {
         postCategories: { include: { category: true } },
         postPositions: { include: { position: true } },
         applications: { where: { isAccepted: true } },
+        _count: { select: { postLikes: true, postComments: true } },
       },
     });
   }

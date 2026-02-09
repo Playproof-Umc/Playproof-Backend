@@ -257,6 +257,8 @@ export class PartyService {
       isMic: party.isMicUse,
       status: party.recruitmentStatus,
       viewCount: Number(party.viewCount),
+      likeCount: party._count?.postLikes ?? 0,
+      commentCount: party._count?.postComments ?? 0,
       tags: party.postCategories.map((pc: any) => ({
         id: Number(pc.category.id),
         name: pc.category.name,

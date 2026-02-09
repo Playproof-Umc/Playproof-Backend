@@ -120,6 +120,18 @@ export class PartyGetResDto {
   @IsNumber()
   viewCount!: number;
 
+  /**
+   * @example 10
+   */
+  @IsNumber()
+  likeCount!: number;
+
+  /**
+   * @example 3
+   */
+  @IsNumber()
+  commentCount!: number;
+
   @IsObject({ each: true })
   tags!: PartyTagDto[];
 
