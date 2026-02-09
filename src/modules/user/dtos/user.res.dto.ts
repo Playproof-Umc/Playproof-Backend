@@ -33,19 +33,98 @@ export class UserUpdateResDto {
   nickname!: string | null;
 }
 
-export class UserGetResDto {
-  /** 
+export class FeedbackTagResDto {
+  /**
    * @example 1
    */
   id!: number;
 
   /**
-   * @example "010-1234-5678"
+   * @example "POSITIVE"
    */
-  phone!: string | null;
+  type!: 'POSITIVE' | 'NEGATIVE';
+}
+
+export class VerifiedAccountResDto {
+  /**
+   * @example 1
+   */
+  gameId!: number;
 
   /**
-   * @example "홍길동"
+   * @example "Hide on bush#KR1"
+   */
+  accountId!: string | null;
+
+  /**
+   * @example 5
+   */
+  tierId!: number | null;
+
+  /**
+   * @example 2
+   */
+  positionId!: number | null;
+}
+
+export class UserGetResDto {
+  /**
+   * @example 1
+   */
+  id!: number;
+
+  /**
+   * @example "레나"
    */
   nickname!: string | null;
+
+  /**
+   * @example "같이 게임해요!!!"
+   */
+  statusMessage!: string | null;
+
+  /**
+   * @example "https://example.com/avatar.png"
+   */
+  profileImageUrl!: string | null;
+
+  /**
+   * @example 40
+   */
+  tsRank!: number;
+
+  /**
+   * @example 88
+   */
+  trustScore!: number;
+
+  /**
+   * @example 90.5
+   */
+  positivePercentage!: number;
+
+  /**
+   * @example "MANNER"
+   */
+  playStyle!: string;
+
+  /**
+   * @example [1, 2, 3]
+   */
+  preferredCategoryIds!: number[];
+
+  /**
+   * @example [{ "id": 1, "type": "POSITIVE" }, { "id": 3, "type": "NEGATIVE" }]
+   */
+  feedbackTags!: FeedbackTagResDto[];
+
+  /**
+   * @example [{ "gameId": 1, "accountId": "TestAccountId" }]
+   */
+  verifiedAccounts!: VerifiedAccountResDto[];
+
+  /**
+   * @example [1, 2]
+   */
+  favoriteGameIds!: number[];
 }

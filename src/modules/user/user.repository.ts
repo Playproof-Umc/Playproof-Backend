@@ -12,11 +12,174 @@ export class UserRepository{
   }
 
   async findById(id: number) {
-    return prisma.user.findUnique({ where: { id } });
+    return prisma.user.findUnique({ 
+      where: { id },
+      include: {
+        userAvatars: {
+          where: { isEquipped: true }, 
+          include: {
+            avatar: true 
+          }
+        }
+      }
+    });
   }
 
   async findByName(nickname: string) {
-    return prisma.user.findUnique({ where: { nickname } });
+    return prisma.user.findUnique({ where: { nickname } }); 
+  }
+
+  async getUserTsRank(userTrustScore: number) {
+    const higherScores = await prisma.user.groupBy({
+      by: ['trustScore'],
+      where: {
+        trustScore: {
+          gt: userTrustScore,
+        },
+      },
+    });
+
+    return higherScores.length + 1;
+  }
+
+  async getPositiveFeedbackPercentage(userId: number) {
+    const targetId = BigInt(userId);
+
+    const positiveCount = await prisma.feedbackPositiveCategory.count({
+      where: {
+        feedback: {
+          targetId: targetId,
+        },
+      },
+    });
+
+    const negativeCount = await prisma.feedbackNegativeCategory.count({
+      where: {
+        feedback: {
+          targetId: targetId,
+        },
+      },
+    });
+
+    const totalCount = positiveCount + negativeCount;
+
+    if (totalCount === 0) {
+      return {
+        positiveCount: 0,
+        negativeCount: 0,
+        totalCount: 0,
+        percentage: 0,
+      };
+    }
+
+    const percentage = (positiveCount / totalCount) * 100;
+
+    return {
+      positiveCount,
+      negativeCount,
+      totalCount,
+      percentage: Math.round(percentage * 10) / 10, 
+    };
+  }
+
+  async getUserCategoryIds(userId: number): Promise<number[]> {
+    const result = await prisma.userCategoryInfo.findMany({
+      where: { 
+        userId: BigInt(userId)
+      },
+      select: { 
+        categoryId: true
+      }
+    });
+
+    return result.map((item) => Number(item.categoryId));
+  }
+
+  async getTop3FeedbackTags(userId: number) {
+    const targetId = BigInt(userId);
+
+    const [posGroup, negGroup] = await Promise.all([
+      prisma.feedbackPositiveCategory.groupBy({
+        by: ['positiveId'],
+        where: { feedback: { targetId } },
+        _count: { positiveId: true },
+        orderBy: { _count: { positiveId: 'desc' } },
+        take: 3,
+      }),
+      prisma.feedbackNegativeCategory.groupBy({
+        by: ['negativeId'],
+        where: { feedback: { targetId } },
+        _count: { negativeId: true },
+        orderBy: { _count: { negativeId: 'desc' } },
+        take: 3,
+      }),
+    ]);
+
+    const mergedTags = [
+      ...posGroup.map((t) => ({
+        id: Number(t.positiveId),
+        type: 'POSITIVE',
+        count: t._count.positiveId,
+      })),
+      ...negGroup.map((t) => ({
+        id: Number(t.negativeId),
+        type: 'NEGATIVE',
+        count: t._count.negativeId,
+      })),
+    ];
+
+    return mergedTags
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+      .map((tag) => ({
+        id: tag.id,
+        type: tag.type, 
+      }));
+  }
+
+  async getVerifiedGameAccounts(userId: number) {
+    const targetId = BigInt(userId);
+
+    const records = await prisma.userGameInfo.findMany({
+      where: {
+        userId: targetId,
+        isVerified: true, 
+      },
+      select: {
+        accountId: true,
+        gameInfo: { 
+          select: {
+            gameId: true, 
+          },
+        },
+      },
+    });
+
+    return records.map((record) => ({
+      gameId: Number(record.gameInfo.gameId), 
+      accountId: record.accountId,
+    }));
+  }
+
+  async getUserPreferredGameIds(userId: number): Promise<number[]> {
+    const targetId = BigInt(userId);
+
+    const records = await prisma.userGameInfo.findMany({
+      where: {
+        userId: targetId,
+      },
+      select: {
+        gameInfo: {
+          select: {
+            gameId: true,
+          },
+        },
+      },
+    });
+
+    const gameIds = records.map((record) => Number(record.gameInfo.gameId));
+    
+    return [...new Set(gameIds)];
   }
 
   async createUser(dto: SignUpReqDto) {
