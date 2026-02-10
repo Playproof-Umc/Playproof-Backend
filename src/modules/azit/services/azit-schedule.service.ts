@@ -1,6 +1,7 @@
 // src/modules/azit/services/azit-schedule.service.ts
 import { injectable, inject } from 'tsyringe';
 import { AzitScheduleRole } from '@prisma/client';
+import { AzitScheduleParticipationStatus } from '../types/azit-schedule-participation-status';
 
 import {
   AzitScheduleCreateReqDto,
@@ -89,6 +90,7 @@ export class AzitScheduleService {
         memberCheckResult.data.id,
         createdSchedule.id,
         AzitScheduleRole.CREATOR,
+        AzitScheduleParticipationStatus.JOIN,
         tx,
       );
 
