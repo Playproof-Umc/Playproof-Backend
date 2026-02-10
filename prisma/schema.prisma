@@ -430,6 +430,13 @@ enum AzitScheduleRole {
   PARTICIPANT @map("participant")
 }
 
+enum AzitScheduleParticipationStatus {
+  PENDING   @map("pending")
+  DECLINE   @map("decline")
+  CANCELLED @map("cancelled")
+  JOIN      @map("join")
+}
+
 enum ChatRoomType {
   TEXT  @map("text")
   VOICE @map("voice")
@@ -487,6 +494,7 @@ model AzitScheduleParticipation {
   memberId        BigInt           @map("member_id")
   scheduleId      BigInt           @map("schedule_id")
   role            AzitScheduleRole @default(PARTICIPANT)
+  isParticipation AzitScheduleParticipationStatus @default(PENDING) @map("is_participation")
   participationAt DateTime         @default(now()) @map("participation_at")
 
   member          AzitUser         @relation(fields: [memberId], references: [id], onDelete: Cascade)
