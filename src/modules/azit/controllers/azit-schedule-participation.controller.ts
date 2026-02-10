@@ -1,8 +1,11 @@
 // src/modules/azit/controllers/azit-schedule-participation.controller.ts
 import { injectable, inject } from 'tsyringe';
 import {
+  Body,
   Controller,
   Delete,
+  Middlewares,
+  Patch,
   Path,
   Post,
   Request,
@@ -13,7 +16,9 @@ import {
   Tags,
 } from 'tsoa';
 
+import { AzitScheduleParticipationUpdateReqDto } from '../dtos/azit-schedule.req.dto';
 import { AzitScheduleParticipationService } from '../services/azit-schedule-participation.service';
+import { validationMiddleware } from '../../../common/middlewares/validation';
 import {
   BadRequestError,
   ConflictError,
@@ -54,6 +59,37 @@ export class AzitScheduleParticipationController extends Controller {
         userId,
         azitId,
         scheduleId,
+      );
+
+    this.setStatus(result.statusCode);
+
+    return result;
+  }
+
+  @SuccessResponse('204', 'No Content')
+  @Response<BadRequestError>(400, 'Bad Request')
+  @Response<ForbiddenError>(403, 'Forbidden')
+  @Response<NotFoundError>(404, 'Not Found')
+  @Response<ConflictError>(409, 'Conflict')
+  @Security('jwt')
+  @Middlewares(validationMiddleware(AzitScheduleParticipationUpdateReqDto))
+  @Patch('/')
+  public async updateParticipationStatus(
+    @Request() req: any,
+    @Path() azit_id: number,
+    @Path() schedule_id: number,
+    @Body() requestBody: AzitScheduleParticipationUpdateReqDto,
+  ): Promise<Result<null>> {
+    const userId = BigInt(req.user.id);
+    const azitId = BigInt(azit_id);
+    const scheduleId = BigInt(schedule_id);
+
+    const result =
+      await this.azitScheduleParticipationService.updateParticipationStatus(
+        userId,
+        azitId,
+        scheduleId,
+        requestBody.is_participation,
       );
 
     this.setStatus(result.statusCode);
