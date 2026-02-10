@@ -1,3 +1,5 @@
+import { UserFeedbackCardDto } from "./feedback.res.dto";
+
 // src/modules/user/dtos/user.req.dto.ts
 export class UserSignUpResDto {
   /** 
@@ -127,4 +129,14 @@ export class UserGetResDto {
    * @example [1, 2]
    */
   favoriteGameIds!: number[];
+}
+
+export class UserFeedbackListResDto {
+  feedbacks!: UserFeedbackCardDto[];
+  
+  /** @example 15 */
+  nextCursor!: number | null; 
+  
+  /** @example true */
+  hasNext!: boolean; 
 }
