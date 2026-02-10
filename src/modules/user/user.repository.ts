@@ -245,6 +245,47 @@ export class UserRepository {
     return user?.trustScore ?? null;
   }
 
+  async findReceivedFeedbacks(userId: number, cursorId: number | null, limit: number) {
+    const targetId = BigInt(userId);
+    const takeLimit = limit + 1; 
+
+    const cursorCondition = cursorId
+      ? {
+          id: { lt: BigInt(cursorId) },
+        }
+      : {};
+
+    return await prisma.feedback.findMany({
+      where: {
+        targetId: targetId,
+        ...cursorCondition,
+      },
+      take: takeLimit,
+      orderBy: {
+        id: "desc", 
+      },
+      include: { 
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+            trustScore: true,
+            userAvatars: {
+              where: { isEquipped: true },
+              select: { avatar: { select: { avatarUrl: true } } },
+            },
+          },
+        },
+        positiveCategories: {
+          include: { positive: true },
+        },
+        negativeCategories: {
+          include: { negative: true },
+        },
+      },
+    });
+  }
+
   async updateTrustScore(
     userId: bigint,
     trustScore: number,

@@ -2,7 +2,7 @@
 import { injectable, inject } from "tsyringe";
 import { UserRepository } from "./user.repository";
 import { UserUpdateReqDto} from "./dtos/user.req.dto";
-import { UserSignUpResDto, UserUpdateResDto, UserGetResDto } from "./dtos/user.res.dto"; 
+import { UserSignUpResDto, UserUpdateResDto, UserGetResDto, UserFeedbackListResDto } from "./dtos/user.res.dto"; 
 import { Result, created, ok, conflict, notFound, success } from "../../common/types/result.type";
 import { UserErrorCode } from "../../common/constants/error-code";
 import { ResultChain } from "../../common/types/result.chain";
@@ -76,4 +76,70 @@ export class UserService {
       favoriteGameIds: stats.favoriteGameIds
     };
   }
+
+async getUserFeedbacks(
+  id: number, 
+  cursorId: number | null, 
+  limit: number = 10
+): Promise<Result<UserFeedbackListResDto>> {
+  return await ResultChain.of({ id, cursorId, limit })
+    .flatThenAsync(checkUserExists(this.userRepository))
+    .flatThenAsync((data) => this.fetchFeedbacksStep(data))
+    .then((feedbacks) => this.processFeedbacksStep(feedbacks, limit))
+    .flatThen((processed) => Promise.resolve(ok(processed)))
+    .getResult();
+}
+
+private async fetchFeedbacksStep(data: {
+  id: number;
+  cursorId: number | null;
+  limit: number;
+}): Promise<Result<any[]>> {
+  const { id, cursorId, limit } = data;
+  const feedbacksRaw = await this.userRepository.findReceivedFeedbacks(
+    id, 
+    cursorId, 
+    limit
+  );
+  
+  return success(feedbacksRaw);
+}
+
+private processFeedbacksStep(
+  feedbacksRaw: any[], 
+  limit: number
+): UserFeedbackListResDto {
+  let hasNext = false;
+  if (feedbacksRaw.length > limit) {
+    hasNext = true;
+    feedbacksRaw.pop(); 
+  }
+
+  const nextCursor = feedbacksRaw.length > 0 
+    ? Number(feedbacksRaw[feedbacksRaw.length - 1].id) 
+    : null;
+
+  const feedbacks = feedbacksRaw.map((f) => ({
+    feedbackId: Number(f.id),
+    content: f.content,
+    tsScoreChange: f.tsScoreChange,
+    createdAt: f.createdAt,
+    writer: {
+      id: Number(f.user.id),
+      nickname: f.user.nickname,
+      trustScore: f.user.trustScore,
+      avatarUrl: f.user.userAvatars[0]?.avatar.avatarUrl ?? null,
+    },
+    tags: [
+      ...f.positiveCategories.map((pc: any) => pc.positive.name),
+      ...f.negativeCategories.map((nc: any) => nc.negative.name),
+    ],
+  }));
+
+  return {
+    feedbacks,
+    nextCursor,
+    hasNext,
+  };
+}
 }
