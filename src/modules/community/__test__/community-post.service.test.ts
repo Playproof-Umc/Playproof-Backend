@@ -218,7 +218,7 @@ describe('CommunityPostService', () => {
     };
 
     it('성공: 내가 쓴 커뮤니티 글 목록과 메타 정보를 반환한다', async () => {
-      communityPostRepository.findByUserId.mockResolvedValue([mockPost]);
+      communityPostRepository.findByUserId.mockResolvedValue([mockPost] as any);
       communityPostRepository.countByUserId.mockResolvedValue(1);
 
       const result = await communityPostService.getMyPostList(userId, 1, 10);
@@ -237,7 +237,7 @@ describe('CommunityPostService', () => {
     });
 
     it('성공: 작성한 글이 없으면 빈 배열을 반환한다', async () => {
-      communityPostRepository.findByUserId.mockResolvedValue([]);
+      communityPostRepository.findByUserId.mockResolvedValue([] as any);
       communityPostRepository.countByUserId.mockResolvedValue(0);
 
       const result = await communityPostService.getMyPostList(userId, 1, 10);

@@ -52,7 +52,7 @@ describe('HighlightListService', () => {
     };
 
     it('성공: 내가 쓴 하이라이트 목록을 반환한다 (아지트 하이라이트)', async () => {
-      highlightRepository.findHighlightsByUserId.mockResolvedValue([mockHighlight]);
+      highlightRepository.findHighlightsByUserId.mockResolvedValue([mockHighlight] as any);
       highlightRepository.findUserLikesByHighlightIds.mockResolvedValue([]);
 
       const result = await highlightListService.getMyHighlightList(userId, null, 20);
@@ -78,7 +78,7 @@ describe('HighlightListService', () => {
         azitId: null,
         azit: null,
       };
-      highlightRepository.findHighlightsByUserId.mockResolvedValue([communityHighlight]);
+      highlightRepository.findHighlightsByUserId.mockResolvedValue([communityHighlight] as any);
       highlightRepository.findUserLikesByHighlightIds.mockResolvedValue([]);
 
       const result = await highlightListService.getMyHighlightList(userId, null, 20);
@@ -95,7 +95,7 @@ describe('HighlightListService', () => {
         ...h,
         id: BigInt(100 + i),
       }));
-      highlightRepository.findHighlightsByUserId.mockResolvedValue(manyHighlights);
+      highlightRepository.findHighlightsByUserId.mockResolvedValue(manyHighlights as any);
       highlightRepository.findUserLikesByHighlightIds.mockResolvedValue([]);
 
       const result = await highlightListService.getMyHighlightList(userId, null, 20);
@@ -109,7 +109,7 @@ describe('HighlightListService', () => {
     });
 
     it('성공: 커서 기반 페이지네이션이 동작한다', async () => {
-      highlightRepository.findHighlightsByUserId.mockResolvedValue([mockHighlight]);
+      highlightRepository.findHighlightsByUserId.mockResolvedValue([mockHighlight] as any);
       highlightRepository.findUserLikesByHighlightIds.mockResolvedValue([]);
 
       const result = await highlightListService.getMyHighlightList(userId, BigInt(200), 20);
@@ -123,7 +123,7 @@ describe('HighlightListService', () => {
     });
 
     it('성공: 작성한 하이라이트가 없으면 빈 배열을 반환한다', async () => {
-      highlightRepository.findHighlightsByUserId.mockResolvedValue([]);
+      highlightRepository.findHighlightsByUserId.mockResolvedValue([] as any);
       highlightRepository.findUserLikesByHighlightIds.mockResolvedValue([]);
 
       const result = await highlightListService.getMyHighlightList(userId, null, 20);
@@ -137,7 +137,7 @@ describe('HighlightListService', () => {
     });
 
     it('성공: 좋아요한 하이라이트는 is_liked가 true이다', async () => {
-      highlightRepository.findHighlightsByUserId.mockResolvedValue([mockHighlight]);
+      highlightRepository.findHighlightsByUserId.mockResolvedValue([mockHighlight] as any);
       highlightRepository.findUserLikesByHighlightIds.mockResolvedValue([
         { highlightId: BigInt(100) },
       ]);
@@ -151,7 +151,7 @@ describe('HighlightListService', () => {
     });
 
     it('성공: limit 미지정 시 기본값 20을 사용한다', async () => {
-      highlightRepository.findHighlightsByUserId.mockResolvedValue([]);
+      highlightRepository.findHighlightsByUserId.mockResolvedValue([] as any);
       highlightRepository.findUserLikesByHighlightIds.mockResolvedValue([]);
 
       await highlightListService.getMyHighlightList(userId, null, undefined as any);

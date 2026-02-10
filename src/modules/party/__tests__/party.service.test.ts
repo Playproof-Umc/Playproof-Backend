@@ -116,7 +116,7 @@ describe('PartyService', () => {
     };
 
     it('성공: 내가 쓴 파티 목록을 페이징하여 반환해야 한다', async () => {
-      partyRepository.findPartiesByUserId.mockResolvedValue([mockParty]);
+      partyRepository.findPartiesByUserId.mockResolvedValue([mockParty] as any);
       partyRepository.countByUserId.mockResolvedValue(1);
 
       const result = await partyService.getMyParties(userId, 1, 10);
@@ -134,7 +134,7 @@ describe('PartyService', () => {
     });
 
     it('성공: 다음 페이지가 있으면 hasNext가 true여야 한다', async () => {
-      partyRepository.findPartiesByUserId.mockResolvedValue(Array(10).fill(mockParty));
+      partyRepository.findPartiesByUserId.mockResolvedValue(Array(10).fill(mockParty) as any);
       partyRepository.countByUserId.mockResolvedValue(25);
 
       const result = await partyService.getMyParties(userId, 1, 10);
@@ -147,7 +147,7 @@ describe('PartyService', () => {
     });
 
     it('성공: 작성한 파티가 없으면 빈 배열을 반환해야 한다', async () => {
-      partyRepository.findPartiesByUserId.mockResolvedValue([]);
+      partyRepository.findPartiesByUserId.mockResolvedValue([] as any);
       partyRepository.countByUserId.mockResolvedValue(0);
 
       const result = await partyService.getMyParties(userId, 1, 10);
