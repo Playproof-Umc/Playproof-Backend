@@ -66,14 +66,28 @@ describe('PartyService', () => {
       partyRepository.findGameById.mockResolvedValue({ id: 1 } as any);
       partyRepository.findTierById.mockResolvedValue({ id: 1 } as any);
       partyRepository.findPositionsByIds.mockResolvedValue([{ id: 1 }, { id: 2 }] as any);
-      
-      (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => callback(null));
-      partyRepository.createTempAzit.mockResolvedValue({ id: BigInt(10) } as any);
-      partyRepository.createParty.mockResolvedValue({ id: BigInt(1), userId: BigInt(userId), azitId: BigInt(10) } as any);
+      partyRepository.findAzitById.mockResolvedValue({
+        id: BigInt(1),
+        azitName: '테스트 아지트',
+        imageUrl: 'https://example.com/azit.png',
+      } as any);
+      partyRepository.createParty.mockResolvedValue({
+        id: BigInt(1),
+        userId: BigInt(userId),
+        gameId: BigInt(1),
+        azitId: BigInt(1),
+        title: validDto.title,
+        memo: validDto.memo,
+        recruitmentPeople: validDto.recruitmentPeople,
+        tierId: BigInt(1),
+        isMicUse: validDto.isMicUse,
+        createdAt: new Date(),
+      } as any);
 
       const result = await partyService.createParty(validDto, userId);
       expect(isSuccess(result)).toBe(true);
       expect(result.statusCode).toBe(201);
+      expect(partyRepository.createParty).toHaveBeenCalledWith(validDto, userId, 1);
     });
   });
 
