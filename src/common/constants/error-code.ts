@@ -193,5 +193,15 @@ export const FriendErrorCode = {
   ALREADY_FRIEND: 'FRIEND_ALREADY_FRIEND', // 이미 친구 관계임
 } as const;
 
+export const BanErrorCode = {
+  BAD_REQUEST: {
+    SELF_BAN_NOT_ALLOWED: 'BAN_SELF_NOT_ALLOWED', // 자기 자신 차단 불가
+  },
+  
+  NOT_FOUND: {
+    TARGET_USER_NOT_FOUND: 'BAN_TARGET_USER_NOT_FOUND', // 차단 대상 사용자를 찾을 수 없음
+  },
+} as const;
+
 // 나중에 다른 도메인이 생기면 추가
 // export const OrderErrorCode = { ... } as const;
