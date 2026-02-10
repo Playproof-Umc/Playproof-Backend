@@ -40,6 +40,61 @@ export class PartyInteractionRepository {
     });
   }
 
+  // 9. 내가 작성한 모든 파티의 신청 목록 조회 (대기 중인 신청만)
+  async findApplicationsByLeaderId(leaderId: number) {
+    return prisma.application.findMany({
+      where: {
+        isAccepted: false,
+        post: { userId: BigInt(leaderId) },
+      },
+      orderBy: { applicationAt: "desc" },
+      include: {
+        user: {
+          include: {
+            userAvatars: {
+              where: { isEquipped: true },
+              include: { avatar: true },
+            },
+          },
+        },
+        post: {
+          include: {
+            game: true,
+            tier: true,
+            postCategories: { include: { category: true } },
+            applications: { where: { isAccepted: true } },
+          },
+        },
+      },
+    });
+  }
+
+  // 10. 특정 파티의 신청 목록 조회 (대기 중인 신청만)
+  async findApplicationsByPostId(postId: number) {
+    return prisma.application.findMany({
+      where: { postId: BigInt(postId), isAccepted: false },
+      orderBy: { applicationAt: "asc" },
+      include: {
+        user: {
+          include: {
+            userAvatars: {
+              where: { isEquipped: true },
+              include: { avatar: true },
+            },
+          },
+        },
+        post: {
+          include: {
+            game: true,
+            tier: true,
+            postCategories: { include: { category: true } },
+            applications: { where: { isAccepted: true } },
+          },
+        },
+      },
+    });
+  }
+
   // 6. 좋아요 기록 확인
   async findLike(userId: number, postId: number) {
     return prisma.userPostLike.findUnique({

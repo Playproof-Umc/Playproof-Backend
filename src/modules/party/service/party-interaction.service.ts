@@ -2,7 +2,7 @@ import { injectable, inject } from "tsyringe";
 import { Result, created, ok, notFound, forbidden, conflict } from "../../../common/types/result.type";
 import { PartyInteractionRepository } from '../repository/party-interaction.repository';
 import { PartyRepository } from '../repository/party.repository';
-import { ApplyPartyResDto, HandleApplicationResDto, ToggleLikeResDto, InteractionMessageResDto } from "../dtos/party-interaction.res.dto";
+import { ApplyPartyResDto, HandleApplicationResDto, ToggleLikeResDto, InteractionMessageResDto, ApplicationListResDto, ApplicationItemDto, MyApplicationListResDto, ApplicationItemWithPostDto } from "../dtos/party-interaction.res.dto";
 import { PartyErrorCode } from "../../../common/constants/error-code";
 import { PartyValidator } from "../utils/party.validator";
 
@@ -80,7 +80,74 @@ export class PartyInteractionService {
     } as InteractionMessageResDto);
   }
 
-  // 4. 파티 좋아요 토글 (toggleLike)
+  // 4. 파티 신청자 목록 조회 (getApplications)
+  async getApplications(leaderId: number, postId: number): Promise<Result<ApplicationListResDto>> {
+    const { error } = await PartyValidator.checkPartyOwnership(this.partyRepo, postId, leaderId);
+    if (error) return error;
+
+    const applications = await this.interactionRepo.findApplicationsByPostId(postId);
+
+    const applicationsDto: ApplicationItemDto[] = applications.map((app) => {
+      const post = app.post as any;
+      const currentParticipants = (post.applications?.length ?? 0) + 1;
+      const recruitmentPeople = post.recruitmentPeople ?? 0;
+      const gameName = post.game?.name ?? "-";
+
+      return {
+        applicationId: Number(app.id),
+        gameName,
+        applicant: {
+          id: Number(app.user.id),
+          nickname: app.user.nickname ?? null,
+          avatarUrl: (app.user as any).userAvatars?.[0]?.avatar?.avatarUrl ?? null,
+          trustScore: app.user.trustScore,
+        },
+        recruitmentStatus: `${currentParticipants}/${recruitmentPeople}`,
+        memo: post.memo ?? null,
+        createdAt: this.formatDate(app.applicationAt),
+      };
+    });
+
+    return ok({
+      totalCount: applicationsDto.length,
+      applications: applicationsDto,
+    } as ApplicationListResDto);
+  }
+
+  // 5. 내가 작성한 모든 파티의 신청자 목록 조회 (getAllMyApplications)
+  async getAllMyApplications(leaderId: number): Promise<Result<MyApplicationListResDto>> {
+    const applications = await this.interactionRepo.findApplicationsByLeaderId(leaderId);
+
+    const applicationsDto: ApplicationItemWithPostDto[] = applications.map((app) => {
+      const post = app.post as any;
+      const currentParticipants = (post.applications?.length ?? 0) + 1;
+      const recruitmentPeople = post.recruitmentPeople ?? 0;
+      const gameName = post.game?.name ?? "-";
+
+      return {
+        applicationId: Number(app.id),
+        postId: Number(post.id),
+        postTitle: post.title ?? "-",
+        gameName,
+        applicant: {
+          id: Number(app.user.id),
+          nickname: app.user.nickname ?? null,
+          avatarUrl: (app.user as any).userAvatars?.[0]?.avatar?.avatarUrl ?? null,
+          trustScore: app.user.trustScore,
+        },
+        recruitmentStatus: `${currentParticipants}/${recruitmentPeople}`,
+        memo: post.memo ?? null,
+        createdAt: this.formatDate(app.applicationAt),
+      };
+    });
+
+    return ok({
+      totalCount: applicationsDto.length,
+      applications: applicationsDto,
+    } as MyApplicationListResDto);
+  }
+
+  // 6. 파티 좋아요 토글 (toggleLike)
   async toggleLike(userId: number, postId: number): Promise<Result<ToggleLikeResDto>> {
     // 4-1. Validator를 통해 파티 존재 확인
     const { error } = await PartyValidator.validateParty(this.partyRepo, postId);
