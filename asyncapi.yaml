@@ -48,6 +48,21 @@ channels:
       summary: 클라이언트가 보이스룸을 나감
       message:
         $ref: "#/components/messages/VoiceLeave"
+  getFriendOnlineStatus:
+    subscribe:
+      summary: 친구 온라인 상태 목록 조회
+      message:
+        $ref: "#/components/messages/GetFriendOnlineStatus"
+  friendOnline:
+    publish:
+      summary: 친구가 온라인 상태가 됨
+      message:
+        $ref: "#/components/messages/FriendOnline"
+  friendOffline:
+    publish:
+      summary: 친구가 오프라인 상태가 됨
+      message:
+        $ref: "#/components/messages/FriendOffline"
   error:
     publish:
       summary: 서버가 에러 정보 전송
@@ -106,6 +121,25 @@ components:
         - ok: false, error: ApiError
       payload:
         $ref: "#/components/schemas/JoinRoomPayload"
+    GetFriendOnlineStatus:
+      name: getFriendOnlineStatus
+      title: 친구 온라인 상태 목록 조회 요청
+      description: |
+        응답(ack):
+        - ok: true, data: { onlineIds: number[] }
+        - ok: false, error: ApiError
+      payload:
+        $ref: "#/components/schemas/FriendOnlineStatusPayload"
+    FriendOnline:
+      name: friendOnline
+      title: 친구 온라인 이벤트
+      payload:
+        $ref: "#/components/schemas/FriendPresenceEvent"
+    FriendOffline:
+      name: friendOffline
+      title: 친구 오프라인 이벤트
+      payload:
+        $ref: "#/components/schemas/FriendPresenceEvent"
     Error:
       name: error
       title: 에러 이벤트
@@ -165,6 +199,24 @@ components:
           type: string
           format: date-time
           example: "2025-01-01T00:00:00.000Z"
+    FriendOnlineStatusPayload:
+      type: object
+      required:
+        - userIds
+      properties:
+        userIds:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+    FriendPresenceEvent:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: integer
+          example: 1
     ApiErrorDetail:
       type: object
       required:
