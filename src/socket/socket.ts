@@ -6,11 +6,15 @@ import { SocketAuthData } from './types';
 import { extractToken, parseUserId } from './utils/auth';
 import { ChatRoomHandler } from './handler/chat.handler';
 import { VoiceRoomHandler } from './handler/voice.handler';
+import { PresenceHandler } from './handler/presence.handler';
+import { PresenceService } from './services/presence.service';
 
 export class SocketServer {
   private io: Server;
   private chatHandler: ChatRoomHandler;
   private voiceHandler: VoiceRoomHandler;
+  private presenceHandler: PresenceHandler;
+  private presenceService: PresenceService;
 
   constructor(httpServer: http.Server) {
     this.io = new Server(httpServer, {
@@ -22,6 +26,8 @@ export class SocketServer {
 
     this.chatHandler = new ChatRoomHandler(this.io);
     this.voiceHandler = new VoiceRoomHandler();
+    this.presenceService = new PresenceService();
+    this.presenceHandler = new PresenceHandler(this.io, this.presenceService);
 
     this.configureAuthMiddleware();
     this.configureHandlers();
@@ -54,6 +60,7 @@ export class SocketServer {
 
   private configureHandlers() {
     this.io.on('connection', (socket) => {
+      this.presenceHandler.handleConnect(socket);
       socket.on('joinRoom', (payload, ack) =>
         this.chatHandler.handleJoinRoom(socket, payload, ack),
       );
@@ -69,6 +76,10 @@ export class SocketServer {
       socket.on('voiceLeave', (payload, ack) =>
         this.voiceHandler.handleVoiceLeave(socket, payload, ack),
       );
+      socket.on('getFriendOnlineStatus', (payload, ack) =>
+        this.presenceHandler.handleGetFriendOnlineStatus(socket, payload, ack),
+      );
+      socket.on('disconnect', () => this.presenceHandler.handleDisconnect(socket));
     });
   }
 }

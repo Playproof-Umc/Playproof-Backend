@@ -10,3 +10,7 @@ export type SendMessagePayload = {
   roomId: number;
   content: string;
 };
+
+export type FriendOnlineStatusPayload = {
+  userIds: number[];
+};
