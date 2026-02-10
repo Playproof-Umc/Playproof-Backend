@@ -2,6 +2,7 @@ import { injectable, inject } from 'tsyringe';
 
 import { AzitScheduleParticipationRepository } from '../../azit/repositories/azit-schedule-participation.repository';
 import { AzitScheduleRepository } from '../../azit/repositories/azit-schedule.repository';
+import { BanRepository } from '../../ban/repositories/ban.repository';
 import { UserRepository } from '../../user/user.repository';
 import {
   computeNewTemperScoreAfterFeedback,
@@ -34,6 +35,7 @@ export class FeedbackService {
     private azitScheduleRepository: AzitScheduleRepository,
     @inject(AzitScheduleParticipationRepository)
     private azitScheduleParticipationRepository: AzitScheduleParticipationRepository,
+    @inject(BanRepository) private banRepository: BanRepository,
   ) {}
 
   async createFeedback(
@@ -82,9 +84,8 @@ export class FeedbackService {
       uniqueGiverCount: number;
     } | null = null;
     if (positiveCategoryIds.length > 0) {
-      const schedule = await this.azitScheduleRepository.findScheduleById(
-        scheduleIdBigInt,
-      );
+      const schedule =
+        await this.azitScheduleRepository.findScheduleById(scheduleIdBigInt);
       const now = new Date();
       const minutesSinceGameEnd = schedule?.gameEndAt
         ? Math.floor((now.getTime() - schedule.gameEndAt.getTime()) / 60_000)
@@ -138,7 +139,20 @@ export class FeedbackService {
         );
       }
 
-      // isBan이 true일 때 차단 테이블에 추가
+      // 다시 만나지 않기(isBan) 체크 시 차단 테이블에 자동 추가
+      if (isBan) {
+        const alreadyBanned =
+          await this.banRepository.existsByUserIdAndTargetId(
+            userId,
+            targetIdBigInt,
+          );
+        if (!alreadyBanned) {
+          await this.banRepository.createBan(
+            { userId: Number(userId), targetId: Number(targetIdBigInt) },
+            tx,
+          );
+        }
+      }
 
       // target 유저 TS 갱신 (가중치 적용)
       const currentTs = await this.userRepository.findTrustScoreById(
