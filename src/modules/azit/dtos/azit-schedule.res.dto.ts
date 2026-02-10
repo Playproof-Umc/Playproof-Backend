@@ -4,9 +4,12 @@ import {
   IsBoolean,
   IsNumber,
   IsObject,
+  IsOptional,
   IsString,
 } from 'class-validator';
 import { formatDate } from '../utils/azit.util';
+import { AzitScheduleRole } from '@prisma/client';
+import { AzitScheduleParticipationStatus } from '../types/azit-schedule-participation-status';
 
 export class AzitScheduleResDto {
   /**
@@ -206,4 +209,39 @@ export class AzitScheduleListResDto {
       hasNext,
     };
   }
+}
+
+export class AzitScheduleMyParticipationResDto {
+  /**
+   * 참여 상태
+   * @example "PENDING"
+   */
+  @IsString()
+  is_participation!: AzitScheduleParticipationStatus;
+
+  /**
+   * 역할
+   * @example "PARTICIPANT"
+   */
+  @IsOptional()
+  @IsString()
+  role!: AzitScheduleRole | null;
+
+  /**
+   * 참여 시각
+   * @example "2026-02-10T00:00:00.000Z"
+   */
+  @IsOptional()
+  @IsString()
+  participation_at!: string | null;
+}
+
+export class AzitScheduleParticipantsResDto {
+  /**
+   * 참여자 목록
+   * @example []
+   */
+  @IsArray()
+  @IsObject({ each: true })
+  participants!: AzitScheduleParticipantResDto[];
 }
