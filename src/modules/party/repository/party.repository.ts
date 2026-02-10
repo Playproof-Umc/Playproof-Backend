@@ -148,6 +148,27 @@ export class PartyRepository {
   async countAll() { 
     return prisma.partyPost.count(); 
   }
+  async findPartiesByUserId(userId: number, page: number, size: number) {
+    const skip = (page - 1) * size;
+    return prisma.partyPost.findMany({
+      where: { userId: BigInt(userId) },
+      skip,
+      take: size,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { include: { userAvatars: { where: { isEquipped: true }, include: { avatar: true } } } },
+        tier: true,
+        azit: true,
+        postCategories: { include: { category: true } },
+        postPositions: { include: { position: true } },
+        applications: { where: { isAccepted: true } },
+        _count: { select: { postLikes: true, postComments: true } },
+      },
+    });
+  }
+  async countByUserId(userId: number) {
+    return prisma.partyPost.count({ where: { userId: BigInt(userId) } });
+  }
   async findParties(page: number, size: number, sort: "latest" | "mostliked") {
     const skip = (page - 1) * size;
     const orderBy: any = sort === "latest" ? { createdAt: "desc" } : { postLikes: { _count: "desc" } };

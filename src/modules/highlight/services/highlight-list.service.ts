@@ -10,6 +10,8 @@ import {
   HighlightMediaResDto,
   HighlightListPaginationResDto,
   GetHighlightDetailResDto,
+  GetMyHighlightListResDto,
+  MyHighlightListItemResDto,
 } from "../dtos/highlight.res.dto";
 import {
   Result,
@@ -236,6 +238,67 @@ export class HighlightListService {
     };
 
     return ok(response);
+  }
+
+  /**
+   * 마이페이지 - 내가 쓴 하이라이트 목록 조회
+   */
+  async getMyHighlightList(
+    userId: bigint,
+    cursor: bigint | null,
+    limit: number,
+  ): Promise<Result<GetMyHighlightListResDto>> {
+    const limitNum = limit || 20;
+    const highlightsData = await this.highlightRepository.findHighlightsByUserId(
+      userId,
+      cursor,
+      limitNum,
+    );
+
+    const hasNext = highlightsData.length > limitNum;
+    const actualHighlights = hasNext ? highlightsData.slice(0, limitNum) : highlightsData;
+
+    const highlightIds = actualHighlights.map((h) => h.id);
+    const userLikes = await this.highlightRepository.findUserLikesByHighlightIds(userId, highlightIds);
+    const likedHighlightIds = new Set(userLikes.map((l) => l.highlightId));
+
+    const highlights: MyHighlightListItemResDto[] = actualHighlights.map((highlight) => {
+      const mediaDtos = highlight.medias.map((media) => ({
+        highlight_media_id: Number(media.id),
+        media_url: media.mediaUrl,
+        order: media.order,
+        upload_at: media.uploadAt,
+      }));
+
+      return {
+        highlight_id: Number(highlight.id),
+        user_id: Number(highlight.userId),
+        nickname: highlight.user.nickname,
+        content: highlight.content,
+        visibility: highlight.isPublic ? "PUBLIC" : "PRIVATE",
+        media_count: highlight.medias.length,
+        medias: mediaDtos,
+        like_count: highlight._count.likes,
+        comment_count: highlight._count.comments,
+        is_liked: likedHighlightIds.has(highlight.id),
+        created_at: highlight.createdAt,
+        updated_at: highlight.updatedAt,
+        azit_id: highlight.azit ? Number(highlight.azit.id) : null,
+        azit_name: highlight.azit?.azitName ?? null,
+      };
+    });
+
+    const lastHighlight = actualHighlights[actualHighlights.length - 1];
+    const nextCursor = hasNext && lastHighlight ? Number(lastHighlight.id) : null;
+
+    return ok({
+      highlights,
+      pagination: {
+        has_next: hasNext,
+        next_cursor: nextCursor,
+        limit: limitNum,
+      },
+    });
   }
 
   /**

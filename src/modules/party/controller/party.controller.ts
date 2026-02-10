@@ -17,6 +17,20 @@ export class PartyController extends Controller {
   }
 
   @SuccessResponse("200", "OK")
+  @Security("jwt")
+  @Get("/my")
+  public async getMyParties(
+    @Request() req: any,
+    @Query() page: number = 1,
+    @Query() size: number = 10,
+  ): Promise<Result<PartyListResDto>> {
+    const userId = req.user.id;
+    const result = await this.partyService.getMyParties(userId, page, size);
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  @SuccessResponse("200", "OK")
   @Get("/")
   public async getParties(
     @Query() page: number = 1,

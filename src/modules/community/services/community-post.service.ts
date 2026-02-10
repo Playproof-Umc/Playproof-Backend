@@ -113,6 +113,27 @@ export class CommunityPostService {
     });
   }
 
+  // 5-2. 마이페이지 - 내가 쓴 커뮤니티 글 목록 조회
+  async getMyPostList(userId: number, page: number, size: number): Promise<Result<CommunityPostListResDto>> {
+    const paginationError = CommunityPostValidator.validatePagination(page, size);
+    if (paginationError) return paginationError;
+
+    const skip = (page - 1) * size;
+    const [posts, total] = await Promise.all([
+      this.repository.findByUserId(userId, skip, size),
+      this.repository.countByUserId(userId),
+    ]);
+
+    return ok({
+      posts: posts.map((p) => this.formatPostResponse(p)),
+      meta: {
+        total_count: total,
+        current_page: page,
+        total_pages: Math.ceil(total / size),
+      },
+    });
+  }
+
   // 6. 베스트 게시글 조회
   async getBestPostList(gameId?: number): Promise<Result<CommunityPostListResDto>> {
     const posts = await this.repository.findBestPosts(gameId);

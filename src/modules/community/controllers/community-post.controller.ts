@@ -32,6 +32,19 @@ export class CommunityPostController extends Controller {
     this.setStatus(result.statusCode);
     return result;
   }
+
+  @SuccessResponse("200", "OK")
+  @Security("jwt")
+  @Get("posts/my")
+  public async getMyPostList(
+    @Request() req: any,
+    @Query() page: number = 1,
+    @Query() size: number = 10,
+  ): Promise<Result<CommunityPostListResDto>> {
+    const result = await this.service.getMyPostList(req.user.id, page, size);
+    this.setStatus(result.statusCode);
+    return result;
+  }
   
   @SuccessResponse("200", "OK")
   @Get("posts/best")

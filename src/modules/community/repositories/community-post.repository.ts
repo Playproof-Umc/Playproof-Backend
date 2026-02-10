@@ -32,6 +32,21 @@ export class CommunityPostRepository extends PrismaClient {
     });
   }
 
+  // 2-0. 유저별 목록 조회 (마이페이지)
+  async findByUserId(userId: number, skip: number, take: number) {
+    return await this.communityPost.findMany({
+      where: { userId: BigInt(userId) },
+      skip,
+      take,
+      include: {
+        user: true,
+        medias: true,
+        _count: { select: { comments: true, likes: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
   // 2-1. 전체 목록 조회
   async findAll(skip: number, take: number) {
     return await this.communityPost.findMany({
@@ -144,5 +159,12 @@ export class CommunityPostRepository extends PrismaClient {
   // 9. 전체 개수 조회
   async countAll() {
     return await this.communityPost.count();
+  }
+
+  // 10. 유저별 개수 조회 (마이페이지)
+  async countByUserId(userId: number) {
+    return await this.communityPost.count({
+      where: { userId: BigInt(userId) }
+    });
   }
 }
