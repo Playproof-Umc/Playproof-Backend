@@ -119,6 +119,45 @@ export class AzitScheduleParticipationRepository {
     });
   }
 
+  async findParticipantsByStatus(
+    scheduleId: bigint,
+    status: AzitScheduleParticipationStatus,
+  ): Promise<AzitScheduleParticipation[]> {
+    return prisma.azitScheduleParticipation.findMany({
+      where: {
+        scheduleId,
+        isParticipation: status,
+      },
+      include: {
+        member: {
+          select: {
+            id: true,
+            userId: true,
+            user: {
+              select: {
+                id: true,
+                nickname: true,
+                userAvatars: {
+                  where: {
+                    isEquipped: true,
+                  },
+                  take: 1,
+                  select: {
+                    avatar: {
+                      select: {
+                        avatarUrl: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async updateParticipationStatus(
     memberId: bigint,
     scheduleId: bigint,
