@@ -31,6 +31,7 @@ describe('PartyService', () => {
       findParties: jest.fn(),
       countAll: jest.fn(),
       findPartiesByUserIdCursor: jest.fn(),
+      findPartiesByCursor: jest.fn(),
     } as any;
 
     partyService = new PartyService(partyRepository);
@@ -100,6 +101,74 @@ describe('PartyService', () => {
       const result = await partyService.updateParty(partyId, { title: '수정' }, userId);
       expect(isSuccess(result)).toBe(false);
       expect(result.statusCode).toBe(403);
+    });
+  });
+
+  // 5. 파티 목록 조회 (커서 기반) 테스트
+  describe('getParties', () => {
+    const mockParty = {
+      id: BigInt(1),
+      userId: BigInt(1),
+      gameId: BigInt(1),
+      title: '테스트 파티',
+      memo: '테스트 메모',
+      recruitmentPeople: 5,
+      isMicUse: true,
+      azitId: BigInt(10),
+      recruitmentStatus: 'active',
+      viewCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      user: { id: BigInt(1), nickname: '테스트유저', trustScore: 50, userAvatars: [] },
+      tier: { id: BigInt(1), name: '골드' },
+      azit: { id: BigInt(10), azitName: '테스트 아지트', imageUrl: null },
+      postCategories: [{ category: { id: BigInt(1), name: '태그1' } }],
+      postPositions: [{ position: { id: BigInt(1), name: '포지션1' } }],
+      applications: [],
+      _count: { postLikes: 5, postComments: 0 },
+    };
+
+    it('성공: cursor 없이 최신순 목록을 반환해야 한다', async () => {
+      partyRepository.findPartiesByCursor.mockResolvedValue([mockParty] as any);
+
+      const result = await partyService.getParties({ limit: 10, sort: 'latest' });
+
+      expect(isSuccess(result)).toBe(true);
+      expect(partyRepository.findPartiesByCursor).toHaveBeenCalledWith(null, 10, 'latest');
+      if (isSuccess(result)) {
+        expect(result.data.parties).toHaveLength(1);
+        expect(result.data.hasNext).toBe(false);
+        expect(result.data.nextCursor).toBeNull();
+      }
+    });
+
+    it('성공: cursor로 다음 페이지를 요청할 수 있다', async () => {
+      partyRepository.findPartiesByCursor.mockResolvedValue([mockParty] as any);
+
+      const result = await partyService.getParties({ cursor: '100', limit: 10, sort: 'latest' });
+
+      expect(partyRepository.findPartiesByCursor).toHaveBeenCalledWith(
+        { id: BigInt(100) },
+        10,
+        'latest',
+      );
+      expect(isSuccess(result)).toBe(true);
+    });
+
+    it('성공: mostliked 정렬 시 nextCursor가 likeCount:id 형식이어야 한다', async () => {
+      const manyParties = Array(11)
+        .fill(null)
+        .map((_, i) => ({ ...mockParty, id: BigInt(100 - i), _count: { postLikes: 3, postComments: 0 } }));
+      partyRepository.findPartiesByCursor.mockResolvedValue(manyParties as any);
+
+      const result = await partyService.getParties({ limit: 10, sort: 'mostliked' });
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.parties).toHaveLength(10);
+        expect(result.data.hasNext).toBe(true);
+        expect(result.data.nextCursor).toBe('3:91');
+      }
     });
   });
 

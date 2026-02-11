@@ -175,14 +175,95 @@ export class PartyRepository {
   async countByUserId(userId: number) {
     return prisma.partyPost.count({ where: { userId: BigInt(userId) } });
   }
+  /** 커서 기반 파티 목록 조회 */
+  async findPartiesByCursor(
+    cursor: { id: bigint; likeCount?: number } | null,
+    limit: number,
+    sort: "latest" | "mostliked",
+  ) {
+    const takeLimit = limit + 1;
+    const include = {
+      user: { include: { userAvatars: { where: { isEquipped: true }, include: { avatar: true } } } },
+      tier: true,
+      azit: true,
+      postCategories: { include: { category: true } },
+      postPositions: { include: { position: true } },
+      applications: { where: { isAccepted: true } },
+      _count: { select: { postLikes: true, postComments: true } },
+    };
+
+    if (sort === "latest") {
+      const where = cursor ? { id: { lt: cursor.id } } : {};
+      return prisma.partyPost.findMany({
+        where,
+        orderBy: { id: "desc" },
+        take: takeLimit,
+        include,
+      });
+    }
+
+    // mostliked: raw query로 (likeCount, id) 커서 패지네이션
+    if (sort === "mostliked") {
+      return this.findPartiesMostLikedWithCursor(
+        cursor?.id ?? null,
+        cursor?.likeCount ?? null,
+        takeLimit,
+        include,
+      );
+    }
+
+    return [];
+  }
+
+  private async findPartiesMostLikedWithCursor(
+    cursorId: bigint | null,
+    cursorLikeCount: number | null,
+    limit: number,
+    include: any,
+  ) {
+    if (cursorId !== null && cursorLikeCount !== null) {
+      const raw = await prisma.$queryRaw<{ post_id: bigint }[]>`
+        SELECT p.post_id
+        FROM party_posts p
+        LEFT JOIN user_post_like l ON p.post_id = l.post_id
+        GROUP BY p.post_id
+        HAVING (COUNT(l.user_id) < ${cursorLikeCount})
+          OR (COUNT(l.user_id) = ${cursorLikeCount} AND p.post_id < ${cursorId})
+        ORDER BY COUNT(l.user_id) DESC, p.post_id DESC
+        LIMIT ${limit}
+      `;
+      if (raw.length === 0) return [];
+      const ids = raw.map((r) => r.post_id);
+      const parties = await prisma.partyPost.findMany({
+        where: { id: { in: ids } },
+        include,
+      });
+      const orderMap = new Map(ids.map((id, i) => [id.toString(), i]));
+      return parties.sort((a, b) => orderMap.get(a.id.toString())! - orderMap.get(b.id.toString())!);
+    }
+
+    const parties = await prisma.partyPost.findMany({
+      orderBy: [
+        { postLikes: { _count: "desc" } },
+        { id: "desc" },
+      ],
+      take: limit,
+      include,
+    });
+    return parties;
+  }
+
   async findParties(page: number, size: number, sort: "latest" | "mostliked") {
     const skip = (page - 1) * size;
-    const orderBy: any = sort === "latest" ? { createdAt: "desc" } : { postLikes: { _count: "desc" } };
+    const orderBy: any = sort === "latest" ? { id: "desc" } : [{ postLikes: { _count: "desc" } }, { id: "desc" }];
     return prisma.partyPost.findMany({
-      skip, take: size, orderBy,
+      skip,
+      take: size,
+      orderBy,
       include: {
         user: { include: { userAvatars: { where: { isEquipped: true }, include: { avatar: true } } } },
-        tier: true, azit: true,
+        tier: true,
+        azit: true,
         postCategories: { include: { category: true } },
         postPositions: { include: { position: true } },
         applications: { where: { isAccepted: true } },

@@ -41,7 +41,6 @@ export class PartyService {
       dto,
     );
     if (masterError) return masterError;
-    console.log('here1');
 
     // 1-2. 아지트 정보 검증 및 설정
     const { azitId } = dto;
@@ -53,7 +52,6 @@ export class PartyService {
     }
     let azitName: string | null = null;
     let azitIconUrl: string | null = null;
-    console.log('here2');
 
     const azit = await this.partyRepository.findAzitById(azitId);
     if (!azit)
@@ -64,8 +62,6 @@ export class PartyService {
     azitName = azit.azitName;
     azitIconUrl = azit.imageUrl ?? null;
 
-    console.log('here3');
-
     // 1-3. 파티 생성
     const party = await this.partyRepository.createParty(
       dto,
@@ -73,7 +69,6 @@ export class PartyService {
       azitId ?? null,
     );
 
-    console.log('here4');
     if (!party) {
       return internalServerError({
         message: '파티 생성에 실패했습니다.',
@@ -221,20 +216,57 @@ export class PartyService {
     return ok(this.mapToGetResDto(party));
   }
 
-  // 5. 파티 목록 조회 (getParties)
+  // 5. 파티 목록 조회 (getParties) - 커서 기반
   async getParties(dto: PartyListReqDto): Promise<Result<PartyListResDto>> {
-    const { page, size, sort } = dto;
-    const [parties, totalCount] = await Promise.all([
-      this.partyRepository.findParties(page, size, sort),
-      this.partyRepository.countAll(),
-    ]);
+    const { cursor, limit, sort } = dto;
 
-    const hasNext = page * size < totalCount;
+    const parsedCursor = this.parseCursor(cursor, sort);
+    const partiesData = await this.partyRepository.findPartiesByCursor(
+      parsedCursor,
+      limit,
+      sort,
+    );
+
+    const hasNext = partiesData.length > limit;
+    const actualParties = hasNext ? partiesData.slice(0, limit) : partiesData;
+    const lastParty = actualParties[actualParties.length - 1];
+    const nextCursor = this.buildNextCursor(lastParty, hasNext, sort);
+
     return ok({
-      parties: parties.map((p) => this.mapToGetResDto(p)),
-      nextCursor: hasNext ? page + 1 : null,
+      parties: actualParties.map((p) => this.mapToGetResDto(p)),
+      nextCursor,
       hasNext,
     } as PartyListResDto);
+  }
+
+  private parseCursor(
+    cursor: string | undefined,
+    sort: "latest" | "mostliked",
+  ): { id: bigint; likeCount?: number } | null {
+    if (!cursor?.trim()) return null;
+
+    if (sort === "latest") {
+      const id = parseInt(cursor, 10);
+      if (isNaN(id)) return null;
+      return { id: BigInt(id) };
+    }
+
+    const [likeCountStr, idStr] = cursor.split(":");
+    const likeCount = parseInt(likeCountStr, 10);
+    const id = parseInt(idStr, 10);
+    if (isNaN(likeCount) || isNaN(id)) return null;
+    return { id: BigInt(id), likeCount };
+  }
+
+  private buildNextCursor(
+    lastParty: any,
+    hasNext: boolean,
+    sort: "latest" | "mostliked",
+  ): number | string | null {
+    if (!hasNext || !lastParty) return null;
+    if (sort === "latest") return Number(lastParty.id);
+    const likeCount = lastParty._count?.postLikes ?? 0;
+    return `${likeCount}:${lastParty.id}`;
   }
 
   // 6. 마이페이지 - 내가 쓴 파티(매칭) 목록 조회 (커서 기반)

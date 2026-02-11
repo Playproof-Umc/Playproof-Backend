@@ -275,10 +275,11 @@ export class PartyListResDto {
   parties!: PartyGetResDto[];
 
   /**
-   * @example 2
+   * 다음 페이지 커서 (latest: id 숫자, mostliked: "likeCount:id" 형식)
+   * @example 100
    */
-  @IsNumber()
-  nextCursor!: number | null;
+  @IsOptional()
+  nextCursor!: number | string | null;
 
   /**
    * @example true
