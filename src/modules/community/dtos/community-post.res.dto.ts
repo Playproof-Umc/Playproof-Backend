@@ -20,11 +20,15 @@ export class CommunityPostResDto {
 // 2. 게시글 목록 응답
 export class CommunityPostListResDto {
   posts!: CommunityPostResDto[];
-  meta!: {
+  /** 페이지 기반 응답용 (getPostList, getAllPostList, getBestPostList) */
+  meta?: {
     total_count: number;
     current_page: number;
     total_pages: number;
   };
+  /** 커서 기반 응답용 (getMyPostList) */
+  nextCursor?: number | null;
+  hasNext?: boolean;
 }
 
 // 3. 삭제 결과 응답

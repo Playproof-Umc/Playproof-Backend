@@ -13,6 +13,7 @@ describe('CommunityPostService', () => {
       findByGameId: jest.fn(),
       findAll: jest.fn(),
       findByUserId: jest.fn(),
+      findByUserIdCursor: jest.fn(),
       findBestPosts: jest.fn(),
       findById: jest.fn(),
       save: jest.fn(),
@@ -70,8 +71,8 @@ describe('CommunityPostService', () => {
 
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
-        expect(result.data.meta.total_count).toBe(10);
-        expect(result.data.meta.total_pages).toBe(1);
+        expect(result.data.meta!.total_count).toBe(10);
+        expect(result.data.meta!.total_pages).toBe(1);
       }
     });
   });
@@ -86,8 +87,8 @@ describe('CommunityPostService', () => {
 
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
-        expect(result.data.meta.total_count).toBe(15);
-        expect(result.data.meta.total_pages).toBe(2);
+        expect(result.data.meta!.total_count).toBe(15);
+        expect(result.data.meta!.total_pages).toBe(2);
       }
     });
 
@@ -200,7 +201,7 @@ describe('CommunityPostService', () => {
     });
   });
 
-  // 8. 마이페이지 - 내가 쓴 커뮤니티 글 목록 조회 테스트
+  // 8. 마이페이지 - 내가 쓴 커뮤니티 글 목록 조회 테스트 (커서 기반)
   describe('getMyPostList', () => {
     const userId = 1;
     const mockPost = {
@@ -217,40 +218,63 @@ describe('CommunityPostService', () => {
       updatedAt: new Date(),
     };
 
-    it('성공: 내가 쓴 커뮤니티 글 목록과 메타 정보를 반환한다', async () => {
-      communityPostRepository.findByUserId.mockResolvedValue([mockPost] as any);
-      communityPostRepository.countByUserId.mockResolvedValue(1);
+    it('성공: 내가 쓴 커뮤니티 글 목록을 커서 기반으로 반환한다', async () => {
+      communityPostRepository.findByUserIdCursor.mockResolvedValue([mockPost] as any);
 
-      const result = await communityPostService.getMyPostList(userId, 1, 10);
+      const result = await communityPostService.getMyPostList(userId, null, 10);
 
       expect(isSuccess(result)).toBe(true);
       expect(result.statusCode).toBe(200);
-      expect(communityPostRepository.findByUserId).toHaveBeenCalledWith(userId, 0, 10);
-      expect(communityPostRepository.countByUserId).toHaveBeenCalledWith(userId);
+      expect(communityPostRepository.findByUserIdCursor).toHaveBeenCalledWith(userId, null, 10);
       if (isSuccess(result)) {
         expect(result.data.posts).toHaveLength(1);
         expect(result.data.posts[0].post_id).toBe(100);
         expect(result.data.posts[0].title).toBe('내가 쓴 글');
-        expect(result.data.meta.total_count).toBe(1);
-        expect(result.data.meta.total_pages).toBe(1);
+        expect(result.data.hasNext).toBe(false);
+        expect(result.data.nextCursor).toBeNull();
       }
     });
 
-    it('성공: 작성한 글이 없으면 빈 배열을 반환한다', async () => {
-      communityPostRepository.findByUserId.mockResolvedValue([] as any);
-      communityPostRepository.countByUserId.mockResolvedValue(0);
+    it('성공: 다음 페이지가 있으면 hasNext가 true이고 nextCursor가 마지막 항목의 id여야 한다', async () => {
+      const manyPosts = Array(11)
+        .fill(null)
+        .map((_, i) => ({ ...mockPost, id: BigInt(100 - i) }));
+      communityPostRepository.findByUserIdCursor.mockResolvedValue(manyPosts as any);
 
-      const result = await communityPostService.getMyPostList(userId, 1, 10);
+      const result = await communityPostService.getMyPostList(userId, null, 10);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.posts).toHaveLength(10);
+        expect(result.data.hasNext).toBe(true);
+        expect(result.data.nextCursor).toBe(91);
+      }
+    });
+
+    it('성공: 커서로 다음 페이지를 요청할 수 있다', async () => {
+      communityPostRepository.findByUserIdCursor.mockResolvedValue([mockPost] as any);
+
+      const result = await communityPostService.getMyPostList(userId, 200, 10);
+
+      expect(communityPostRepository.findByUserIdCursor).toHaveBeenCalledWith(userId, BigInt(200), 10);
+      expect(isSuccess(result)).toBe(true);
+    });
+
+    it('성공: 작성한 글이 없으면 빈 배열을 반환한다', async () => {
+      communityPostRepository.findByUserIdCursor.mockResolvedValue([] as any);
+
+      const result = await communityPostService.getMyPostList(userId, null, 10);
 
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
         expect(result.data.posts).toHaveLength(0);
-        expect(result.data.meta.total_count).toBe(0);
+        expect(result.data.hasNext).toBe(false);
+        expect(result.data.nextCursor).toBeNull();
       }
     });
 
-    it('실패: 페이지 파라미터가 0 이하면 400을 반환한다', async () => {
-      const result = await communityPostService.getMyPostList(userId, 0, 10);
+    it('실패: size가 0 이하면 400을 반환한다', async () => {
+      const result = await communityPostService.getMyPostList(userId, null, 0);
 
       expect(result.statusCode).toBe(400);
       expect(isSuccess(result)).toBe(false);
