@@ -237,6 +237,21 @@ export class PartyService {
     } as PartyListResDto);
   }
 
+  // 6. 마이페이지 - 내가 쓴 파티(매칭) 목록 조회
+  async getMyParties(userId: number, page: number, size: number): Promise<Result<PartyListResDto>> {
+    const [parties, totalCount] = await Promise.all([
+      this.partyRepository.findPartiesByUserId(userId, page, size),
+      this.partyRepository.countByUserId(userId),
+    ]);
+
+    const hasNext = page * size < totalCount;
+    return ok({
+      parties: parties.map((p) => this.mapToGetResDto(p)),
+      nextCursor: hasNext ? page + 1 : null,
+      hasNext,
+    } as PartyListResDto);
+  }
+
   // 6. 응답 데이터 매핑 (Private)
   private mapToGetResDto(party: any): PartyGetResDto {
     return {

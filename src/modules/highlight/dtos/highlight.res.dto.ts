@@ -222,6 +222,20 @@ export class GetHighlightListResDto {
   pagination!: HighlightListPaginationResDto;
 }
 
+/** 마이페이지 - 내가 쓴 하이라이트 목록 아이템 (아지트 정보 포함) */
+export class MyHighlightListItemResDto extends HighlightListItemResDto {
+  /** 아지트 ID (커뮤니티 직접 등록 시 null) */
+  azit_id?: number | null;
+  /** 아지트 이름 */
+  azit_name?: string | null;
+}
+
+/** 마이페이지 - 내가 쓴 하이라이트 목록 응답 */
+export class GetMyHighlightListResDto {
+  highlights!: MyHighlightListItemResDto[];
+  pagination!: HighlightListPaginationResDto;
+}
+
 export class GetHighlightDetailResDto {
   /**
    * 하이라이트 ID

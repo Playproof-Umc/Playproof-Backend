@@ -1,8 +1,8 @@
 import { injectable } from "tsyringe";
-import { Controller, Post, Patch, Delete, Path, Body, Request, Route, Tags, Security } from "tsoa";
+import { Controller, Get, Post, Patch, Delete, Path, Body, Request, Route, Tags, Security } from "tsoa";
 import { PartyInteractionService } from "../service/party-interaction.service";
 import { Result } from "../../../common/types/result.type";
-import { ApplyPartyResDto, HandleApplicationResDto, ToggleLikeResDto, InteractionMessageResDto } from "../dtos/party-interaction.res.dto";
+import { ApplyPartyResDto, HandleApplicationResDto, ToggleLikeResDto, InteractionMessageResDto, ApplicationListResDto, MyApplicationListResDto } from "../dtos/party-interaction.res.dto";
 import { HandleApplicationReqDto } from "../dtos/party-interaction.req.dto";
 
 @injectable()
@@ -13,7 +13,30 @@ export class PartyInteractionController extends Controller {
     super();
   }
 
-  // 1. 파티 참가 신청 API
+  // 1. 내가 작성한 모든 파티의 신청자 목록 조회 API
+  @Get('me/applications')
+  @Security("jwt")
+  public async getAllMyApplications(
+    @Request() request: any
+  ): Promise<Result<MyApplicationListResDto>> {
+    const result = await this.partyInteractionService.getAllMyApplications(request.user.id);
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  // 2. 특정 파티의 신청자 목록 조회 API
+  @Get('{postId}/applications')
+  @Security("jwt")
+  public async getApplications(
+    @Request() request: any,
+    @Path() postId: number
+  ): Promise<Result<ApplicationListResDto>> {
+    const result = await this.partyInteractionService.getApplications(request.user.id, postId);
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  // 3. 파티 참가 신청 API
   @Post('{postId}/applications')
   @Security("jwt")
   public async applyParty(
@@ -25,7 +48,7 @@ export class PartyInteractionController extends Controller {
     return result;
   }
 
-  // 2. 파티 신청 수락/거절 API
+  // 4. 파티 신청 수락/거절 API
   @Patch('applications/{applicationId}')
   @Security("jwt")
   public async handleApplication(
@@ -38,7 +61,7 @@ export class PartyInteractionController extends Controller {
     return result;
   }
 
-  // 3. 파티 좋아요 토글 API
+  // 5. 파티 좋아요 토글 API
   @Post('{postId}/likes')
   @Security("jwt")
   public async toggleLike(
@@ -50,7 +73,7 @@ export class PartyInteractionController extends Controller {
     return result;
   }
 
-  // 4. 파티 참가 신청 취소 API
+  // 6. 파티 참가 신청 취소 API
   @Delete('applications/{applicationId}')
   @Security("jwt")
   public async cancelApplication(
