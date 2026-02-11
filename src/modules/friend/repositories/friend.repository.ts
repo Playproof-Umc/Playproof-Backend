@@ -194,7 +194,7 @@ export class FriendRepository {
     requestId: number,
   ): Promise<FriendAcceptResDto> {
     const result = await prisma.friend.update({
-      where: { id: requestId },
+      where: { id: BigInt(requestId) },
       data: { friendStatus: 'ACCEPTED' },
     });
     return {

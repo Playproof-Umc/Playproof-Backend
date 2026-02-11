@@ -40,7 +40,7 @@ export class FriendController extends Controller {
   async getFriendList(
     @Request() req: any,
   ): Promise<Result<FriendItemResDto[]>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.friendService.getFriendList(userId);
     this.setStatus(result.statusCode);
     return result;
@@ -53,7 +53,7 @@ export class FriendController extends Controller {
     @Request() req: any,
     @Body() dto: FriendRequestReqDto,
   ): Promise<Result<FriendRequestResDto>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.friendService.friendRequest(userId, dto);
     this.setStatus(result.statusCode);
     return result;
@@ -66,7 +66,7 @@ export class FriendController extends Controller {
   async getSentFriendList(
     @Request() req: any,
   ): Promise<Result<FriendListResDto>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.friendService.getSentFriendList(userId);
     this.setStatus(result.statusCode);
     return result;
@@ -79,7 +79,7 @@ export class FriendController extends Controller {
   async getReceivedFriendList(
     @Request() req: any,
   ): Promise<Result<FriendListResDto>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.friendService.getReceivedFriendList(userId);
     this.setStatus(result.statusCode);
     return result;
@@ -93,7 +93,7 @@ export class FriendController extends Controller {
     @Request() req: any,
     @Path() requestId: number,
   ): Promise<Result<FriendAcceptResDto>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.friendService.acceptFriendRequest(
       userId,
       requestId,
@@ -110,7 +110,7 @@ export class FriendController extends Controller {
     @Request() req: any,
     @Path() friendId: number,
   ): Promise<Result<number>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.friendService.deleteFriend(userId, friendId);
     this.setStatus(result.statusCode);
     return result;
@@ -124,7 +124,7 @@ export class FriendController extends Controller {
     @Request() req: any,
     @Query() nickname: string,
   ): Promise<Result<FriendItemResDto[]>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.friendService.searchFriendByNickname(
       userId,
       nickname,
