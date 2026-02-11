@@ -39,12 +39,12 @@ export class UserController extends Controller {
   constructor(@inject(UserService) private userService: UserService) {
     super();
   }
-  
-  @SuccessResponse("200", "OK") 
-  @Response<BadRequestError>(400, "Bad Request") 
-  @Response<ConflictError>(409, "Conflict")
-  @Response<InternalServerError>(500, "Internal Server Error")
-  @Get("/")
+
+  @SuccessResponse('200', 'OK')
+  @Response<BadRequestError>(400, 'Bad Request')
+  @Response<ConflictError>(409, 'Conflict')
+  @Response<InternalServerError>(500, 'Internal Server Error')
+  @Get('/')
   public async getUserProfile(
     @Query() userId: number,
   ): Promise<Result<UserGetResDto>> {
@@ -60,7 +60,7 @@ export class UserController extends Controller {
   @Response<ConflictError>(409, 'Conflict')
   @Response<InternalServerError>(500, 'Internal Server Error')
   @Security('jwt')
-  @Get('/my-profile')
+  @Get('/me')
   public async getMyProfile(
     @Request() req: any,
   ): Promise<Result<UserGetResDto>> {
@@ -72,23 +72,26 @@ export class UserController extends Controller {
     return result;
   }
 
-  @SuccessResponse("200", "OK") 
-  @Response<BadRequestError>(400, "Bad Request") 
-  @Response<ConflictError>(409, "Conflict")
-  @Response<InternalServerError>(500, "Internal Server Error")
-  @Security("jwt")
-  @Get("/me/feedbacks")
+  @SuccessResponse('200', 'OK')
+  @Response<BadRequestError>(400, 'Bad Request')
+  @Response<ConflictError>(409, 'Conflict')
+  @Response<InternalServerError>(500, 'Internal Server Error')
+  @Security('jwt')
+  @Get('/me/feedbacks')
   public async getMyFeedbacks(
     @Request() req: any,
     @Query() cursor?: number,
-    @Query() limit: number = 10
+    @Query() limit: number = 10,
   ): Promise<Result<UserFeedbackListResDto>> {
-    const userId = req.user.id
-    const result = await this.userService.getUserFeedbacks(userId, cursor ?? null, limit);
+    const userId = req.user.id;
+    const result = await this.userService.getUserFeedbacks(
+      userId,
+      cursor ?? null,
+      limit,
+    );
 
     this.setStatus(result.statusCode);
 
     return result;
   }
-  
 }
