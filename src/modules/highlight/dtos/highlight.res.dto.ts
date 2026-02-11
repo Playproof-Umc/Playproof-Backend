@@ -235,7 +235,6 @@ export class GetMyHighlightListResDto {
   highlights!: MyHighlightListItemResDto[];
   has_next!: boolean;
   next_cursor!: number | null;
-  limit!: number;
 }
 
 export class GetHighlightDetailResDto {

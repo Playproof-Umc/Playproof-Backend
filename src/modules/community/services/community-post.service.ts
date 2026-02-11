@@ -114,15 +114,15 @@ export class CommunityPostService {
   }
 
   // 5-2. 마이페이지 - 내가 쓴 커뮤니티 글 목록 조회 (커서 기반)
-  async getMyPostList(userId: number, cursor: number | null, size: number): Promise<Result<CommunityPostListResDto>> {
-    const sizeError = CommunityPostValidator.validateSize(size);
-    if (sizeError) return sizeError;
+  async getMyPostList(userId: number, cursor: number | null, limit: number): Promise<Result<CommunityPostListResDto>> {
+    const limitError = CommunityPostValidator.validateLimit(limit);
+    if (limitError) return limitError;
 
     const cursorBigInt = cursor ? BigInt(cursor) : null;
-    const postsData = await this.repository.findByUserIdCursor(userId, cursorBigInt, size);
+    const postsData = await this.repository.findByUserIdCursor(userId, cursorBigInt, limit);
 
-    const hasNext = postsData.length > size;
-    const actualPosts = hasNext ? postsData.slice(0, size) : postsData;
+    const hasNext = postsData.length > limit;
+    const actualPosts = hasNext ? postsData.slice(0, limit) : postsData;
     const lastPost = actualPosts[actualPosts.length - 1];
     const nextCursor = hasNext && lastPost ? Number(lastPost.id) : null;
 

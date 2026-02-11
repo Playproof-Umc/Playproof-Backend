@@ -295,7 +295,6 @@ export class HighlightListService {
       highlights,
       has_next: hasNext,
       next_cursor: nextCursor,
-      limit: limitNum,
     });
   }
 

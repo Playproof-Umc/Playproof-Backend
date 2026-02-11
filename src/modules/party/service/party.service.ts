@@ -238,12 +238,12 @@ export class PartyService {
   }
 
   // 6. 마이페이지 - 내가 쓴 파티(매칭) 목록 조회 (커서 기반)
-  async getMyParties(userId: number, cursor: number | null, size: number): Promise<Result<PartyListResDto>> {
+  async getMyParties(userId: number, cursor: number | null, limit: number): Promise<Result<PartyListResDto>> {
     const cursorBigInt = cursor ? BigInt(cursor) : null;
-    const partiesData = await this.partyRepository.findPartiesByUserIdCursor(userId, cursorBigInt, size);
+    const partiesData = await this.partyRepository.findPartiesByUserIdCursor(userId, cursorBigInt, limit);
 
-    const hasNext = partiesData.length > size;
-    const actualParties = hasNext ? partiesData.slice(0, size) : partiesData;
+    const hasNext = partiesData.length > limit;
+    const actualParties = hasNext ? partiesData.slice(0, limit) : partiesData;
     const lastParty = actualParties[actualParties.length - 1];
     const nextCursor = hasNext && lastParty ? Number(lastParty.id) : null;
 

@@ -61,13 +61,13 @@ export class CommunityPostValidator {
     return null;
   }
 
-  // 4-1. 커서 기반 size 검증
-  static validateSize(size: number): Result<any> | null {
-    if (size < 1) {
+  // 4-1. 커서 기반 limit 검증
+  static validateLimit(limit: number): Result<any> | null {
+    if (limit < 1) {
       return badRequest({
         message: "요청 파라미터가 잘못되었습니다.",
         errorCode: "COMMON_INVALID_PARAMETER",
-        errors: [{ field: "size", value: size, reason: "size는 1 이상이어야 합니다." }],
+        errors: [{ field: "limit", value: limit, reason: "limit는 1 이상이어야 합니다." }],
       });
     }
     return null;
