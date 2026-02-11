@@ -1,21 +1,21 @@
 // src/modules/user/user.service.ts
 import { injectable, inject } from "tsyringe";
 import { UserRepository } from "./user.repository";
-import { UserUpdateReqDto} from "./dtos/user.req.dto";
-import { UserSignUpResDto, UserUpdateResDto, UserGetResDto, UserFeedbackListResDto } from "./dtos/user.res.dto"; 
+import { AddGameAccountReqDto, UserUpdateReqDto} from "./dtos/user.req.dto";
+import { UserSignUpResDto, UserUpdateResDto, UserGetResDto, UserFeedbackListResDto, AddGameAccountResDto } from "./dtos/user.res.dto"; 
 import { Result, created, ok, conflict, notFound, success } from "../../common/types/result.type";
 import { UserErrorCode } from "../../common/constants/error-code";
 import { ResultChain } from "../../common/types/result.chain";
-import { checkUserExists } from "./utills/user.validator";
+import { checkDuplicateGameAccount, checkGameExists, checkUserExists } from "./utills/user.validator";
 
 @injectable()
 export class UserService {
   constructor(@inject(UserRepository) private userRepository: UserRepository) {}
 
-  async getUserById(id: number): Promise<Result<UserGetResDto>> {
-    return await ResultChain.of({ id })
+  async getUserById(userId: number): Promise<Result<UserGetResDto>> {
+    return await ResultChain.of({ userId })
       .flatThenAsync(checkUserExists(this.userRepository))
-      .flatThenAsync((data) => this.fetchUserStep(data.id))
+      .flatThenAsync((data) => this.fetchUserStep(data.userId))
       .flatThenAsync((user) => this.fetchUserStatsStep(user))
       .flatThen((stats) => Promise.resolve(ok(this.toUserGetResDto(stats))))
       .getResult();
@@ -77,69 +77,107 @@ export class UserService {
     };
   }
 
-async getUserFeedbacks(
-  id: number, 
-  cursorId: number | null, 
-  limit: number = 10
-): Promise<Result<UserFeedbackListResDto>> {
-  return await ResultChain.of({ id, cursorId, limit })
-    .flatThenAsync(checkUserExists(this.userRepository))
-    .flatThenAsync((data) => this.fetchFeedbacksStep(data))
-    .then((feedbacks) => this.processFeedbacksStep(feedbacks, limit))
-    .flatThen((processed) => Promise.resolve(ok(processed)))
-    .getResult();
-}
-
-private async fetchFeedbacksStep(data: {
-  id: number;
-  cursorId: number | null;
-  limit: number;
-}): Promise<Result<any[]>> {
-  const { id, cursorId, limit } = data;
-  const feedbacksRaw = await this.userRepository.findReceivedFeedbacks(
-    id, 
-    cursorId, 
-    limit
-  );
-  
-  return success(feedbacksRaw);
-}
-
-private processFeedbacksStep(
-  feedbacksRaw: any[], 
-  limit: number
-): UserFeedbackListResDto {
-  let hasNext = false;
-  if (feedbacksRaw.length > limit) {
-    hasNext = true;
-    feedbacksRaw.pop(); 
+  async getUserFeedbacks(
+    userId: number, 
+    cursorId: number | null, 
+    limit: number = 10
+  ): Promise<Result<UserFeedbackListResDto>> {
+    return await ResultChain.of({ userId, cursorId, limit })
+      .flatThenAsync(checkUserExists(this.userRepository))
+      .flatThenAsync((data) => this.fetchFeedbacksStep(data))
+      .then((feedbacks) => this.processFeedbacksStep(feedbacks, limit))
+      .flatThen((processed) => Promise.resolve(ok(processed)))
+      .getResult();
   }
 
-  const nextCursor = feedbacksRaw.length > 0 
-    ? Number(feedbacksRaw[feedbacksRaw.length - 1].id) 
-    : null;
+  private async fetchFeedbacksStep(data: {
+    userId: number;
+    cursorId: number | null;
+    limit: number;
+  }): Promise<Result<any[]>> {
+    const { userId, cursorId, limit } = data;
+    const feedbacksRaw = await this.userRepository.findReceivedFeedbacks(
+      userId, 
+      cursorId, 
+      limit
+    );
+    
+    return success(feedbacksRaw);
+  }
 
-  const feedbacks = feedbacksRaw.map((f) => ({
-    feedbackId: Number(f.id),
-    content: f.content,
-    tsScoreChange: f.tsScoreChange,
-    createdAt: f.createdAt,
-    writer: {
-      id: Number(f.user.id),
-      nickname: f.user.nickname,
-      trustScore: f.user.trustScore,
-      avatarUrl: f.user.userAvatars[0]?.avatar.avatarUrl ?? null,
-    },
-    tags: [
-      ...f.positiveCategories.map((pc: any) => pc.positive.name),
-      ...f.negativeCategories.map((nc: any) => nc.negative.name),
-    ],
-  }));
+  private processFeedbacksStep(
+    feedbacksRaw: any[], 
+    limit: number
+  ): UserFeedbackListResDto {
+    let hasNext = false;
+    if (feedbacksRaw.length > limit) {
+      hasNext = true;
+      feedbacksRaw.pop(); 
+    }
 
-  return {
-    feedbacks,
-    nextCursor,
-    hasNext,
-  };
-}
+    const nextCursor = feedbacksRaw.length > 0 
+      ? Number(feedbacksRaw[feedbacksRaw.length - 1].id) 
+      : null;
+
+    const feedbacks = feedbacksRaw.map((f) => ({
+      feedbackId: Number(f.id),
+      content: f.content,
+      tsScoreChange: f.tsScoreChange,
+      createdAt: f.createdAt,
+      writer: {
+        id: Number(f.user.id),
+        nickname: f.user.nickname,
+        trustScore: f.user.trustScore,
+        avatarUrl: f.user.userAvatars[0]?.avatar.avatarUrl ?? null,
+      },
+      tags: [
+        ...f.positiveCategories.map((pc: any) => pc.positive.name),
+        ...f.negativeCategories.map((nc: any) => nc.negative.name),
+      ],
+    }));
+
+    return {
+      feedbacks,
+      nextCursor,
+      hasNext,
+    };
+  }
+  async addGameAccount(
+    userId: number,
+    dto: AddGameAccountReqDto
+  ): Promise<Result<AddGameAccountResDto>> {
+    return await ResultChain.of({ userId, ...dto })
+      .flatThenAsync(checkUserExists(this.userRepository))
+      .flatThenAsync(checkGameExists())
+      .flatThenAsync(checkDuplicateGameAccount(this.userRepository))
+      .flatThenAsync((data) => this.createGameAccountStep(data))
+      .flatThen((gameAccount) => Promise.resolve(created(this.toAddGameAccountResDto(gameAccount))))
+      .getResult();
+  }
+
+  private async createGameAccountStep(data: AddGameAccountReqDto & { userId: number }): Promise<Result<any>> {
+    const gameAccount = await this.userRepository.createGameAccount(data.userId, {
+      gameId: data.gameId,
+      gameName: data.gameName,
+      accountId: data.accountId,
+      gameNickname: data.gameNickname,
+      tierId: data.tierId,
+      positionId: data.positionId,
+    });
+
+    return success(gameAccount);
+  }
+
+  private toAddGameAccountResDto(gameAccount: any): AddGameAccountResDto {
+    return {
+      userGameInfoId: Number(gameAccount.id),
+      gameId: Number(gameAccount.gameInfo.gameId),
+      gameName: gameAccount.gameInfo.gameName,
+      accountId: gameAccount.accountId,
+      gameNickname: gameAccount.gameInfo.gameNickname,
+      tierId: gameAccount.gameInfo.tierId ? Number(gameAccount.gameInfo.tierId) : null,
+      positionId: gameAccount.gameInfo.positionId ? Number(gameAccount.gameInfo.positionId) : null,
+      isVerified: gameAccount.isVerified,
+    };
+  }
 }

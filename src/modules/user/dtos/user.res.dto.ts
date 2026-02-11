@@ -140,3 +140,45 @@ export class UserFeedbackListResDto {
   /** @example true */
   hasNext!: boolean; 
 }
+
+export class AddGameAccountResDto {
+  /**
+   * @example 1
+   */
+  userGameInfoId!: number;
+
+  /**
+   * @example 1
+   */
+  gameId!: number;
+
+  /**
+   * @example "리그 오브 레전드"
+   */
+  gameName!: string;
+
+  /**
+   * @example "Hide on bush#KR1"
+   */
+  accountId!: string;
+
+  /**
+   * @example "페이커"
+   */
+  gameNickname!: string;
+
+  /**
+   * @example 1
+   */
+  tierId!: number | null;
+
+  /**
+   * @example 2
+   */
+  positionId!: number | null;
+
+  /**
+   * @example false
+   */
+  isVerified!: boolean;
+}

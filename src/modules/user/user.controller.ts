@@ -15,12 +15,13 @@ import {
 } from 'tsoa';
 import { injectable, inject } from 'tsyringe';
 import { UserService } from './user.service';
-import { UserUpdateReqDto } from './dtos/user.req.dto';
+import { AddGameAccountReqDto, UserUpdateReqDto } from './dtos/user.req.dto';
 import {
   UserSignUpResDto,
   UserUpdateResDto,
   UserGetResDto,
   UserFeedbackListResDto,
+  AddGameAccountResDto,
 } from './dtos/user.res.dto';
 import {
   Result,
@@ -92,6 +93,23 @@ export class UserController extends Controller {
 
     this.setStatus(result.statusCode);
 
+    return result;
+  }
+
+  @SuccessResponse('201', 'Created')
+  @Response<BadRequestError>(400, 'Bad Request')
+  @Response<ConflictError>(409, 'Conflict')
+  @Response<InternalServerError>(500, 'Internal Server Error')
+  @Security('jwt')
+  @Middlewares(validationMiddleware(AddGameAccountReqDto))
+  @Post('/me/game-accounts')
+  public async updateMyGameAccounts(
+    @Request() req: any,
+    @Body() body: AddGameAccountReqDto,
+  ): Promise<Result<AddGameAccountResDto>> {
+    const userId = req.user.id;
+    const result = await this.userService.addGameAccount(userId, body);
+    this.setStatus(result.statusCode);
     return result;
   }
 }

@@ -6,6 +6,7 @@ export const UserErrorCode = {
   UNAUTHORIZED: 'USER_UNAUTHORIZED', // 인증되지 않은 사용자
   DUPLICATE_PHONE_NUMBER: 'USER_DUPLICATE_PHONE_NUMBER', // 이미 존재하는 전화번호
   DUPLICATE_NAME: 'USER_DUPLICATE_NAME', // 이미 존재하는 이름
+  DUPLICATE_GAME_ACCOUNT: 'USER_DUPLICATE_GAME_ACCOUNT', // 이미 존재하는 게임 계정
 } as const;
 
 // 파티 및 매칭 관련 에러 코드
