@@ -41,14 +41,14 @@ export class PartyController extends Controller {
 
   @SuccessResponse('200', 'OK')
   @Security('jwt')
-  @Get('/my')
+  @Get('/me')
   public async getMyParties(
     @Request() req: any,
-    @Query() page: number = 1,
-    @Query() size: number = 10,
+    @Query() limit: number = 10,
+    @Query() cursor?: number,
   ): Promise<Result<PartyListResDto>> {
     const userId = req.user.id;
-    const result = await this.partyService.getMyParties(userId, page, size);
+    const result = await this.partyService.getMyParties(userId, cursor ?? null, limit);
     this.setStatus(result.statusCode);
     return result;
   }
@@ -59,8 +59,10 @@ export class PartyController extends Controller {
     @Query() page: number = 1,
     @Query() size: number = 10,
     @Query() sort: 'latest' | 'mostliked' = 'latest',
+    @Query() cursor?: number,
   ): Promise<Result<PartyListResDto>> {
-    const result = await this.partyService.getParties({ page, size, sort });
+    const effectivePage = cursor ?? page;
+    const result = await this.partyService.getParties({ page: effectivePage, size, sort });
     this.setStatus(result.statusCode);
     return result;
   }

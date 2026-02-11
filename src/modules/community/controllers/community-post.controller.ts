@@ -71,10 +71,10 @@ export class CommunityPostController extends Controller {
   @Get('/me')
   public async getMyPostList(
     @Request() req: any,
-    @Query() page: number = 1,
-    @Query() size: number = 10,
+    @Query() limit: number = 10,
+    @Query() cursor?: number,
   ): Promise<Result<CommunityPostListResDto>> {
-    const result = await this.service.getMyPostList(req.user.id, page, size);
+    const result = await this.service.getMyPostList(req.user.id, cursor ?? null, limit);
     this.setStatus(result.statusCode);
     return result;
   }

@@ -30,8 +30,7 @@ describe('PartyService', () => {
       deleteAzit: jest.fn(),
       findParties: jest.fn(),
       countAll: jest.fn(),
-      findPartiesByUserId: jest.fn(),
-      countByUserId: jest.fn(),
+      findPartiesByUserIdCursor: jest.fn(),
     } as any;
 
     partyService = new PartyService(partyRepository);
@@ -129,47 +128,58 @@ describe('PartyService', () => {
       _count: { postLikes: 0, postComments: 0 },
     };
 
-    it('성공: 내가 쓴 파티 목록을 페이징하여 반환해야 한다', async () => {
-      partyRepository.findPartiesByUserId.mockResolvedValue([mockParty] as any);
-      partyRepository.countByUserId.mockResolvedValue(1);
+    it('성공: 내가 쓴 파티 목록을 커서 기반으로 반환해야 한다', async () => {
+      partyRepository.findPartiesByUserIdCursor.mockResolvedValue([mockParty] as any);
 
-      const result = await partyService.getMyParties(userId, 1, 10);
+      const result = await partyService.getMyParties(userId, null, 10);
 
       expect(isSuccess(result)).toBe(true);
       expect(result.statusCode).toBe(200);
-      expect(partyRepository.findPartiesByUserId).toHaveBeenCalledWith(userId, 1, 10);
-      expect(partyRepository.countByUserId).toHaveBeenCalledWith(userId);
+      expect(partyRepository.findPartiesByUserIdCursor).toHaveBeenCalledWith(userId, null, 10);
       if (isSuccess(result)) {
         expect(result.data.parties).toHaveLength(1);
         expect(result.data.parties[0].partyId).toBe(1);
         expect(result.data.parties[0].title).toBe('테스트 파티');
         expect(result.data.hasNext).toBe(false);
+        expect(result.data.nextCursor).toBeNull();
       }
     });
 
-    it('성공: 다음 페이지가 있으면 hasNext가 true여야 한다', async () => {
-      partyRepository.findPartiesByUserId.mockResolvedValue(Array(10).fill(mockParty) as any);
-      partyRepository.countByUserId.mockResolvedValue(25);
+    it('성공: 다음 페이지가 있으면 hasNext가 true이고 nextCursor가 마지막 항목의 id여야 한다', async () => {
+      const manyParties = Array(11)
+        .fill(null)
+        .map((_, i) => ({ ...mockParty, id: BigInt(100 - i) }));
+      partyRepository.findPartiesByUserIdCursor.mockResolvedValue(manyParties as any);
 
-      const result = await partyService.getMyParties(userId, 1, 10);
+      const result = await partyService.getMyParties(userId, null, 10);
 
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
+        expect(result.data.parties).toHaveLength(10);
         expect(result.data.hasNext).toBe(true);
-        expect(result.data.nextCursor).toBe(2);
+        expect(result.data.nextCursor).toBe(91); // 10번째 항목(id: 100-9=91)의 id
       }
     });
 
-    it('성공: 작성한 파티가 없으면 빈 배열을 반환해야 한다', async () => {
-      partyRepository.findPartiesByUserId.mockResolvedValue([] as any);
-      partyRepository.countByUserId.mockResolvedValue(0);
+    it('성공: 커서로 다음 페이지를 요청할 수 있다', async () => {
+      partyRepository.findPartiesByUserIdCursor.mockResolvedValue([mockParty] as any);
 
-      const result = await partyService.getMyParties(userId, 1, 10);
+      const result = await partyService.getMyParties(userId, 200, 10);
+
+      expect(partyRepository.findPartiesByUserIdCursor).toHaveBeenCalledWith(userId, BigInt(200), 10);
+      expect(isSuccess(result)).toBe(true);
+    });
+
+    it('성공: 작성한 파티가 없으면 빈 배열을 반환해야 한다', async () => {
+      partyRepository.findPartiesByUserIdCursor.mockResolvedValue([] as any);
+
+      const result = await partyService.getMyParties(userId, null, 10);
 
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
         expect(result.data.parties).toHaveLength(0);
         expect(result.data.hasNext).toBe(false);
+        expect(result.data.nextCursor).toBeNull();
       }
     });
   });

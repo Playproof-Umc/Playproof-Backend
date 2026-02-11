@@ -113,24 +113,23 @@ export class CommunityPostService {
     });
   }
 
-  // 5-2. 마이페이지 - 내가 쓴 커뮤니티 글 목록 조회
-  async getMyPostList(userId: number, page: number, size: number): Promise<Result<CommunityPostListResDto>> {
-    const paginationError = CommunityPostValidator.validatePagination(page, size);
-    if (paginationError) return paginationError;
+  // 5-2. 마이페이지 - 내가 쓴 커뮤니티 글 목록 조회 (커서 기반)
+  async getMyPostList(userId: number, cursor: number | null, limit: number): Promise<Result<CommunityPostListResDto>> {
+    const limitError = CommunityPostValidator.validateLimit(limit);
+    if (limitError) return limitError;
 
-    const skip = (page - 1) * size;
-    const [posts, total] = await Promise.all([
-      this.repository.findByUserId(userId, skip, size),
-      this.repository.countByUserId(userId),
-    ]);
+    const cursorBigInt = cursor ? BigInt(cursor) : null;
+    const postsData = await this.repository.findByUserIdCursor(userId, cursorBigInt, limit);
+
+    const hasNext = postsData.length > limit;
+    const actualPosts = hasNext ? postsData.slice(0, limit) : postsData;
+    const lastPost = actualPosts[actualPosts.length - 1];
+    const nextCursor = hasNext && lastPost ? Number(lastPost.id) : null;
 
     return ok({
-      posts: posts.map((p) => this.formatPostResponse(p)),
-      meta: {
-        total_count: total,
-        current_page: page,
-        total_pages: Math.ceil(total / size),
-      },
+      posts: actualPosts.map((p) => this.formatPostResponse(p)),
+      nextCursor,
+      hasNext,
     });
   }
 

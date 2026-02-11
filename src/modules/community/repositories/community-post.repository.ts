@@ -32,7 +32,7 @@ export class CommunityPostRepository extends PrismaClient {
     });
   }
 
-  // 2-0. 유저별 목록 조회 (마이페이지)
+  // 2-0. 유저별 목록 조회 (마이페이지) - 페이지 기반
   async findByUserId(userId: number, skip: number, take: number) {
     return await this.communityPost.findMany({
       where: { userId: BigInt(userId) },
@@ -44,6 +44,27 @@ export class CommunityPostRepository extends PrismaClient {
         _count: { select: { comments: true, likes: true } }
       },
       orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  // 2-0-1. 유저별 목록 조회 (마이페이지) - 커서 기반
+  async findByUserIdCursor(userId: number, cursor: bigint | null, limit: number) {
+    const whereCondition: { userId: bigint; id?: { lt: bigint } } = {
+      userId: BigInt(userId),
+    };
+    if (cursor) {
+      whereCondition.id = { lt: cursor };
+    }
+
+    return await this.communityPost.findMany({
+      where: whereCondition,
+      take: limit + 1,
+      include: {
+        user: true,
+        medias: true,
+        _count: { select: { comments: true, likes: true } }
+      },
+      orderBy: { id: 'desc' }
     });
   }
 

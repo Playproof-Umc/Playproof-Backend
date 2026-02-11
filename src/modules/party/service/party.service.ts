@@ -237,17 +237,19 @@ export class PartyService {
     } as PartyListResDto);
   }
 
-  // 6. 마이페이지 - 내가 쓴 파티(매칭) 목록 조회
-  async getMyParties(userId: number, page: number, size: number): Promise<Result<PartyListResDto>> {
-    const [parties, totalCount] = await Promise.all([
-      this.partyRepository.findPartiesByUserId(userId, page, size),
-      this.partyRepository.countByUserId(userId),
-    ]);
+  // 6. 마이페이지 - 내가 쓴 파티(매칭) 목록 조회 (커서 기반)
+  async getMyParties(userId: number, cursor: number | null, limit: number): Promise<Result<PartyListResDto>> {
+    const cursorBigInt = cursor ? BigInt(cursor) : null;
+    const partiesData = await this.partyRepository.findPartiesByUserIdCursor(userId, cursorBigInt, limit);
 
-    const hasNext = page * size < totalCount;
+    const hasNext = partiesData.length > limit;
+    const actualParties = hasNext ? partiesData.slice(0, limit) : partiesData;
+    const lastParty = actualParties[actualParties.length - 1];
+    const nextCursor = hasNext && lastParty ? Number(lastParty.id) : null;
+
     return ok({
-      parties: parties.map((p) => this.mapToGetResDto(p)),
-      nextCursor: hasNext ? page + 1 : null,
+      parties: actualParties.map((p) => this.mapToGetResDto(p)),
+      nextCursor,
       hasNext,
     } as PartyListResDto);
   }
