@@ -13,6 +13,7 @@ import {
   Security,
   SuccessResponse,
   Tags,
+  UploadedFile,
 } from 'tsoa';
 import { inject, injectable } from 'tsyringe';
 import { ChatService } from '../service/chat.service';
@@ -59,6 +60,20 @@ export class ChatController extends Controller {
 
   @SuccessResponse('201', 'Created')
   @Security('jwt')
+  @Post('{roomId}/upload')
+  public async uploadChatImage(
+    @Path() roomId: number,
+    @Request() req: any,
+    @UploadedFile() file?: Express.Multer.File,
+  ): Promise<Result<{ mediaUrl: string }>> {
+    const userId = Number(req.user.id);
+    const result = await this.chatService.uploadChatImage(roomId, userId, file);
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
+  @SuccessResponse('201', 'Created')
+  @Security('jwt')
   @Middlewares(validationMiddleware(ChatMessageCreateReqDto))
   @Post('{roomId}/messages')
   public async createMessage(
@@ -70,7 +85,8 @@ export class ChatController extends Controller {
     const result = await this.chatService.sendMessage(
       roomId,
       userId,
-      dto.content,
+      dto.content ?? '',
+      dto.mediaUrls,
     );
     this.setStatus(result.statusCode);
     return result;

@@ -11,15 +11,17 @@ import {
 import { ChatErrorCode } from '../../../common/constants/error-code';
 import {
   Result,
+  badRequest,
   created,
   internalServerError,
   isSuccess,
   ok,
 } from '../../../common/types/result.type';
+import { uploadFileToS3 } from '../../../common/utils/file-util';
 import {
   validateAzitMemberOnly,
   validateIsRoomCreator,
-  validateMessageContent,
+  validateMessageContentOrMedia,
   validateMembersNotInRoom,
   validateRoomAndMember,
   validateRoomIsPrivate,
@@ -81,6 +83,35 @@ export class ChatService {
     return validateRoomAndMember(this.chatRepository, roomId, userId);
   }
 
+  async uploadChatImage(
+    roomId: number,
+    userId: number,
+    file?: Express.Multer.File,
+  ): Promise<Result<{ mediaUrl: string }>> {
+    const access = await this.getRoomAndMember(roomId, userId);
+    if (!isSuccess(access)) return access;
+
+    if (!file || !file.buffer) {
+      return badRequest({
+        message: '이미지 파일이 필요합니다.',
+        errorCode: ChatErrorCode.MESSAGE_INVALID,
+      });
+    }
+
+    const isImage = file.mimetype?.startsWith('image/');
+    if (!isImage) {
+      return badRequest({
+        message: '이미지 파일만 업로드 가능합니다.',
+        errorCode: ChatErrorCode.MESSAGE_INVALID,
+      });
+    }
+
+    const uploadResult = await uploadFileToS3(file, 'chat');
+    if (!isSuccess(uploadResult)) return uploadResult;
+
+    return created({ mediaUrl: uploadResult.data });
+  }
+
   async joinRoom(
     roomId: number,
     userId: number,
@@ -98,19 +129,24 @@ export class ChatService {
     roomId: number,
     userId: number,
     content: string,
+    mediaUrls?: string[],
   ): Promise<Result<ChatMessageResDto>> {
-    const contentResult = validateMessageContent(content);
-    if (!isSuccess(contentResult)) return contentResult;
+    const messageResult = validateMessageContentOrMedia(content, mediaUrls);
+    if (!isSuccess(messageResult)) return messageResult;
 
     const access = await this.getRoomAndMember(roomId, userId);
     if (!isSuccess(access)) return access;
 
     try {
-      const chat = await this.chatRepository.createChat(
+      const chat = await this.chatRepository.createChatWithMedias(
         roomId,
         access.data.member.id,
-        contentResult.data.content,
+        messageResult.data.content,
+        messageResult.data.mediaUrls ?? [],
       );
+      const mediaUrlsRes = chat.medias
+        .sort((a, b) => Number(a.id) - Number(b.id))
+        .map((m) => m.mediaUrl);
       return created({
         id: Number(chat.id),
         chatRoomId: Number(chat.chatRoomId),
@@ -118,6 +154,7 @@ export class ChatService {
         userId: Number(chat.member.userId),
         nickname: chat.member.user.nickname,
         content: chat.content,
+        mediaUrls: mediaUrlsRes.length > 0 ? mediaUrlsRes : undefined,
         createdAt: chat.createdAt.toISOString(),
       });
     } catch (error) {
@@ -155,6 +192,10 @@ export class ChatService {
         userId: Number(chat.member.userId),
         nickname: chat.member.user.nickname,
         content: chat.content,
+        mediaUrls:
+          chat.medias?.length > 0
+            ? chat.medias.map((m) => m.mediaUrl)
+            : undefined,
         createdAt: chat.createdAt.toISOString(),
       }))
       .reverse();
@@ -173,9 +214,16 @@ export class ChatService {
     userId: number,
     dto: ChatRoomCreateReqDto,
   ): Promise<Result<ChatRoomCreateResDto>> {
+    const memberAccess = await validateAzitMemberOnly(
+      this.chatRepository,
+      userId,
+      BigInt(azitId),
+    );
+    if (!isSuccess(memberAccess)) return memberAccess;
+
     const chatRoom = await this.chatRepository.createChatRoom(
       azitId,
-      userId,
+      memberAccess.data.id,
       dto,
     );
     return created({

@@ -158,14 +158,22 @@ components:
       type: object
       required:
         - roomId
-        - content
       properties:
         roomId:
           type: integer
           example: 1
         content:
           type: string
+          nullable: true
+          description: 메시지 텍스트 (없으면 mediaUrls 필요)
           example: "안녕하세요!"
+        mediaUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+          maxItems: 5
+          description: 업로드 API로 받은 이미지 URL 목록
     ChatMessage:
       type: object
       required:
@@ -195,6 +203,12 @@ components:
         content:
           type: string
           example: "안녕하세요!"
+        mediaUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: 첨부 이미지 URL 목록
         createdAt:
           type: string
           format: date-time

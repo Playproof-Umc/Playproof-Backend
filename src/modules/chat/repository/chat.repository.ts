@@ -7,7 +7,7 @@ import { ChatRoomRole } from '@prisma/client';
 export class ChatRepository {
   async createChatRoom(
     azitId: number,
-    userId: number,
+    memberId: bigint,
     dto: ChatRoomCreateReqDto,
   ) {
     return prisma.chatRoom.create({
@@ -18,7 +18,7 @@ export class ChatRepository {
         isPrivate: dto.isPrivate ?? false,
         chatRoomParticipation: {
           create: {
-            memberId: BigInt(userId),
+            memberId,
             role: ChatRoomRole.CREATOR,
           },
         },
@@ -72,6 +72,41 @@ export class ChatRepository {
     });
   }
 
+  async createChatWithMedias(
+    chatRoomId: number,
+    memberId: bigint,
+    content: string,
+    mediaUrls: string[],
+  ) {
+    return prisma.chat.create({
+      data: {
+        chatRoomId: BigInt(chatRoomId),
+        memberId,
+        content,
+        medias:
+          mediaUrls.length > 0
+            ? {
+                create: mediaUrls.map((mediaUrl) => ({ mediaUrl })),
+              }
+            : undefined,
+      },
+      include: {
+        member: {
+          select: {
+            id: true,
+            userId: true,
+            user: {
+              select: {
+                nickname: true,
+              },
+            },
+          },
+        },
+        medias: true,
+      },
+    });
+  }
+
   async listChats(chatRoomId: number, size: number, cursor?: number) {
     return prisma.chat.findMany({
       where: { chatRoomId: BigInt(chatRoomId) },
@@ -94,6 +129,9 @@ export class ChatRepository {
               },
             },
           },
+        },
+        medias: {
+          orderBy: { id: 'asc' },
         },
       },
     });
@@ -119,20 +157,44 @@ export class ChatRepository {
   }
 
   async isRoomCreator(roomId: number, userId: number) {
+    const room = await prisma.chatRoom.findUnique({
+      where: { id: BigInt(roomId) },
+      select: { azitId: true },
+    });
+    if (!room) return false;
+
+    const azitUser = await this.findAzitUserByUserIdAndAzitId(
+      userId,
+      room.azitId,
+    );
+    if (!azitUser) return false;
+
     const participation = await prisma.chatRoomParticipation.findFirst({
       where: {
         roomId: BigInt(roomId),
-        memberId: BigInt(userId),
+        memberId: azitUser.id,
       },
     });
     return participation?.role === ChatRoomRole.CREATOR;
   }
 
   async isRoomMember(roomId: number, userId: number) {
+    const room = await prisma.chatRoom.findUnique({
+      where: { id: BigInt(roomId) },
+      select: { azitId: true },
+    });
+    if (!room) return false;
+
+    const azitUser = await this.findAzitUserByUserIdAndAzitId(
+      userId,
+      room.azitId,
+    );
+    if (!azitUser) return false;
+
     const participation = await prisma.chatRoomParticipation.findFirst({
       where: {
         roomId: BigInt(roomId),
-        memberId: BigInt(userId),
+        memberId: azitUser.id,
       },
     });
     return Boolean(participation);

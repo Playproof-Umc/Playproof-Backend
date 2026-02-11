@@ -41,6 +41,14 @@ export class ChatMessageResDto {
   content!: string;
 
   /**
+   * @example ["https://bucket.s3.region.amazonaws.com/chat/xxx.jpg"]
+   */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  mediaUrls?: string[];
+
+  /**
    * @example "2025-01-01T00:00:00.000Z"
    */
   @IsString()
