@@ -73,7 +73,7 @@ export class PartyController extends Controller {
     @Body() requestBody: PartyCreateReqDto,
     @Request() req: any,
   ): Promise<Result<PartyCreateResDto>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.partyService.createParty(requestBody, userId);
     this.setStatus(result.statusCode);
     return result;
@@ -96,7 +96,7 @@ export class PartyController extends Controller {
     @Body() requestBody: PartyUpdateReqDto,
     @Request() req: any,
   ): Promise<Result<PartyCreateResDto>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.partyService.updateParty(id, requestBody, userId);
     this.setStatus(result.statusCode);
     return result;
@@ -109,7 +109,7 @@ export class PartyController extends Controller {
     @Path() id: number,
     @Request() req: any,
   ): Promise<Result<PartyDeleteResDto>> {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const result = await this.partyService.deleteParty(id, userId);
     this.setStatus(result.statusCode);
     return result;
