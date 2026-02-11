@@ -44,13 +44,11 @@ export class PartyController extends Controller {
   @Get('/me')
   public async getMyParties(
     @Request() req: any,
-    @Query() page: number = 1,
     @Query() size: number = 10,
     @Query() cursor?: number,
   ): Promise<Result<PartyListResDto>> {
     const userId = req.user.id;
-    const effectivePage = cursor ?? page;
-    const result = await this.partyService.getMyParties(userId, effectivePage, size);
+    const result = await this.partyService.getMyParties(userId, cursor ?? null, size);
     this.setStatus(result.statusCode);
     return result;
   }

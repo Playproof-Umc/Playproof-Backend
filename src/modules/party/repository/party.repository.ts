@@ -148,13 +148,19 @@ export class PartyRepository {
   async countAll() { 
     return prisma.partyPost.count(); 
   }
-  async findPartiesByUserId(userId: number, page: number, size: number) {
-    const skip = (page - 1) * size;
+  /** 커서 기반 페이지네이션 - 마이페이지 내가 쓴 파티 목록 */
+  async findPartiesByUserIdCursor(userId: number, cursor: bigint | null, limit: number) {
+    const whereCondition: { userId: bigint; id?: { lt: bigint } } = {
+      userId: BigInt(userId),
+    };
+    if (cursor) {
+      whereCondition.id = { lt: cursor };
+    }
+
     return prisma.partyPost.findMany({
-      where: { userId: BigInt(userId) },
-      skip,
-      take: size,
-      orderBy: { createdAt: "desc" },
+      where: whereCondition,
+      orderBy: { id: "desc" },
+      take: limit + 1,
       include: {
         user: { include: { userAvatars: { where: { isEquipped: true }, include: { avatar: true } } } },
         tier: true,
