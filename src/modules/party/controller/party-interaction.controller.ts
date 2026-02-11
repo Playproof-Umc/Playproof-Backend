@@ -19,7 +19,7 @@ export class PartyInteractionController extends Controller {
   public async getAllMyApplications(
     @Request() request: any
   ): Promise<Result<MyApplicationListResDto>> {
-    const result = await this.partyInteractionService.getAllMyApplications(request.user.id);
+    const result = await this.partyInteractionService.getAllMyApplications(Number(request.user.id));
     this.setStatus(result.statusCode);
     return result;
   }
@@ -31,7 +31,7 @@ export class PartyInteractionController extends Controller {
     @Request() request: any,
     @Path() postId: number
   ): Promise<Result<ApplicationListResDto>> {
-    const result = await this.partyInteractionService.getApplications(request.user.id, postId);
+    const result = await this.partyInteractionService.getApplications(Number(request.user.id), postId);
     this.setStatus(result.statusCode);
     return result;
   }
@@ -43,7 +43,7 @@ export class PartyInteractionController extends Controller {
     @Request() request: any,
     @Path() postId: number
   ): Promise<Result<ApplyPartyResDto>> {
-    const result = await this.partyInteractionService.applyParty(request.user.id, postId);
+    const result = await this.partyInteractionService.applyParty(Number(request.user.id), postId);
     this.setStatus(result.statusCode);
     return result;
   }
@@ -56,7 +56,7 @@ export class PartyInteractionController extends Controller {
     @Path() applicationId: number,
     @Body() body: HandleApplicationReqDto
   ): Promise<Result<HandleApplicationResDto>> {
-    const result = await this.partyInteractionService.handleApplication(request.user.id, applicationId, body.isAccepted);
+    const result = await this.partyInteractionService.handleApplication(Number(request.user.id), applicationId, body.isAccepted);
     this.setStatus(result.statusCode);
     return result;
   }
@@ -68,7 +68,7 @@ export class PartyInteractionController extends Controller {
     @Request() request: any,
     @Path() postId: number
   ): Promise<Result<ToggleLikeResDto>> {
-    const result = await this.partyInteractionService.toggleLike(request.user.id, postId);
+    const result = await this.partyInteractionService.toggleLike(Number(request.user.id), postId);
     this.setStatus(result.statusCode);
     return result;
   }
@@ -80,7 +80,7 @@ export class PartyInteractionController extends Controller {
     @Request() request: any,
     @Path() applicationId: number
   ): Promise<Result<InteractionMessageResDto>> {
-    const result = await this.partyInteractionService.cancelApplication(request.user.id, applicationId);
+    const result = await this.partyInteractionService.cancelApplication(Number(request.user.id), applicationId);
     this.setStatus(result.statusCode);
     return result;
   }
