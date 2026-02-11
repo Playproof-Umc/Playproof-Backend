@@ -214,9 +214,16 @@ export class ChatService {
     userId: number,
     dto: ChatRoomCreateReqDto,
   ): Promise<Result<ChatRoomCreateResDto>> {
+    const memberAccess = await validateAzitMemberOnly(
+      this.chatRepository,
+      userId,
+      BigInt(azitId),
+    );
+    if (!isSuccess(memberAccess)) return memberAccess;
+
     const chatRoom = await this.chatRepository.createChatRoom(
       azitId,
-      userId,
+      memberAccess.data.id,
       dto,
     );
     return created({
