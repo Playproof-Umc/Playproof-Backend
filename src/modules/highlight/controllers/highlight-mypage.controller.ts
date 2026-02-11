@@ -1,14 +1,32 @@
-import { Controller, Get, Route, Tags, SuccessResponse, Response, Request, Security, Query } from "tsoa";
-import { injectable, inject } from "tsyringe";
-import { HighlightListService } from "../services/highlight-list.service";
-import { GetMyHighlightListResDto } from "../dtos/highlight.res.dto";
-import { Result, BadRequestError, UnauthorizedError, InternalServerError } from "../../../common/types/result.type";
+import {
+  Controller,
+  Get,
+  Route,
+  Tags,
+  SuccessResponse,
+  Response,
+  Request,
+  Security,
+  Query,
+} from 'tsoa';
+import { injectable, inject } from 'tsyringe';
+import { HighlightListService } from '../services/highlight-list.service';
+import { GetMyHighlightListResDto } from '../dtos/highlight.res.dto';
+import {
+  Result,
+  BadRequestError,
+  UnauthorizedError,
+  InternalServerError,
+} from '../../../common/types/result.type';
 
-@Route("highlights")
-@Tags("Highlight")
+@Route('highlights')
+@Tags('Highlight')
 @injectable()
 export class HighlightMypageController extends Controller {
-  constructor(@inject(HighlightListService) private highlightListService: HighlightListService) {
+  constructor(
+    @inject(HighlightListService)
+    private highlightListService: HighlightListService,
+  ) {
     super();
   }
 
@@ -16,12 +34,12 @@ export class HighlightMypageController extends Controller {
    * 마이페이지 - 내가 쓴 하이라이트 목록 조회
    * 아지트 하이라이트 + 커뮤니티 하이라이트 통합 조회
    */
-  @SuccessResponse("200", "OK")
-  @Response<BadRequestError>(400, "Bad Request")
-  @Response<UnauthorizedError>(401, "Unauthorized")
-  @Response<InternalServerError>(500, "Internal Server Error")
-  @Security("jwt")
-  @Get("my")
+  @SuccessResponse('200', 'OK')
+  @Response<BadRequestError>(400, 'Bad Request')
+  @Response<UnauthorizedError>(401, 'Unauthorized')
+  @Response<InternalServerError>(500, 'Internal Server Error')
+  @Security('jwt')
+  @Get('me')
   public async getMyHighlightList(
     @Request() req: any,
     @Query() cursor?: number,

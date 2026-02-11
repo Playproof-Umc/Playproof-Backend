@@ -14,7 +14,7 @@ export class PartyInteractionController extends Controller {
   }
 
   // 1. 내가 작성한 모든 파티의 신청자 목록 조회 API
-  @Get('my/applications')
+  @Get('me/applications')
   @Security("jwt")
   public async getAllMyApplications(
     @Request() request: any

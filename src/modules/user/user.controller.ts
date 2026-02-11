@@ -1,16 +1,39 @@
-// src/modules/user/user.controller.ts
-import { Controller, Post, Body, Route, Tags, SuccessResponse, Response, Get, Query, Queries, Middlewares, Request, Security } from "tsoa";
-import { injectable, inject } from "tsyringe";
-import { UserService } from "./user.service";
-import { UserUpdateReqDto } from "./dtos/user.req.dto";
-import { UserSignUpResDto, UserUpdateResDto, UserGetResDto, UserFeedbackListResDto } from "./dtos/user.res.dto"; 
-import { Result, BadRequestError, ConflictError, InternalServerError } from "../../common/types/result.type";
-import { User } from "@prisma/client";
-import { get } from "node:http";
-import { validationMiddleware } from "../../common/middlewares/validation";
+import {
+  Controller,
+  Post,
+  Body,
+  Route,
+  Tags,
+  SuccessResponse,
+  Response,
+  Get,
+  Query,
+  Queries,
+  Middlewares,
+  Request,
+  Security,
+} from 'tsoa';
+import { injectable, inject } from 'tsyringe';
+import { UserService } from './user.service';
+import { UserUpdateReqDto } from './dtos/user.req.dto';
+import {
+  UserSignUpResDto,
+  UserUpdateResDto,
+  UserGetResDto,
+  UserFeedbackListResDto,
+} from './dtos/user.res.dto';
+import {
+  Result,
+  BadRequestError,
+  ConflictError,
+  InternalServerError,
+} from '../../common/types/result.type';
+import { User } from '@prisma/client';
+import { get } from 'node:http';
+import { validationMiddleware } from '../../common/middlewares/validation';
 
-@Route("users")
-@Tags("User")
+@Route('users')
+@Tags('User')
 @injectable()
 export class UserController extends Controller {
   constructor(@inject(UserService) private userService: UserService) {
@@ -32,16 +55,16 @@ export class UserController extends Controller {
     return result;
   }
 
-  @SuccessResponse("200", "OK") 
-  @Response<BadRequestError>(400, "Bad Request") 
-  @Response<ConflictError>(409, "Conflict")
-  @Response<InternalServerError>(500, "Internal Server Error")
-  @Security("jwt")
-  @Get("/me")
+  @SuccessResponse('200', 'OK')
+  @Response<BadRequestError>(400, 'Bad Request')
+  @Response<ConflictError>(409, 'Conflict')
+  @Response<InternalServerError>(500, 'Internal Server Error')
+  @Security('jwt')
+  @Get('/my-profile')
   public async getMyProfile(
-    @Request() req: any
+    @Request() req: any,
   ): Promise<Result<UserGetResDto>> {
-    const userId = req.user.id
+    const userId = req.user.id;
     const result = await this.userService.getUserById(userId);
 
     this.setStatus(result.statusCode);
