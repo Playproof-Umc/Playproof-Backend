@@ -1,6 +1,7 @@
 // src/modules/azit/repositories/azit-schedule.repository.ts
 import { singleton } from 'tsyringe';
 import { AzitSchedule } from '@prisma/client';
+import { AzitScheduleParticipationStatus } from '../types/azit-schedule-participation-status';
 
 import { prisma } from '../../../common/config/database';
 import { parseScheduleCursor } from '../utils/azit.util';
@@ -96,8 +97,12 @@ export class AzitScheduleRepository {
       ],
       include: {
         participations: {
+          where: {
+            isParticipation: AzitScheduleParticipationStatus.JOIN,
+          },
           select: {
             memberId: true,
+            isParticipation: true,
             member: {
               select: {
                 id: true,

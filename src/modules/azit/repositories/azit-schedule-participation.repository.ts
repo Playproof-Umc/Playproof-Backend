@@ -1,6 +1,7 @@
 // src/modules/azit/repositories/azit-schedule-participation.repository.ts
 import { singleton } from 'tsyringe';
 import { AzitScheduleParticipation, AzitScheduleRole } from '@prisma/client';
+import { AzitScheduleParticipationStatus } from '../types/azit-schedule-participation-status';
 
 import { prisma } from '../../../common/config/database';
 
@@ -14,6 +15,8 @@ export class AzitScheduleParticipationRepository {
     memberId: bigint,
     scheduleId: bigint,
     role: AzitScheduleRole = AzitScheduleRole.PARTICIPANT,
+    status: AzitScheduleParticipationStatus =
+      AzitScheduleParticipationStatus.JOIN,
     tx?: any,
   ): Promise<AzitScheduleParticipation> {
     const client = tx || prisma;
@@ -22,6 +25,7 @@ export class AzitScheduleParticipationRepository {
         memberId,
         scheduleId,
         role,
+        isParticipation: status,
       },
     });
   }
@@ -34,6 +38,7 @@ export class AzitScheduleParticipationRepository {
     return prisma.azitScheduleParticipation.count({
       where: {
         scheduleId,
+        isParticipation: AzitScheduleParticipationStatus.JOIN,
       },
     });
   }
@@ -52,6 +57,28 @@ export class AzitScheduleParticipationRepository {
           memberId,
           scheduleId,
         },
+      },
+      select: {
+        memberId: true,
+        isParticipation: true,
+      },
+    });
+    return (
+      participation?.memberId != null &&
+      participation.isParticipation === AzitScheduleParticipationStatus.JOIN
+    );
+  }
+
+  async existsParticipationWithStatus(
+    memberId: bigint,
+    scheduleId: bigint,
+    status: AzitScheduleParticipationStatus,
+  ): Promise<boolean> {
+    const participation = await prisma.azitScheduleParticipation.findFirst({
+      where: {
+        memberId,
+        scheduleId,
+        isParticipation: status,
       },
       select: {
         memberId: true,
@@ -76,6 +103,77 @@ export class AzitScheduleParticipationRepository {
       },
     });
     return participation !== null;
+  }
+
+  async findParticipation(
+    memberId: bigint,
+    scheduleId: bigint,
+  ): Promise<AzitScheduleParticipation | null> {
+    return prisma.azitScheduleParticipation.findUnique({
+      where: {
+        memberId_scheduleId: {
+          memberId,
+          scheduleId,
+        },
+      },
+    });
+  }
+
+  async findParticipantsByStatus(
+    scheduleId: bigint,
+    status: AzitScheduleParticipationStatus,
+  ): Promise<AzitScheduleParticipation[]> {
+    return prisma.azitScheduleParticipation.findMany({
+      where: {
+        scheduleId,
+        isParticipation: status,
+      },
+      include: {
+        member: {
+          select: {
+            id: true,
+            userId: true,
+            user: {
+              select: {
+                id: true,
+                nickname: true,
+                userAvatars: {
+                  where: {
+                    isEquipped: true,
+                  },
+                  take: 1,
+                  select: {
+                    avatar: {
+                      select: {
+                        avatarUrl: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async updateParticipationStatus(
+    memberId: bigint,
+    scheduleId: bigint,
+    status: AzitScheduleParticipationStatus,
+  ): Promise<AzitScheduleParticipation> {
+    return prisma.azitScheduleParticipation.update({
+      where: {
+        memberId_scheduleId: {
+          memberId,
+          scheduleId,
+        },
+      },
+      data: {
+        isParticipation: status,
+      },
+    });
   }
 
   // ----------------------------------------------------------------------------------------------------

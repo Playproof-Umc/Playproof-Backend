@@ -2,6 +2,7 @@
 import { Type } from 'class-transformer';
 import {
   IsDateString,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -9,6 +10,7 @@ import {
   Min,
   IsString,
 } from 'class-validator';
+import { AzitScheduleParticipationStatus } from '../types/azit-schedule-participation-status';
 
 export class AzitScheduleCreateReqDto {
   /**
@@ -98,4 +100,14 @@ export class AzitScheduleUpdateReqDto {
   @IsOptional()
   @IsDateString()
   recruitment_end_at?: string | null;
+}
+
+export class AzitScheduleParticipationUpdateReqDto {
+  /**
+   * 참여 상태
+   * @example "JOIN"
+   */
+  @IsEnum(AzitScheduleParticipationStatus)
+  @IsNotEmpty()
+  is_participation!: AzitScheduleParticipationStatus;
 }

@@ -1,6 +1,7 @@
 // src/modules/azit/services/azit-schedule-participation.service.ts
 import { injectable, inject } from 'tsyringe';
 import { AzitScheduleRole } from '@prisma/client';
+import { AzitScheduleParticipationStatus } from '../types/azit-schedule-participation-status';
 
 import { AzitRepository } from '../repositories/azit.repository';
 import { AzitScheduleParticipationRepository } from '../repositories/azit-schedule-participation.repository';
@@ -12,7 +13,12 @@ import {
   checkParticipationExists,
   validateParticipation,
 } from '../utils/azit.validator';
-import { noContent, Result } from '../../../common/types/result.type';
+import { noContent, ok, Result } from '../../../common/types/result.type';
+import {
+  AzitScheduleMyParticipationResDto,
+  AzitScheduleParticipantResDto,
+  AzitScheduleParticipantsResDto,
+} from '../dtos/azit-schedule.res.dto';
 
 @injectable()
 export class AzitScheduleParticipationService {
@@ -64,12 +70,27 @@ export class AzitScheduleParticipationService {
       return validationResult;
     }
 
-    // 4. 참여 생성
-    await this.azitScheduleParticipationRepository.createParticipation(
-      azitUser.id,
-      scheduleId,
-      AzitScheduleRole.PARTICIPANT,
-    );
+    // 4. 참여 생성 또는 상태 갱신
+    const existingParticipation =
+      await this.azitScheduleParticipationRepository.findParticipation(
+        azitUser.id,
+        scheduleId,
+      );
+
+    if (existingParticipation) {
+      await this.azitScheduleParticipationRepository.updateParticipationStatus(
+        azitUser.id,
+        scheduleId,
+        AzitScheduleParticipationStatus.JOIN,
+      );
+    } else {
+      await this.azitScheduleParticipationRepository.createParticipation(
+        azitUser.id,
+        scheduleId,
+        AzitScheduleRole.PARTICIPANT,
+        AzitScheduleParticipationStatus.JOIN,
+      );
+    }
 
     return noContent();
   }
@@ -119,12 +140,165 @@ export class AzitScheduleParticipationService {
       return participationCheckResult;
     }
 
-    // 4. 참여 삭제
-    await this.azitScheduleParticipationRepository.deleteParticipation(
+    // 4. 참여 상태 변경 (취소)
+    await this.azitScheduleParticipationRepository.updateParticipationStatus(
       azitUser.id,
       scheduleId,
+      AzitScheduleParticipationStatus.CANCELLED,
     );
 
     return noContent();
+  }
+
+  /**
+   * 아지트 일정 참여 상태를 변경합니다.
+   */
+  async updateParticipationStatus(
+    userId: bigint,
+    azitId: bigint,
+    scheduleId: bigint,
+    status: AzitScheduleParticipationStatus,
+  ): Promise<Result<null>> {
+    const memberCheckResult = await checkAzitAndMember(
+      this.azitRepository,
+      this.azitUserRepository,
+      userId,
+      azitId,
+    );
+    if (memberCheckResult.error) {
+      return memberCheckResult;
+    }
+
+    const scheduleCheckResult = await checkScheduleAndInAzit(
+      this.azitScheduleRepository,
+      scheduleId,
+      azitId,
+    );
+    if (scheduleCheckResult.error) {
+      return scheduleCheckResult;
+    }
+
+    const azitUser = memberCheckResult.data;
+    const schedule = scheduleCheckResult.data;
+
+    if (status === AzitScheduleParticipationStatus.JOIN) {
+      const validationResult = await validateParticipation(
+        azitUser.id,
+        schedule,
+        this.azitScheduleParticipationRepository,
+      );
+      if (validationResult) {
+        return validationResult;
+      }
+    }
+
+    const existingParticipation =
+      await this.azitScheduleParticipationRepository.findParticipation(
+        azitUser.id,
+        scheduleId,
+      );
+
+    if (existingParticipation) {
+      await this.azitScheduleParticipationRepository.updateParticipationStatus(
+        azitUser.id,
+        scheduleId,
+        status,
+      );
+    } else {
+      await this.azitScheduleParticipationRepository.createParticipation(
+        azitUser.id,
+        scheduleId,
+        AzitScheduleRole.PARTICIPANT,
+        status,
+      );
+    }
+
+    return noContent();
+  }
+
+  async getMyParticipationStatus(
+    userId: bigint,
+    azitId: bigint,
+    scheduleId: bigint,
+  ): Promise<Result<AzitScheduleMyParticipationResDto>> {
+    const memberCheckResult = await checkAzitAndMember(
+      this.azitRepository,
+      this.azitUserRepository,
+      userId,
+      azitId,
+    );
+    if (memberCheckResult.error) {
+      return memberCheckResult;
+    }
+
+    const scheduleCheckResult = await checkScheduleAndInAzit(
+      this.azitScheduleRepository,
+      scheduleId,
+      azitId,
+    );
+    if (scheduleCheckResult.error) {
+      return scheduleCheckResult;
+    }
+
+    const azitUser = memberCheckResult.data;
+    const participation =
+      await this.azitScheduleParticipationRepository.findParticipation(
+        azitUser.id,
+        scheduleId,
+      );
+
+    if (!participation) {
+      return ok({
+        is_participation: AzitScheduleParticipationStatus.PENDING,
+        role: null,
+        participation_at: null,
+      } as AzitScheduleMyParticipationResDto);
+    }
+
+    return ok({
+      is_participation: participation.isParticipation,
+      role: participation.role,
+      participation_at: participation.participationAt
+        ? participation.participationAt.toISOString()
+        : null,
+    } as AzitScheduleMyParticipationResDto);
+  }
+
+  async getParticipantsByStatus(
+    userId: bigint,
+    azitId: bigint,
+    scheduleId: bigint,
+    status: AzitScheduleParticipationStatus,
+  ): Promise<Result<AzitScheduleParticipantsResDto>> {
+    const memberCheckResult = await checkAzitAndMember(
+      this.azitRepository,
+      this.azitUserRepository,
+      userId,
+      azitId,
+    );
+    if (memberCheckResult.error) {
+      return memberCheckResult;
+    }
+
+    const scheduleCheckResult = await checkScheduleAndInAzit(
+      this.azitScheduleRepository,
+      scheduleId,
+      azitId,
+    );
+    if (scheduleCheckResult.error) {
+      return scheduleCheckResult;
+    }
+
+    const participations =
+      await this.azitScheduleParticipationRepository.findParticipantsByStatus(
+        scheduleId,
+        status,
+      );
+
+    const participants = participations.map((participation) =>
+      AzitScheduleParticipantResDto.from(participation as any),
+    );
+
+    return ok({ participants } as AzitScheduleParticipantsResDto);
   }
 }
