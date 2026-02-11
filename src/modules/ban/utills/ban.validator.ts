@@ -28,7 +28,7 @@ export const checkSameUser = () => {
 export const checkTargetUserExists = (userRepository: UserRepository) => {
   return async <T extends WithTargetId>(data: T): Promise<Result<T>> => {
     
-    const checkResult = await checkUserExists(userRepository)({ id: data.targetId });
+    const checkResult = await checkUserExists(userRepository)({ userId: data.targetId });
 
     if (!isSuccess(checkResult)) {
       return notFound({ 

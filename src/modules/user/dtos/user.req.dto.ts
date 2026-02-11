@@ -1,6 +1,6 @@
 // src/modules/user/dtos/user.req.dto.ts
 import { Type } from "class-transformer";
-import { IsEmail, IsNumber, isNumber, IsPhoneNumber, IsString, MinLength } from "class-validator";
+import { IsEmail, IsNumber, isNumber, IsOptional, IsPhoneNumber, IsString, MinLength } from "class-validator";
 
 export class UserUpdateReqDto {
   /**
@@ -26,6 +26,49 @@ export class UserUpdateReqDto {
   //   message: '전화번호 형식이 올바르지 않습니다',
   // })
   // phoneNumber!: string;
+}
+
+export class AddGameAccountReqDto {
+  /**
+   * @example 1
+   */
+  @IsNumber()
+  gameId!: number;
+
+  /**
+   * @example "리그 오브 레전드"
+   */
+  @IsString()
+  @MinLength(1)
+  gameName!: string;
+
+  /**
+   * @example "Hide on bush#KR1"
+   */
+  @IsString()
+  @MinLength(1)
+  accountId!: string;
+
+  /**
+   * @example "페이커"
+   */
+  @IsString()
+  @MinLength(1)
+  gameNickname!: string;
+
+  /**
+   * @example 1
+   */
+  @IsNumber()
+  @IsOptional()
+  tierId?: number;
+
+  /**
+   * @example 2
+   */
+  @IsNumber()
+  @IsOptional()
+  positionId?: number;
 }
 
 

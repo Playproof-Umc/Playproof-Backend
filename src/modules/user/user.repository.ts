@@ -3,6 +3,7 @@ import { singleton } from "tsyringe";
 import { prisma } from "../../common/config/database"; 
 import { PlayStyle, Provider } from "@prisma/client";
 import { SignUpReqDto } from '../auth/dtos/auth.req.dto';
+import { AddGameAccountReqDto } from "./dtos/user.req.dto";
 
 @singleton()
 export class UserRepository {
@@ -297,4 +298,39 @@ export class UserRepository {
       data: { trustScore },
     });
   }
+
+  async findUserGameAccount(userId: number, gameId: number, accountId: string) {
+    return await prisma.userGameInfo.findFirst({
+      where: {
+        userId: BigInt(userId),
+        gameInfo: {
+          gameId: BigInt(gameId),
+        },
+        accountId: accountId,
+      },
+    });
+  }
+
+  async createGameAccount(userId: number, data: AddGameAccountReqDto) {
+    const gameInfo = await prisma.gameInfo.create({
+      data: {
+        gameId: BigInt(data.gameId),
+        gameName: data.gameName,
+        gameNickname: data.gameNickname,
+        tierId: data.tierId ? BigInt(data.tierId) : null,
+        positionId: data.positionId ? BigInt(data.positionId) : null,
+      },
+    });
+    return await prisma.userGameInfo.create({
+      data: {
+        userId: BigInt(userId),
+        infoId: gameInfo.id, 
+        accountId: data.accountId,
+        isVerified: true,
+      },
+      include: {
+        gameInfo: true,
+      },
+    });
+    }
 }
