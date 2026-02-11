@@ -2,8 +2,8 @@
 import { injectable, inject } from "tsyringe";
 import * as jose from "jose";
 import { UserRepository } from "../../user/user.repository";
-import { SignUpReqDto, LoginReqDto, SendCertificationReqDto, VerifyCertificationReqDto, VerifiyDuplicateNicknameReqDto} from "../dtos/auth.req.dto";
-import { SignUpResDto, LoginResDto, SendCertificationResDto, VerifyCertificationResDto, VerifiyDuplicateNicknameResDto } from "../dtos/auth.res.dto"
+import { SignUpReqDto, LoginReqDto, SendCertificationReqDto, VerifyCertificationReqDto, VerifiyDuplicateNicknameReqDto, RefreshTokenReqDto } from "../dtos/auth.req.dto";
+import { SignUpResDto, LoginResDto, SendCertificationResDto, VerifyCertificationResDto, VerifiyDuplicateNicknameResDto, RefreshTokenResDto } from "../dtos/auth.res.dto"
 import { Result, created, ok, unauthorized, conflict, isSuccess, badRequest, success} from "../../../common/types/result.type";
 import { ResultChain } from "../../../common/types/result.chain";
 import { sendVerificationSms } from "../../../common/utils/sms.util";
@@ -59,8 +59,8 @@ export class AuthService {
   async login(dto: LoginReqDto): Promise<Result<LoginResDto>> {
     return await ResultChain.of(dto)
       .flatThenAsync((dto) => this.comparePasswordStep(dto))
-      .flatThenAsync((user) => this.generateAccessTokenStep(user))
-      .flatThen((accessToken) => Promise.resolve(ok(this.toLoginResponse(accessToken))))
+      .flatThenAsync((user) => this.generateTokensStep(user))
+      .flatThen((tokens) => Promise.resolve(ok(this.toLoginResponse(tokens))))
       .getResult();
   }
 
@@ -78,7 +78,7 @@ export class AuthService {
   }
 
   private async generateAccessTokenStep(user: any): Promise<Result<string>> {
-    const accessToken = await new jose.SignJWT({ userId: user.id })
+    const accessToken = await new jose.SignJWT({ userId: user.id.toString() })
       .setProtectedHeader({ alg: authConfig.jwtAlgorithm })
       .setIssuedAt()
       .setExpirationTime(authConfig.jwtExpiration)
@@ -86,8 +86,79 @@ export class AuthService {
     return success(accessToken);
   }
 
-  private toLoginResponse(accessToken: string): LoginResDto {
-    return { accessToken };
+  private async generateRefreshTokenStep(user: any): Promise<Result<string>> {
+    const refreshToken = await new jose.SignJWT({ userId: user.id.toString() })
+      .setProtectedHeader({ alg: authConfig.jwtAlgorithm })
+      .setIssuedAt()
+      .setExpirationTime(authConfig.jwtRefreshExpiration)
+      .sign(this.SECRET);
+    return success(refreshToken);
+  }
+
+  private async storeRefreshTokenStep(userId: bigint, refreshToken: string): Promise<Result<boolean>> {
+    const key = `${REDIS_PREFIX.REFRESH_TOKEN}${userId}`;
+    await redisClient.set(key, refreshToken, { EX: authConfig.refreshTokenTTL });
+    return success(true);
+  }
+
+  private async generateTokensStep(user: any): Promise<Result<{ accessToken: string; refreshToken: string }>> {
+    const [accessResult, refreshResult] = await Promise.all([
+      this.generateAccessTokenStep(user),
+      this.generateRefreshTokenStep(user),
+    ]);
+    if (!isSuccess(accessResult)) return accessResult;
+    if (!isSuccess(refreshResult)) return refreshResult;
+
+    const storeResult = await this.storeRefreshTokenStep(user.id, refreshResult.data);
+    if (!isSuccess(storeResult)) return storeResult;
+
+    return success({ accessToken: accessResult.data, refreshToken: refreshResult.data });
+  }
+
+  private toLoginResponse(tokens: { accessToken: string; refreshToken: string }): LoginResDto {
+    return { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+  }
+
+  async refresh(dto: RefreshTokenReqDto): Promise<Result<RefreshTokenResDto>> {
+    return await ResultChain.of(dto)
+      .flatThenAsync((dto) => this.verifyRefreshTokenStep(dto.refreshToken))
+      .flatThenAsync((userId) => this.validateStoredRefreshTokenStep(userId, dto.refreshToken))
+      .flatThenAsync(async (userId) => {
+        const user = await this.userRepository.findById(Number(userId));
+        if (!user) return unauthorized({ message: "유저를 찾을 수 없습니다.", errorCode: "AUTH_REFRESH_FAILED" });
+        return success(user);
+      })
+      .flatThenAsync((user) => this.generateTokensStep(user))
+      .flatThenAsync((tokens) =>
+        Promise.resolve(ok<RefreshTokenResDto>({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken })),
+      )
+      .getResult();
+  }
+
+  private async verifyRefreshTokenStep(refreshToken: string): Promise<Result<bigint>> {
+    try {
+      const { payload } = await jose.jwtVerify(refreshToken, this.SECRET);
+      const userId = payload.userId;
+      if (userId === undefined || userId === null) {
+        return unauthorized({ message: "유효하지 않은 리프레시 토큰입니다.", errorCode: "AUTH_REFRESH_FAILED" });
+      }
+      const userIdStr = typeof userId === "number" ? String(userId) : typeof userId === "string" ? userId : null;
+      if (userIdStr === null) {
+        return unauthorized({ message: "유효하지 않은 리프레시 토큰입니다.", errorCode: "AUTH_REFRESH_FAILED" });
+      }
+      return success(BigInt(userIdStr));
+    } catch {
+      return unauthorized({ message: "만료되었거나 유효하지 않은 리프레시 토큰입니다.", errorCode: "AUTH_REFRESH_FAILED" });
+    }
+  }
+
+  private async validateStoredRefreshTokenStep(userId: bigint, refreshToken: string): Promise<Result<bigint>> {
+    const key = `${REDIS_PREFIX.REFRESH_TOKEN}${userId}`;
+    const storedToken = await redisClient.get(key);
+    if (!storedToken || storedToken !== refreshToken) {
+      return unauthorized({ message: "만료되었거나 유효하지 않은 리프레시 토큰입니다.", errorCode: "AUTH_REFRESH_FAILED" });
+    }
+    return success(userId);
   }
 
   async sendCertification(dto: SendCertificationReqDto): Promise<Result<SendCertificationResDto>> {
