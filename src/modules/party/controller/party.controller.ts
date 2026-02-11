@@ -46,9 +46,13 @@ export class PartyController extends Controller {
     @Request() req: any,
     @Query() page: number = 1,
     @Query() size: number = 10,
+    @Query() cursor?: number,
   ): Promise<Result<PartyListResDto>> {
     const userId = req.user.id;
-    const result = await this.partyService.getMyParties(userId, page, size);
+    // cursor 지원: 다른 API(chat, highlight 등)와 동일하게 cursor로 다음 페이지 요청 가능
+    // cursor가 있으면 page 대신 cursor 사용 (nextCursor가 다음 페이지 번호이므로)
+    const effectivePage = cursor ?? page;
+    const result = await this.partyService.getMyParties(userId, effectivePage, size);
     this.setStatus(result.statusCode);
     return result;
   }
