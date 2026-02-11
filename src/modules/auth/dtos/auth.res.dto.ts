@@ -21,6 +21,23 @@ export class LoginResDto {
    * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
    */
   accessToken!: string;
+
+  /**
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+   */
+  refreshToken!: string;
+}
+
+export class RefreshTokenResDto {
+  /**
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+   */
+  accessToken!: string;
+
+  /**
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+   */
+  refreshToken!: string;
 }
 
 export class SendCertificationResDto {

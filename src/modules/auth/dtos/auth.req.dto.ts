@@ -105,3 +105,12 @@ export class VerifiyDuplicateNicknameReqDto {
   @IsNotEmpty()
   nickname!: string;
 }
+
+export class RefreshTokenReqDto {
+  /**
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+   */
+  @IsString()
+  @IsNotEmpty({ message: "리프레시 토큰은 필수입니다." })
+  refreshToken!: string;
+}
