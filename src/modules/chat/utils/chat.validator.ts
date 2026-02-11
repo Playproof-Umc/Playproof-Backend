@@ -131,6 +131,9 @@ export function validateRoomIsPrivate(
   return ok(true);
 }
 
+export const CHAT_MEDIA_MAX_COUNT = 5;
+export const CHAT_MEDIA_MAX_URL_LENGTH = 2048;
+
 export function validateMessageContent(
   content?: string,
 ): Result<{ content: string }> {
@@ -150,4 +153,39 @@ export function validateMessageContent(
   }
 
   return ok({ content: trimmed });
+}
+
+export function validateMessageContentOrMedia(
+  content?: string,
+  mediaUrls?: string[],
+): Result<{ content: string; mediaUrls?: string[] }> {
+  const trimmed = content?.trim() ?? '';
+  const hasContent = trimmed.length > 0;
+  const hasMedia = mediaUrls && mediaUrls.length > 0;
+
+  if (!hasContent && !hasMedia) {
+    return badRequest({
+      message: '메시지 내용 또는 이미지가 필요합니다.',
+      errorCode: ChatErrorCode.MESSAGE_INVALID,
+    });
+  }
+
+  if (trimmed.length > CHAT_MESSAGE_MAX_LENGTH) {
+    return badRequest({
+      message: `메시지는 ${CHAT_MESSAGE_MAX_LENGTH}자를 초과할 수 없습니다.`,
+      errorCode: ChatErrorCode.MESSAGE_TOO_LONG,
+    });
+  }
+
+  if (mediaUrls && mediaUrls.length > CHAT_MEDIA_MAX_COUNT) {
+    return badRequest({
+      message: `이미지는 최대 ${CHAT_MEDIA_MAX_COUNT}개까지 첨부할 수 있습니다.`,
+      errorCode: ChatErrorCode.MESSAGE_INVALID,
+    });
+  }
+
+  return ok({
+    content: trimmed,
+    mediaUrls: mediaUrls?.filter((url) => url?.trim().length > 0),
+  });
 }

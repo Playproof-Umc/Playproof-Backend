@@ -72,6 +72,41 @@ export class ChatRepository {
     });
   }
 
+  async createChatWithMedias(
+    chatRoomId: number,
+    memberId: bigint,
+    content: string,
+    mediaUrls: string[],
+  ) {
+    return prisma.chat.create({
+      data: {
+        chatRoomId: BigInt(chatRoomId),
+        memberId,
+        content,
+        medias:
+          mediaUrls.length > 0
+            ? {
+                create: mediaUrls.map((mediaUrl) => ({ mediaUrl })),
+              }
+            : undefined,
+      },
+      include: {
+        member: {
+          select: {
+            id: true,
+            userId: true,
+            user: {
+              select: {
+                nickname: true,
+              },
+            },
+          },
+        },
+        medias: true,
+      },
+    });
+  }
+
   async listChats(chatRoomId: number, size: number, cursor?: number) {
     return prisma.chat.findMany({
       where: { chatRoomId: BigInt(chatRoomId) },
@@ -94,6 +129,9 @@ export class ChatRepository {
               },
             },
           },
+        },
+        medias: {
+          orderBy: { id: 'asc' },
         },
       },
     });

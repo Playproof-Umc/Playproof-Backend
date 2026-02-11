@@ -13,6 +13,7 @@ import {
   Security,
   SuccessResponse,
   Tags,
+  UploadedFile,
 } from 'tsoa';
 import { inject, injectable } from 'tsyringe';
 import { ChatService } from '../service/chat.service';
@@ -57,6 +58,24 @@ export class ChatController extends Controller {
     return result;
   }
 
+  /**
+   * 채팅 이미지 업로드
+   * 파일을 S3에 업로드하고 URL을 반환합니다. 반환된 URL을 메시지 전송 시 mediaUrls에 포함하세요.
+   */
+  @SuccessResponse('201', 'Created')
+  @Security('jwt')
+  @Post('{roomId}/upload')
+  public async uploadChatImage(
+    @Path() roomId: number,
+    @Request() req: any,
+    @UploadedFile() file?: Express.Multer.File,
+  ): Promise<Result<{ mediaUrl: string }>> {
+    const userId = Number(req.user.id);
+    const result = await this.chatService.uploadChatImage(roomId, userId, file);
+    this.setStatus(result.statusCode);
+    return result;
+  }
+
   @SuccessResponse('201', 'Created')
   @Security('jwt')
   @Middlewares(validationMiddleware(ChatMessageCreateReqDto))
@@ -70,7 +89,8 @@ export class ChatController extends Controller {
     const result = await this.chatService.sendMessage(
       roomId,
       userId,
-      dto.content,
+      dto.content ?? '',
+      dto.mediaUrls,
     );
     this.setStatus(result.statusCode);
     return result;

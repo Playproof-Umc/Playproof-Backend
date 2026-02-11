@@ -51,7 +51,12 @@ describe('socket chat', () => {
         ok({ roomId, azitId: 1 }),
       ),
       sendMessage: jest.fn(
-        async (roomId: number, userId: number, content: string) =>
+        async (
+          roomId: number,
+          userId: number,
+          content: string,
+          mediaUrls?: string[],
+        ) =>
           ok({
             id: 1,
             chatRoomId: roomId,
@@ -59,6 +64,7 @@ describe('socket chat', () => {
             userId,
             nickname: 'tester',
             content,
+            mediaUrls,
             createdAt: new Date().toISOString(),
           }),
       ),
@@ -156,6 +162,43 @@ describe('socket chat', () => {
     expect(response.error.code).toBe(ChatErrorCode.MESSAGE_INVALID);
 
     socket.disconnect();
+  });
+
+  it('accepts message with mediaUrls only (image-only message)', async () => {
+    const receiver = await connectUser(2);
+    const sender = await connectUser(1);
+
+    const joinAck1 = await new Promise<any>((resolve) => {
+      sender.emit('joinRoom', { roomId: 1 }, resolve);
+    });
+    const joinAck2 = await new Promise<any>((resolve) => {
+      receiver.emit('joinRoom', { roomId: 1 }, resolve);
+    });
+
+    expect(joinAck1.ok).toBe(true);
+    expect(joinAck2.ok).toBe(true);
+
+    const messagePromise = waitForEvent<any>(receiver, 'newMessage');
+    const sendAck = await new Promise<any>((resolve) => {
+      sender.emit(
+        'sendMessage',
+        {
+          roomId: 1,
+          mediaUrls: ['https://bucket.s3.region.amazonaws.com/chat/xxx.jpg'],
+        },
+        resolve,
+      );
+    });
+
+    expect(sendAck.ok).toBe(true);
+    const message = await messagePromise;
+    expect(message.content).toBe('');
+    expect(message.mediaUrls).toEqual([
+      'https://bucket.s3.region.amazonaws.com/chat/xxx.jpg',
+    ]);
+
+    sender.disconnect();
+    receiver.disconnect();
   });
 
   it('propagates joinRoom permission errors', async () => {

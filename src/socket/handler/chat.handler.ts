@@ -4,7 +4,7 @@ import { ChatService } from '../../modules/chat/service/chat.service';
 import { isSuccess } from '../../common/types/result.type';
 import { JoinRoomPayload, SendMessagePayload, SocketAuthData } from '../types';
 import { getRoomKey } from '../utils/rooms';
-import { validateMessageContent } from '../../modules/chat/utils/chat.validator';
+import { validateMessageContentOrMedia } from '../../modules/chat/utils/chat.validator';
 
 type Ack = (data: unknown) => void;
 
@@ -60,11 +60,15 @@ export class ChatRoomHandler {
     const authData = socket.data as SocketAuthData;
     const { userId } = authData;
     const roomId = this.parseRoomId(payload);
-    const contentResult = validateMessageContent(payload?.content);
-    if (!roomId || !isSuccess(contentResult)) {
+    const messageResult = validateMessageContentOrMedia(
+      payload?.content,
+      payload?.mediaUrls,
+    );
+    if (!roomId || !isSuccess(messageResult)) {
       const response = {
-        code: contentResult.error?.code ?? 'INVALID_MESSAGE',
-        message: contentResult.error?.message ?? '메시지 입력이 올바르지 않습니다.',
+        code: messageResult.error?.code ?? 'INVALID_MESSAGE',
+        message:
+          messageResult.error?.message ?? '메시지 입력이 올바르지 않습니다.',
       };
       socket.emit('error', response);
       ack?.({ ok: false, error: response });
@@ -74,7 +78,8 @@ export class ChatRoomHandler {
     const result = await this.chatService.sendMessage(
       roomId,
       userId,
-      contentResult.data.content,
+      messageResult.data.content,
+      messageResult.data.mediaUrls,
     );
     if (!isSuccess(result)) {
       socket.emit('error', result.error);

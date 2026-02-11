@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsNumber,
@@ -32,11 +34,23 @@ export class ChatMessageCreateReqDto {
   /**
    * @example "안녕하세요!"
    */
+  @IsOptional()
   @IsString()
   @MaxLength(CHAT_MESSAGE_MAX_LENGTH, {
     message: `메시지는 ${CHAT_MESSAGE_MAX_LENGTH}자를 초과할 수 없습니다.`,
   })
-  content!: string;
+  content?: string;
+
+  /**
+   * 이미지 업로드 API로 받은 URL 목록 (최대 5개)
+   * @example ["https://bucket.s3.region.amazonaws.com/chat/xxx.jpg"]
+   */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5)
+  @IsString({ each: true })
+  @MaxLength(2048, { each: true })
+  mediaUrls?: string[];
 }
 
 export enum ChatType {

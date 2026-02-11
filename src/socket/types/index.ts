@@ -8,7 +8,8 @@ export type JoinRoomPayload = {
 
 export type SendMessagePayload = {
   roomId: number;
-  content: string;
+  content?: string;
+  mediaUrls?: string[];
 };
 
 export type FriendOnlineStatusPayload = {
