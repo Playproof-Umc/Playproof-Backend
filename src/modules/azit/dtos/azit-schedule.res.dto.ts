@@ -138,6 +138,13 @@ export class AzitScheduleDetailResDto extends AzitScheduleResDto {
   is_participated!: boolean;
 
   /**
+   * 현재 사용자가 작성자인지 여부
+   * @example true
+   */
+  @IsBoolean()
+  is_creator!: boolean;
+
+  /**
    * 참여자 목록
    * @example []
    */
@@ -159,6 +166,7 @@ export class AzitScheduleDetailResDto extends AzitScheduleResDto {
       participations: any[];
     },
     isParticipated: boolean,
+    isCreator: boolean,
     participants: AzitScheduleParticipantResDto[],
   ): AzitScheduleDetailResDto {
     const base = AzitScheduleResDto.from(schedule);
@@ -166,6 +174,7 @@ export class AzitScheduleDetailResDto extends AzitScheduleResDto {
       ...base,
       current_participants: schedule.participations.length,
       is_participated: isParticipated,
+      is_creator: isCreator,
       participants: participants,
     };
   }
