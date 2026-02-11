@@ -78,7 +78,7 @@ export class AuthService {
   }
 
   private async generateAccessTokenStep(user: any): Promise<Result<string>> {
-    const accessToken = await new jose.SignJWT({ userId: user.id.toString() })
+    const accessToken = await new jose.SignJWT({ userId: Number(user.id) })
       .setProtectedHeader({ alg: authConfig.jwtAlgorithm })
       .setIssuedAt()
       .setExpirationTime(authConfig.jwtExpiration)
@@ -87,7 +87,7 @@ export class AuthService {
   }
 
   private async generateRefreshTokenStep(user: any): Promise<Result<string>> {
-    const refreshToken = await new jose.SignJWT({ userId: user.id.toString() })
+    const refreshToken = await new jose.SignJWT({ userId: Number(user.id) })
       .setProtectedHeader({ alg: authConfig.jwtAlgorithm })
       .setIssuedAt()
       .setExpirationTime(authConfig.jwtRefreshExpiration)

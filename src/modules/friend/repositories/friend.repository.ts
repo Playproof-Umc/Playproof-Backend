@@ -58,6 +58,7 @@ export class FriendRepository {
         OR: [{ fromUserId: BigInt(userId) }, { toUserId: BigInt(userId) }],
       },
       select: {
+        id: true,
         fromUserId: true,
         toUserId: true,
         friendAt: true,
@@ -104,6 +105,7 @@ export class FriendRepository {
         friendStatus: { in: ['PENDING', 'ACCEPTED'] },
       },
       select: {
+        id: true,
         fromUserId: true,
         toUserId: true,
         friendAt: true,
@@ -150,6 +152,7 @@ export class FriendRepository {
         friendStatus: 'PENDING',
       },
       select: {
+        id: true,
         fromUserId: true,
         toUserId: true,
         friendAt: true,
@@ -194,7 +197,7 @@ export class FriendRepository {
     requestId: number,
   ): Promise<FriendAcceptResDto> {
     const result = await prisma.friend.update({
-      where: { id: requestId },
+      where: { id: BigInt(requestId) },
       data: { friendStatus: 'ACCEPTED' },
     });
     return {
@@ -229,6 +232,7 @@ export class FriendRepository {
         ],
       },
       select: {
+        id: true,
         fromUserId: true,
         toUserId: true,
         friendAt: true,
@@ -267,6 +271,7 @@ export class FriendRepository {
       },
     });
     return result.map((result) => ({
+      requestId: Number(result.id),
       userId:
         Number(result.fromUserId) === userId
           ? Number(result.toUserId)
@@ -291,6 +296,7 @@ export class FriendRepository {
 
 export type FriendWithUsers = Prisma.FriendGetPayload<{
   select: {
+    id: true;
     fromUserId: true;
     toUserId: true;
     friendAt: true;

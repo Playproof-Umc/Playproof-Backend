@@ -110,11 +110,20 @@ export class PartyUpdateReqDto {
 
 export class PartyListReqDto {
   /**
-   * @example 1
+   * 커서 (다음 페이지 조회 시 이전 응답의 nextCursor 사용)
+   * latest: id 숫자, mostliked: "likeCount:id" 형식
+   * @example 100
+   */
+  @IsOptional()
+  @IsString()
+  cursor?: string;
+
+  /**
+   * @example 10
    */
   @IsOptional()
   @IsNumber()
-  page: number = 1;
+  limit: number = 10;
 
   /**
    * @example "latest"
@@ -122,11 +131,4 @@ export class PartyListReqDto {
   @IsOptional()
   @IsString()
   sort: "latest" | "mostliked" = "latest";
-
-  /**
-   * @example 10
-   */
-  @IsOptional()
-  @IsNumber()
-  size: number = 10;
 }

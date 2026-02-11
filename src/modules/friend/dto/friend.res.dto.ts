@@ -39,6 +39,13 @@ export class FriendRequestResDto {
 
 export class FriendItemResDto {
   /**
+   * 친구 요청/관계 ID (수락 시 PATCH /friends/requests/{requestId}, 삭제 시 DELETE /friends/{friendId}에 사용)
+   * @example 3
+   */
+  @IsNumber()
+  requestId!: number;
+
+  /**
    * 친구 사용자 ID
    * @example 1
    */

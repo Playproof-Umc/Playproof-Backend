@@ -38,6 +38,7 @@ export class FriendService {
     const targetUserId = isSender ? friend.toUserId : friend.fromUserId;
 
     return {
+      requestId: Number(friend.id),
       userId: Number(targetUserId),
       nickname: targetUser?.nickname ?? null,
       avatarUrl: targetUser?.userAvatars[0]?.avatar.avatarUrl ?? null,
