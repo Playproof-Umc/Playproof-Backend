@@ -102,6 +102,24 @@ export class PartyInteractionRepository {
     });
   }
 
+  // 6-1. 여러 파티에 대한 사용자 좋아요 여부 일괄 조회
+  async findLikesByUserAndPostIds(userId: number, postIds: bigint[]) {
+    if (postIds.length === 0) return [];
+    return prisma.userPostLike.findMany({
+      where: { userId: BigInt(userId), postId: { in: postIds } },
+      select: { postId: true },
+    });
+  }
+
+  // 1-1. 여러 파티에 대한 사용자 신청 상태 일괄 조회
+  async findApplicationsByUserAndPostIds(userId: number, postIds: bigint[]) {
+    if (postIds.length === 0) return [];
+    return prisma.application.findMany({
+      where: { userId: BigInt(userId), postId: { in: postIds } },
+      select: { postId: true, isAccepted: true },
+    });
+  }
+
   // 7. 좋아요 등록
   async createLike(userId: number, postId: number) {
     return prisma.userPostLike.create({

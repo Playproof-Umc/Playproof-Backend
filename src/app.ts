@@ -9,6 +9,7 @@ import { RegisterRoutes } from "./build/routes";
 import * as swaggerJson from "./build/swagger.json";
 //import swaggerDocument from "./build/swagger.json"; 
 import { globalErrorHandler } from "./common/middlewares/error.handler";
+import { optionalAuthMiddleware } from "./common/middlewares/optional-auth.middleware";
 import { upload } from "./common/config/multer";
 
 // BigInt JSON 변환 처리
@@ -29,6 +30,7 @@ app.use(cors({
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(optionalAuthMiddleware);
 
 const asyncapiSpecPath = path.resolve(process.cwd(), "asyncapi.yaml");
 const asyncapiHtmlPath = path.resolve(process.cwd(), "public", "asyncapi.html");

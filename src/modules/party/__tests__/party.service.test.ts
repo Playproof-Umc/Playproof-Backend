@@ -1,5 +1,6 @@
 import { PartyService } from '../service/party.service';
 import { PartyRepository } from '../repository/party.repository';
+import { PartyInteractionRepository } from '../repository/party-interaction.repository';
 import { PartyErrorCode } from '../../../common/constants/error-code';
 import { prisma } from '../../../common/config/database';
 import { PartyCreateReqDto } from '../dtos/party.req.dto';
@@ -12,8 +13,16 @@ jest.mock('../../../common/config/database', () => ({
 describe('PartyService', () => {
   let partyService: PartyService;
   let partyRepository: jest.Mocked<PartyRepository>;
+  let partyInteractionRepository: jest.Mocked<PartyInteractionRepository>;
 
   beforeEach(() => {
+    partyInteractionRepository = {
+      findLike: jest.fn(),
+      findApplication: jest.fn(),
+      findLikesByUserAndPostIds: jest.fn().mockResolvedValue([]),
+      findApplicationsByUserAndPostIds: jest.fn().mockResolvedValue([]),
+    } as any;
+
     partyRepository = {
       findPartyPostByPostId: jest.fn(),
       findGameById: jest.fn(),
@@ -34,7 +43,7 @@ describe('PartyService', () => {
       findPartiesByCursor: jest.fn(),
     } as any;
 
-    partyService = new PartyService(partyRepository);
+    partyService = new PartyService(partyRepository, partyInteractionRepository);
     jest.clearAllMocks();
   });
 
@@ -131,12 +140,14 @@ describe('PartyService', () => {
     it('성공: cursor 없이 최신순 목록을 반환해야 한다', async () => {
       partyRepository.findPartiesByCursor.mockResolvedValue([mockParty] as any);
 
-      const result = await partyService.getParties({ limit: 10, sort: 'latest' });
+      const result = await partyService.getParties({ limit: 10, sort: 'latest' }, null);
 
       expect(isSuccess(result)).toBe(true);
       expect(partyRepository.findPartiesByCursor).toHaveBeenCalledWith(null, 10, 'latest');
       if (isSuccess(result)) {
         expect(result.data.parties).toHaveLength(1);
+        expect(result.data.parties[0].isLiked).toBe(false);
+        expect(result.data.parties[0].applicationStatus).toBe('none');
         expect(result.data.hasNext).toBe(false);
         expect(result.data.nextCursor).toBeNull();
       }
@@ -145,7 +156,7 @@ describe('PartyService', () => {
     it('성공: cursor로 다음 페이지를 요청할 수 있다', async () => {
       partyRepository.findPartiesByCursor.mockResolvedValue([mockParty] as any);
 
-      const result = await partyService.getParties({ cursor: '100', limit: 10, sort: 'latest' });
+      const result = await partyService.getParties({ cursor: '100', limit: 10, sort: 'latest' }, null);
 
       expect(partyRepository.findPartiesByCursor).toHaveBeenCalledWith(
         { id: BigInt(100) },
@@ -161,7 +172,7 @@ describe('PartyService', () => {
         .map((_, i) => ({ ...mockParty, id: BigInt(100 - i), _count: { postLikes: 3, postComments: 0 } }));
       partyRepository.findPartiesByCursor.mockResolvedValue(manyParties as any);
 
-      const result = await partyService.getParties({ limit: 10, sort: 'mostliked' });
+      const result = await partyService.getParties({ limit: 10, sort: 'mostliked' }, null);
 
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
