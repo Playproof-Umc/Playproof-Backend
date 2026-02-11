@@ -233,7 +233,9 @@ export class MyHighlightListItemResDto extends HighlightListItemResDto {
 /** 마이페이지 - 내가 쓴 하이라이트 목록 응답 */
 export class GetMyHighlightListResDto {
   highlights!: MyHighlightListItemResDto[];
-  pagination!: HighlightListPaginationResDto;
+  has_next!: boolean;
+  next_cursor!: number | null;
+  limit!: number;
 }
 
 export class GetHighlightDetailResDto {

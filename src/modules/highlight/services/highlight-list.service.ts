@@ -293,11 +293,9 @@ export class HighlightListService {
 
     return ok({
       highlights,
-      pagination: {
-        has_next: hasNext,
-        next_cursor: nextCursor,
-        limit: limitNum,
-      },
+      has_next: hasNext,
+      next_cursor: nextCursor,
+      limit: limitNum,
     });
   }
 

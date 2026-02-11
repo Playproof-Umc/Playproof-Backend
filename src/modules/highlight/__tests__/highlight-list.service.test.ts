@@ -67,7 +67,7 @@ describe('HighlightListService', () => {
         expect(result.data.highlights[0].azit_id).toBe(10);
         expect(result.data.highlights[0].azit_name).toBe('테스트 아지트');
         expect(result.data.highlights[0].visibility).toBe('PUBLIC');
-        expect(result.data.pagination.has_next).toBe(false);
+        expect(result.data.has_next).toBe(false);
       }
     });
 
@@ -103,8 +103,8 @@ describe('HighlightListService', () => {
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
         expect(result.data.highlights).toHaveLength(20);
-        expect(result.data.pagination.has_next).toBe(true);
-        expect(result.data.pagination.next_cursor).toBe(119); // 100 + 19
+        expect(result.data.has_next).toBe(true);
+        expect(result.data.next_cursor).toBe(119); // 100 + 19
       }
     });
 
@@ -131,8 +131,8 @@ describe('HighlightListService', () => {
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
         expect(result.data.highlights).toHaveLength(0);
-        expect(result.data.pagination.has_next).toBe(false);
-        expect(result.data.pagination.next_cursor).toBeNull();
+        expect(result.data.has_next).toBe(false);
+        expect(result.data.next_cursor).toBeNull();
       }
     });
 
