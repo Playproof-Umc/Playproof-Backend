@@ -11,11 +11,13 @@ describe('FriendService', () => {
   let userRepository: jest.Mocked<UserRepository>;
 
   const createMockFriendWithUsers = (
+    requestId: number,
     fromUserId: number,
     toUserId: number,
     fromUserNickname: string,
   ): FriendWithUsers =>
     ({
+      id: BigInt(requestId),
       fromUserId: BigInt(fromUserId),
       toUserId: BigInt(toUserId),
       friendAt: new Date(),
@@ -129,8 +131,8 @@ describe('FriendService', () => {
     it('받은 친구 신청 목록을 정상적으로 반환해야 한다', async () => {
       // Given: userId가 2인 유저가 받은 신청 목록 (userId 1이 2에게 신청)
       const receivedList = [
-        createMockFriendWithUsers(1, 2, '신청자1'),
-        createMockFriendWithUsers(3, 2, '신청자2'),
+        createMockFriendWithUsers(10, 1, 2, '신청자1'),
+        createMockFriendWithUsers(11, 3, 2, '신청자2'),
       ];
 
       userRepository.findById.mockResolvedValue({ id: BigInt(2) } as any);
@@ -146,8 +148,10 @@ describe('FriendService', () => {
       expect(data).not.toBeNull();
       expect(data!.friends).toHaveLength(2);
       // 받은 친구 신청이므로 sender(fromUser) 정보가 표시되어야 함
+      expect(data!.friends[0].requestId).toBe(10);
       expect(data!.friends[0].userId).toBe(1);
       expect(data!.friends[0].nickname).toBe('신청자1');
+      expect(data!.friends[1].requestId).toBe(11);
       expect(data!.friends[1].userId).toBe(3);
       expect(data!.friends[1].nickname).toBe('신청자2');
       expect(friendRepository.getReceivedRequestList).toHaveBeenCalledWith(2);
