@@ -20,7 +20,10 @@ import { upload } from "./common/config/multer";
 export const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:5173', // 임시 프론트엔드 주소 허용
+  origin: [
+    'http://localhost:5173', 
+    'https://playproof-frontend.vercel.app'
+  ],
   credentials: true
 }));
 app.use(morgan("dev"));
