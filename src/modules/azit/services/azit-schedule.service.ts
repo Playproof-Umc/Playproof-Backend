@@ -128,9 +128,19 @@ export class AzitScheduleService {
     // 3. 사용자의 AzitUser ID 조회 (참여 여부 확인용)
     const azitUserId = memberCheckResult.data.id;
 
-    // 4. DTO 매핑
+    // 4. 각 스케줄의 작성자 여부 확인
+    const creatorChecks = await Promise.all(
+      schedules.map((schedule: any) =>
+        this.azitScheduleParticipationRepository.isScheduleCreator(
+          azitUserId,
+          schedule.id,
+        ),
+      ),
+    );
+
+    // 5. DTO 매핑
     const mappedSchedules: AzitScheduleDetailResDto[] = schedules.map(
-      (schedule: any) => {
+      (schedule: any, index: number) => {
         // 참여자 정보 매핑
         const participants: AzitScheduleParticipantResDto[] =
           schedule.participations.map((participation: any) =>
@@ -142,15 +152,19 @@ export class AzitScheduleService {
           (p: any) => p.memberId === azitUserId,
         );
 
+        // 사용자가 작성자인지 여부 확인
+        const isCreator = creatorChecks[index];
+
         return AzitScheduleDetailResDto.fromDetail(
           schedule,
           isParticipated,
+          isCreator,
           participants,
         );
       },
     );
 
-    // 5. 다음 커서 생성
+    // 6. 다음 커서 생성
     let nextCursor: string | null = null;
     if (hasNext && mappedSchedules.length > 0) {
       const lastSchedule = schedules[mappedSchedules.length - 1];
