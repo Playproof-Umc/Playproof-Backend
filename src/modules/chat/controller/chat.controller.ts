@@ -58,10 +58,6 @@ export class ChatController extends Controller {
     return result;
   }
 
-  /**
-   * 채팅 이미지 업로드
-   * 파일을 S3에 업로드하고 URL을 반환합니다. 반환된 URL을 메시지 전송 시 mediaUrls에 포함하세요.
-   */
   @SuccessResponse('201', 'Created')
   @Security('jwt')
   @Post('{roomId}/upload')
