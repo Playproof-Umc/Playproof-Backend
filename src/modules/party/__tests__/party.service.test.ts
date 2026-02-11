@@ -147,6 +147,7 @@ describe('PartyService', () => {
       if (isSuccess(result)) {
         expect(result.data.parties).toHaveLength(1);
         expect(result.data.parties[0].isLiked).toBe(false);
+        expect(result.data.parties[0].isApplied).toBe(false);
         expect(result.data.parties[0].applicationStatus).toBe('none');
         expect(result.data.hasNext).toBe(false);
         expect(result.data.nextCursor).toBeNull();

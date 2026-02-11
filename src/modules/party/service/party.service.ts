@@ -236,9 +236,10 @@ export class PartyService {
     const nextCursor = this.buildNextCursor(lastParty, hasNext, sort);
 
     const statusMap = await this.getUserPartyStatusMap(userId, actualParties.map((p) => p.id));
+    const defaultStatus = { isLiked: false, isApplied: false, applicationStatus: 'none' as const };
 
     return ok({
-      parties: actualParties.map((p) => this.mapToGetResDto(p, statusMap.get(p.id.toString()) ?? { isLiked: false, applicationStatus: 'none' as const })),
+      parties: actualParties.map((p) => this.mapToGetResDto(p, statusMap.get(p.id.toString()) ?? defaultStatus)),
       nextCursor,
       hasNext,
     } as PartyListResDto);
@@ -285,9 +286,10 @@ export class PartyService {
     const nextCursor = hasNext && lastParty ? Number(lastParty.id) : null;
 
     const statusMap = await this.getUserPartyStatusMap(userId, actualParties.map((p) => p.id));
+    const defaultStatus = { isLiked: false, isApplied: false, applicationStatus: 'none' as const };
 
     return ok({
-      parties: actualParties.map((p) => this.mapToGetResDto(p, statusMap.get(p.id.toString()) ?? { isLiked: false, applicationStatus: 'none' as const })),
+      parties: actualParties.map((p) => this.mapToGetResDto(p, statusMap.get(p.id.toString()) ?? defaultStatus)),
       nextCursor,
       hasNext,
     } as PartyListResDto);
@@ -296,21 +298,22 @@ export class PartyService {
   private async getUserPartyStatus(
     userId: number | null,
     postId: bigint,
-  ): Promise<{ isLiked: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }> {
-    if (!userId) return { isLiked: false, applicationStatus: 'none' };
+  ): Promise<{ isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }> {
+    if (!userId) return { isLiked: false, isApplied: false, applicationStatus: 'none' };
     const [like, application] = await Promise.all([
       this.partyInteractionRepository.findLike(userId, Number(postId)),
       this.partyInteractionRepository.findApplication(userId, Number(postId)),
     ]);
     const applicationStatus = !application ? 'none' : application.isAccepted ? 'accepted' : 'pending';
-    return { isLiked: !!like, applicationStatus };
+    const isApplied = applicationStatus !== 'none';
+    return { isLiked: !!like, isApplied, applicationStatus };
   }
 
   private async getUserPartyStatusMap(
     userId: number | null,
     postIds: bigint[],
-  ): Promise<Map<string, { isLiked: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }>> {
-    const map = new Map<string, { isLiked: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }>();
+  ): Promise<Map<string, { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }>> {
+    const map = new Map<string, { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }>();
     if (!userId || postIds.length === 0) return map;
 
     const [likes, applications] = await Promise.all([
@@ -325,7 +328,8 @@ export class PartyService {
       const isLiked = likedPostIds.has(key);
       const app = applicationByPost.get(key);
       const applicationStatus = app === undefined ? 'none' : app ? 'accepted' : 'pending';
-      map.set(key, { isLiked, applicationStatus });
+      const isApplied = applicationStatus !== 'none';
+      map.set(key, { isLiked, isApplied, applicationStatus });
     }
     return map;
   }
@@ -333,7 +337,7 @@ export class PartyService {
   // 7. 응답 데이터 매핑 (Private)
   private mapToGetResDto(
     party: any,
-    status: { isLiked: boolean; applicationStatus: 'none' | 'pending' | 'accepted' },
+    status: { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' },
   ): PartyGetResDto {
     return {
       partyId: Number(party.id),
@@ -365,6 +369,7 @@ export class PartyService {
         positionName: pp.position.name,
       })),
       isLiked: status.isLiked,
+      isApplied: status.isApplied,
       applicationStatus: status.applicationStatus,
       createdAt: party.createdAt,
       updatedAt: party.updatedAt,
