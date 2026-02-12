@@ -23,7 +23,7 @@ export const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173', 
-    'https://playproof-frontend.vercel.app'
+    'https://playproof-frontend-afyn.vercel.app/'
   ],
   credentials: true
 }));
