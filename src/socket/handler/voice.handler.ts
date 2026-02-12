@@ -1,15 +1,16 @@
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { container } from 'tsyringe';
 import { ChatService } from '../../modules/chat/service/chat.service';
 import { isSuccess } from '../../common/types/result.type';
 import { JoinRoomPayload, SocketAuthData } from '../types';
+import { getRoomKey } from '../utils/rooms';
 
 type Ack = (data: unknown) => void;
 
 export class VoiceRoomHandler {
   private chatService: ChatService;
 
-  constructor() {
+  constructor(private io: Server) {
     this.chatService = container.resolve(ChatService);
   }
 
@@ -35,11 +36,16 @@ export class VoiceRoomHandler {
       return;
     }
 
-    // LiveKit에서 참여자 상태를 관리
+    socket.to(getRoomKey(roomId)).emit('voiceUserJoined', {
+      roomId,
+      userId,
+    });
     ack?.({ ok: true, data: { roomId } });
   }
 
   handleVoiceLeave(socket: Socket, payload: JoinRoomPayload, ack?: Ack) {
+    const authData = socket.data as SocketAuthData;
+    const { userId } = authData;
     const roomId = this.parseRoomId(payload);
     if (!roomId) {
       const response = {
@@ -51,7 +57,10 @@ export class VoiceRoomHandler {
       return;
     }
 
-    // LiveKit에서 참여자 상태를 관리
+    socket.to(getRoomKey(roomId)).emit('voiceUserLeft', {
+      roomId,
+      userId,
+    });
     ack?.({ ok: true, data: { roomId } });
   }
 

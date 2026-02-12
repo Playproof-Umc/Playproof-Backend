@@ -25,7 +25,7 @@ export class SocketServer {
     });
 
     this.chatHandler = new ChatRoomHandler(this.io);
-    this.voiceHandler = new VoiceRoomHandler();
+    this.voiceHandler = new VoiceRoomHandler(this.io);
     this.presenceService = new PresenceService();
     this.presenceHandler = new PresenceHandler(this.io, this.presenceService);
 
