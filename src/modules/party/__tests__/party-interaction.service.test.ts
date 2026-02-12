@@ -1,6 +1,7 @@
 import { PartyInteractionService } from '../service/party-interaction.service';
 import { PartyInteractionRepository } from '../repository/party-interaction.repository';
 import { PartyRepository } from '../repository/party.repository';
+import { AzitUserRepository } from '../../azit/repositories/azit-user.repository';
 import { isSuccess } from '../../../common/types/result.type';
 import { PartyErrorCode } from '../../../common/constants/error-code';
 
@@ -8,6 +9,7 @@ describe('PartyInteractionService', () => {
   let service: PartyInteractionService;
   let interactionRepo: jest.Mocked<PartyInteractionRepository>;
   let partyRepo: jest.Mocked<PartyRepository>;
+  let azitUserRepository: jest.Mocked<AzitUserRepository>;
 
   beforeEach(() => {
     interactionRepo = {
@@ -25,7 +27,12 @@ describe('PartyInteractionService', () => {
       findPartyPostByPostId: jest.fn(),
     } as any;
 
-    service = new PartyInteractionService(interactionRepo, partyRepo);
+    azitUserRepository = {
+      findAzitUserByUserIdAndAzitId: jest.fn(),
+      createAzitUser: jest.fn(),
+    } as any;
+
+    service = new PartyInteractionService(interactionRepo, partyRepo, azitUserRepository);
     jest.clearAllMocks();
   });
 
