@@ -22,8 +22,9 @@ export const app = express();
 
 app.use(cors({
   origin: [
-    'http://localhost:5173', 
-    'https://playproof-frontend-afyn.vercel.app/'
+    'http://localhost:5173', // 1. 로컬 테스트 주소
+    'https://playproof-frontend-afyn.vercel.app', // 2. 현재 배포된 특정 주소 (끝에 / 제거)
+    /^https:\/\/playproof-frontend.*\.vercel\.app$/ // 3. 정규표현식 (따옴표 제거)
   ],
   credentials: true
 }));
