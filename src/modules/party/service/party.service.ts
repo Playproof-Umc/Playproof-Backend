@@ -1,5 +1,6 @@
 import { injectable, inject } from 'tsyringe';
 import { PartyRepository } from '../repository/party.repository';
+import { PartyInteractionRepository } from '../repository/party-interaction.repository';
 import {
   Result,
   created,
@@ -28,6 +29,7 @@ import { PartyValidator } from '../utils/party.validator';
 export class PartyService {
   constructor(
     @inject(PartyRepository) private partyRepository: PartyRepository,
+    @inject(PartyInteractionRepository) private partyInteractionRepository: PartyInteractionRepository,
   ) {}
 
   // 1. 파티 생성 (createParty)
@@ -205,7 +207,7 @@ export class PartyService {
   }
 
   // 4. 파티 단건 조회 (getParty)
-  async getParty(id: number): Promise<Result<PartyGetResDto>> {
+  async getParty(id: number, userId: number | null): Promise<Result<PartyGetResDto>> {
     const party = await this.partyRepository.incrementViewCount(id);
     if (!party)
       return notFound({
@@ -213,11 +215,12 @@ export class PartyService {
         errorCode: PartyErrorCode.NOT_FOUND,
       });
 
-    return ok(this.mapToGetResDto(party));
+    const status = await this.getUserPartyStatus(userId, party.id);
+    return ok(this.mapToGetResDto(party, status));
   }
 
   // 5. 파티 목록 조회 (getParties) - 커서 기반
-  async getParties(dto: PartyListReqDto): Promise<Result<PartyListResDto>> {
+  async getParties(dto: PartyListReqDto, userId: number | null): Promise<Result<PartyListResDto>> {
     const { cursor, limit, sort } = dto;
 
     const parsedCursor = this.parseCursor(cursor, sort);
@@ -232,8 +235,11 @@ export class PartyService {
     const lastParty = actualParties[actualParties.length - 1];
     const nextCursor = this.buildNextCursor(lastParty, hasNext, sort);
 
+    const statusMap = await this.getUserPartyStatusMap(userId, actualParties.map((p) => p.id));
+    const defaultStatus = { isLiked: false, isApplied: false, applicationStatus: 'none' as const };
+
     return ok({
-      parties: actualParties.map((p) => this.mapToGetResDto(p)),
+      parties: actualParties.map((p) => this.mapToGetResDto(p, statusMap.get(p.id.toString()) ?? defaultStatus)),
       nextCursor,
       hasNext,
     } as PartyListResDto);
@@ -279,15 +285,60 @@ export class PartyService {
     const lastParty = actualParties[actualParties.length - 1];
     const nextCursor = hasNext && lastParty ? Number(lastParty.id) : null;
 
+    const statusMap = await this.getUserPartyStatusMap(userId, actualParties.map((p) => p.id));
+    const defaultStatus = { isLiked: false, isApplied: false, applicationStatus: 'none' as const };
+
     return ok({
-      parties: actualParties.map((p) => this.mapToGetResDto(p)),
+      parties: actualParties.map((p) => this.mapToGetResDto(p, statusMap.get(p.id.toString()) ?? defaultStatus)),
       nextCursor,
       hasNext,
     } as PartyListResDto);
   }
 
-  // 6. 응답 데이터 매핑 (Private)
-  private mapToGetResDto(party: any): PartyGetResDto {
+  private async getUserPartyStatus(
+    userId: number | null,
+    postId: bigint,
+  ): Promise<{ isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }> {
+    if (!userId) return { isLiked: false, isApplied: false, applicationStatus: 'none' };
+    const [like, application] = await Promise.all([
+      this.partyInteractionRepository.findLike(userId, Number(postId)),
+      this.partyInteractionRepository.findApplication(userId, Number(postId)),
+    ]);
+    const applicationStatus = !application ? 'none' : application.isAccepted ? 'accepted' : 'pending';
+    const isApplied = applicationStatus !== 'none';
+    return { isLiked: !!like, isApplied, applicationStatus };
+  }
+
+  private async getUserPartyStatusMap(
+    userId: number | null,
+    postIds: bigint[],
+  ): Promise<Map<string, { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }>> {
+    const map = new Map<string, { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }>();
+    if (!userId || postIds.length === 0) return map;
+
+    const [likes, applications] = await Promise.all([
+      this.partyInteractionRepository.findLikesByUserAndPostIds(userId, postIds),
+      this.partyInteractionRepository.findApplicationsByUserAndPostIds(userId, postIds),
+    ]);
+    const likedPostIds = new Set(likes.map((l) => l.postId.toString()));
+    const applicationByPost = new Map(applications.map((a) => [a.postId.toString(), a.isAccepted]));
+
+    for (const postId of postIds) {
+      const key = postId.toString();
+      const isLiked = likedPostIds.has(key);
+      const app = applicationByPost.get(key);
+      const applicationStatus = app === undefined ? 'none' : app ? 'accepted' : 'pending';
+      const isApplied = applicationStatus !== 'none';
+      map.set(key, { isLiked, isApplied, applicationStatus });
+    }
+    return map;
+  }
+
+  // 7. 응답 데이터 매핑 (Private)
+  private mapToGetResDto(
+    party: any,
+    status: { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' },
+  ): PartyGetResDto {
     return {
       partyId: Number(party.id),
       gameId: Number(party.gameId),
@@ -317,6 +368,9 @@ export class PartyService {
         positionId: Number(pp.position.id),
         positionName: pp.position.name,
       })),
+      isLiked: status.isLiked,
+      isApplied: status.isApplied,
+      applicationStatus: status.applicationStatus,
       createdAt: party.createdAt,
       updatedAt: party.updatedAt,
     };

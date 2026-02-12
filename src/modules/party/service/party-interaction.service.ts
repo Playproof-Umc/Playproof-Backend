@@ -1,7 +1,9 @@
 import { injectable, inject } from "tsyringe";
+import { AzitUserRole } from "@prisma/client";
 import { Result, created, ok, notFound, forbidden, conflict } from "../../../common/types/result.type";
 import { PartyInteractionRepository } from '../repository/party-interaction.repository';
 import { PartyRepository } from '../repository/party.repository';
+import { AzitUserRepository } from "../../azit/repositories/azit-user.repository";
 import { ApplyPartyResDto, HandleApplicationResDto, ToggleLikeResDto, InteractionMessageResDto, ApplicationListResDto, ApplicationItemDto, MyApplicationListResDto, ApplicationItemWithPostDto } from "../dtos/party-interaction.res.dto";
 import { PartyErrorCode } from "../../../common/constants/error-code";
 import { PartyValidator } from "../utils/party.validator";
@@ -10,7 +12,8 @@ import { PartyValidator } from "../utils/party.validator";
 export class PartyInteractionService {
   constructor(
     @inject(PartyInteractionRepository) private readonly interactionRepo: PartyInteractionRepository,
-    @inject(PartyRepository) private readonly partyRepo: PartyRepository
+    @inject(PartyRepository) private readonly partyRepo: PartyRepository,
+    @inject(AzitUserRepository) private readonly azitUserRepository: AzitUserRepository,
   ) {}
 
   private formatDate(date?: Date): string {
@@ -54,6 +57,17 @@ export class PartyInteractionService {
 
     // 2-2. 상태 업데이트
     const updated = await this.interactionRepo.updateApplicationStatus(applicationId, isAccepted);
+
+    // 2-3. 수락 시: 신청자를 해당 아지트 멤버(AzitUser)로 추가 (아지트 GET 조회 가능하도록)
+    if (updated.isAccepted && application.post.azitId) {
+      const applicantUserId = application.userId;
+      const azitId = application.post.azitId;
+      const existingMember = await this.azitUserRepository.findAzitUserByUserIdAndAzitId(applicantUserId, azitId);
+      if (!existingMember) {
+        await this.azitUserRepository.createAzitUser(applicantUserId, azitId, AzitUserRole.MEMBER);
+      }
+    }
+
     return ok({
       applicationId: Number(updated.id),
       partyId: Number(updated.postId),

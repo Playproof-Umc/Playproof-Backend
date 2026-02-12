@@ -138,6 +138,28 @@ export class PartyGetResDto {
   @IsNumber()
   commentCount!: number;
 
+  /**
+   * 현재 사용자의 좋아요 여부 (로그인 시에만 유효, 비로그인 시 false)
+   * @example false
+   */
+  @IsBoolean()
+  isLiked!: boolean;
+
+  /**
+   * 현재 사용자의 파티 신청 여부 (로그인 시에만 유효, 비로그인 시 false)
+   * @example false
+   */
+  @IsBoolean()
+  isApplied!: boolean;
+
+  /**
+   * 현재 사용자의 신청 상태: none(미신청), pending(대기중), accepted(수락됨)
+   * 로그인 시에만 유효, 비로그인 시 "none"
+   * @example "none"
+   */
+  @IsString()
+  applicationStatus!: "none" | "pending" | "accepted";
+
   @IsObject({ each: true })
   tags!: PartyTagDto[];
 
