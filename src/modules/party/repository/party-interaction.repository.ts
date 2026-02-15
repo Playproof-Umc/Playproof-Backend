@@ -116,7 +116,7 @@ export class PartyInteractionRepository {
     if (postIds.length === 0) return [];
     return prisma.application.findMany({
       where: { userId: BigInt(userId), postId: { in: postIds } },
-      select: { postId: true, isAccepted: true },
+      select: { id: true, postId: true, isAccepted: true },
     });
   }
 
