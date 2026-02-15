@@ -20,30 +20,47 @@ import { upload } from "./common/config/multer";
 
 export const app = express();
 
-app.use(cors({
-  origin: [
-    'http://localhost:5173', // 1. 로컬 테스트 주소
-    'https://playproof-frontend-afyn.vercel.app', // 2. 현재 배포된 특정 주소 (끝에 / 제거)
-    /^https:\/\/playproof-frontend.*\.vercel\.app$/ // 3. 정규표현식 (따옴표 제거)
-  ],
-  credentials: true
-}));
+const allowedOrigins: Array<string | RegExp> = [
+  /^http:\/\/localhost:\d+$/, // 로컬 전체 포트 허용
+  /^https:\/\/playproof-frontend(?:[-a-z0-9]+)?\.vercel\.app$/i
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      const isAllowed = allowedOrigins.some((allowed) =>
+        typeof allowed === "string" ? allowed === origin : allowed.test(origin)
+      );
+
+      return callback(null, isAllowed);
+    },
+    credentials: true
+  })
+);
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(optionalAuthMiddleware);
 
 const asyncapiSpecPath = path.resolve(process.cwd(), "asyncapi.yaml");
 const asyncapiHtmlPath = path.resolve(process.cwd(), "public", "asyncapi.html");
 const swaggerDocument = "default" in swaggerJson ? (swaggerJson as any).default : swaggerJson;
+const swaggerDocumentWithBase = {
+  ...swaggerDocument,
+  servers: [{ url: "/api" }, ...(swaggerDocument.servers ?? [])]
+};
 
 // Swagger UI
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocumentWithBase));
 app.get("/asyncapi.yaml", (_req, res) => res.sendFile(asyncapiSpecPath));
 app.get("/async-docs", (_req, res) => res.sendFile(asyncapiHtmlPath));
 
 // TSOA Routes 등록 (커스텀 multer 사용)
-RegisterRoutes(app, { multer: upload });
+const apiRouter = express.Router();
+apiRouter.use(optionalAuthMiddleware);
+RegisterRoutes(apiRouter, { multer: upload });
+app.use("/api", apiRouter);
 
 // Global Error Handler (반드시 라우트 등록 뒤에!)
 app.use(globalErrorHandler);
