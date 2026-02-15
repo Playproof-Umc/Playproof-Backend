@@ -236,7 +236,7 @@ export class PartyService {
     const nextCursor = this.buildNextCursor(lastParty, hasNext, sort);
 
     const statusMap = await this.getUserPartyStatusMap(userId, actualParties.map((p) => p.id));
-    const defaultStatus = { isLiked: false, isApplied: false, applicationStatus: 'none' as const };
+    const defaultStatus = { isLiked: false, isApplied: false, applicationStatus: 'none' as const, applicationId: null };
 
     return ok({
       parties: actualParties.map((p) => this.mapToGetResDto(p, statusMap.get(p.id.toString()) ?? defaultStatus)),
@@ -286,7 +286,7 @@ export class PartyService {
     const nextCursor = hasNext && lastParty ? Number(lastParty.id) : null;
 
     const statusMap = await this.getUserPartyStatusMap(userId, actualParties.map((p) => p.id));
-    const defaultStatus = { isLiked: false, isApplied: false, applicationStatus: 'none' as const };
+    const defaultStatus = { isLiked: false, isApplied: false, applicationStatus: 'none' as const, applicationId: null };
 
     return ok({
       parties: actualParties.map((p) => this.mapToGetResDto(p, statusMap.get(p.id.toString()) ?? defaultStatus)),
@@ -298,22 +298,23 @@ export class PartyService {
   private async getUserPartyStatus(
     userId: number | null,
     postId: bigint,
-  ): Promise<{ isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }> {
-    if (!userId) return { isLiked: false, isApplied: false, applicationStatus: 'none' };
+  ): Promise<{ isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted'; applicationId: number | null }> {
+    if (!userId) return { isLiked: false, isApplied: false, applicationStatus: 'none', applicationId: null };
     const [like, application] = await Promise.all([
       this.partyInteractionRepository.findLike(userId, Number(postId)),
       this.partyInteractionRepository.findApplication(userId, Number(postId)),
     ]);
     const applicationStatus = !application ? 'none' : application.isAccepted ? 'accepted' : 'pending';
     const isApplied = applicationStatus !== 'none';
-    return { isLiked: !!like, isApplied, applicationStatus };
+    const applicationId = application ? Number(application.id) : null;
+    return { isLiked: !!like, isApplied, applicationStatus, applicationId };
   }
 
   private async getUserPartyStatusMap(
     userId: number | null,
     postIds: bigint[],
-  ): Promise<Map<string, { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }>> {
-    const map = new Map<string, { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' }>();
+  ): Promise<Map<string, { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted'; applicationId: number | null }>> {
+    const map = new Map<string, { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted'; applicationId: number | null }>();
     if (!userId || postIds.length === 0) return map;
 
     const [likes, applications] = await Promise.all([
@@ -321,15 +322,16 @@ export class PartyService {
       this.partyInteractionRepository.findApplicationsByUserAndPostIds(userId, postIds),
     ]);
     const likedPostIds = new Set(likes.map((l) => l.postId.toString()));
-    const applicationByPost = new Map(applications.map((a) => [a.postId.toString(), a.isAccepted]));
+    const applicationByPost = new Map(applications.map((a) => [a.postId.toString(), { isAccepted: a.isAccepted, applicationId: Number(a.id) }]));
 
     for (const postId of postIds) {
       const key = postId.toString();
       const isLiked = likedPostIds.has(key);
       const app = applicationByPost.get(key);
-      const applicationStatus = app === undefined ? 'none' : app ? 'accepted' : 'pending';
+      const applicationStatus = app === undefined ? 'none' : app.isAccepted ? 'accepted' : 'pending';
       const isApplied = applicationStatus !== 'none';
-      map.set(key, { isLiked, isApplied, applicationStatus });
+      const applicationId = app?.applicationId ?? null;
+      map.set(key, { isLiked, isApplied, applicationStatus, applicationId });
     }
     return map;
   }
@@ -337,7 +339,7 @@ export class PartyService {
   // 7. 응답 데이터 매핑 (Private)
   private mapToGetResDto(
     party: any,
-    status: { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted' },
+    status: { isLiked: boolean; isApplied: boolean; applicationStatus: 'none' | 'pending' | 'accepted'; applicationId: number | null },
   ): PartyGetResDto {
     return {
       partyId: Number(party.id),
@@ -371,6 +373,7 @@ export class PartyService {
       isLiked: status.isLiked,
       isApplied: status.isApplied,
       applicationStatus: status.applicationStatus,
+      applicationId: status.applicationId,
       createdAt: party.createdAt,
       updatedAt: party.updatedAt,
     };

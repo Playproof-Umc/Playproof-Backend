@@ -160,6 +160,14 @@ export class PartyGetResDto {
   @IsString()
   applicationStatus!: "none" | "pending" | "accepted";
 
+  /**
+   * 현재 사용자의 신청 ID (신청한 경우에만 존재, 미신청 시 null)
+   * @example 1
+   */
+  @IsOptional()
+  @IsNumber()
+  applicationId!: number | null;
+
   @IsObject({ each: true })
   tags!: PartyTagDto[];
 
