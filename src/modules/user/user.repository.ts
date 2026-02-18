@@ -184,7 +184,6 @@ export class UserRepository {
 
   async createUser(dto: SignUpReqDto) {
     const { gameInfo, terms } = dto;
-
     return await prisma.user.create({
       data: {
         // 1. 유저 기본 정보
@@ -205,7 +204,8 @@ export class UserRepository {
 
         userGameInfos: {
           create: {
-            accountId: gameInfo.accountId, 
+            accountId: gameInfo.accountId ? gameInfo.accountId : null, 
+            isVerified: gameInfo.accountId ? true : false,
             gameInfo: {
               create: {
                 gameId: BigInt(gameInfo.gameId),

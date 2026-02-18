@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 export class TermDto {
   @IsNumber()
   id!: number;
@@ -31,7 +31,8 @@ export class GameInfoDto {
     * @example "example-account-id-12345"
     */
     @IsString()
-    accountId!: string;
+    @IsOptional()
+    accountId?: string;
 
     /**
     * @example "manner"
@@ -41,14 +42,16 @@ export class GameInfoDto {
     playStyle!: string;
 
     /**
-    * @example 1
+    * @example 101
     */
     @IsNumber()
-    positionId!: number;
+    @IsOptional()
+    positionId?: number;
     /**
-    * @example 5
+    * @example 101
     */
     @IsNumber()
-    tierId!: number;
+    @IsOptional()
+    tierId?: number;
 
 }
