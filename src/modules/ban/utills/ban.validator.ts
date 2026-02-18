@@ -4,6 +4,7 @@ import { isSuccess, badRequest, notFound, Result, success } from "../../../commo
 import { BanErrorCode } from "../../../common/constants/error-code";
 import { UserRepository } from "../../user/user.repository";
 import { checkUserExists } from "../../user/utills/user.validator";
+import { BanRepository } from "../repositories/ban.repository";
 
 interface WithTargetId {
   userId: number,
@@ -37,6 +38,23 @@ export const checkTargetUserExists = (userRepository: UserRepository) => {
       }) as Result<T>;
     }
 
+    return success(data);
+  };
+};
+
+// 차단 관계 존재 여부 검증
+export const checkBanExists = (banRepository: BanRepository) => {
+  return async <T extends WithTargetId>(data: T): Promise<Result<T>> => {
+    const exists = await banRepository.existsByUserIdAndTargetId(
+      BigInt(data.userId),
+      BigInt(data.targetId),
+    );
+    if (!exists) {
+      return notFound({
+        message: '차단 관계가 존재하지 않습니다.',
+        errorCode: BanErrorCode.NOT_FOUND.BAN_NOT_FOUND,
+      }) as Result<T>;
+    }
     return success(data);
   };
 };

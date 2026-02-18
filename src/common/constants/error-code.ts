@@ -201,6 +201,7 @@ export const BanErrorCode = {
   
   NOT_FOUND: {
     TARGET_USER_NOT_FOUND: 'BAN_TARGET_USER_NOT_FOUND', // 차단 대상 사용자를 찾을 수 없음
+    BAN_NOT_FOUND: "BAN_NOT_FOUND", // 차단 관계를 찾을 수 없음
   },
 } as const;
 
