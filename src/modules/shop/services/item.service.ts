@@ -74,8 +74,11 @@ export class ItemService {
     const page = dto.page && dto.page > 0 ? dto.page : 1;
     const size = dto.size && dto.size > 0 ? dto.size : 10;
     const where: any = {};
-    if (dto.q) {
-      where.name = { contains: dto.q };
+    if (dto.search) {
+      where.OR = [
+        { name: { contains: dto.search, mode: 'insensitive' } },
+        { description: { contains: dto.search, mode: 'insensitive' } },
+      ];
     }
     const total = await this.itemRepository.countItems(where);
     const items = await this.itemRepository.findItemsWithPagination(where, page, size);

@@ -11,6 +11,7 @@ import {
   Path,
   Body,
   Get,
+  Query,
   Security,
 } from 'tsoa';
 import { injectable, inject } from 'tsyringe';
@@ -118,10 +119,13 @@ export class ItemController extends Controller {
   @SuccessResponse('200', 'OK')
   @Response<BadRequestError>(400, 'Bad Request')
   @Response<InternalServerError>(500, 'Internal Server Error')
-  @Post('/')
+  @Get('/')
   public async listItems(
-    @Body() dto: ListItemsReqDto,
+    @Query() page?: number,
+    @Query() size?: number,
+    @Query() search?: string,
   ): Promise<Result<ListItemsResDto>> {
+    const dto: ListItemsReqDto = { page, size, search };
     const result = await this.itemService.listItems(dto);
     this.setStatus(result.statusCode);
     return result;
@@ -131,7 +135,7 @@ export class ItemController extends Controller {
   @Response<BadRequestError>(400, 'Bad Request')
   @Response<NotFoundError>(404, 'Not Found')
   @Response<InternalServerError>(500, 'Internal Server Error')
-  @Post('/{itemId}')
+  @Get('/{itemId}')
   public async getItemDetail(@Path() itemId: number): Promise<Result<ItemDetailResDto>> {
     const result = await this.itemService.getItemDetail({ itemId });
     this.setStatus(result.statusCode);

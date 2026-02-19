@@ -20,5 +20,5 @@ export interface UpdateItemReqDto {
 export interface ListItemsReqDto {
   page?: number;
   size?: number;
-  q?: string | null;
+  search?: string | null;
 }
