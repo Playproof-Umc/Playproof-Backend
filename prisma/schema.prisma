@@ -42,6 +42,7 @@ model User {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
 
+  // 1. 관계 설정 업데이트
   userTerms         UserTerm[]
   userAvatars       UserAvatar[]
   userGameInfos     UserGameInfo[]
@@ -62,6 +63,11 @@ model User {
   communityLikes    CommunityLike[]
   feedbacksUser     Feedback[]         @relation("FeedbackUser")
   feedbacksTarget   Feedback[]         @relation("FeedbackTarget")
+  
+  // 2. 상점/인벤토리 관계 (에러 해결 핵심)
+  userInventory     UserInventory[]
+  userEquippedItems UserEquippedItem[]
+  carts             Cart[]
 
   bansTarget        Ban[]              @relation("BanTarget")
   reportsTarget     Report[]           @relation("ReportTarget")
@@ -72,11 +78,6 @@ model User {
 }
 
 // 2. 마스터 테이블들
-enum ShopItemCategory {
-  ITEM   @map("item")
-  AVATAR @map("avatar")
-}
-
 model Term {
   id         BigInt     @id @default(autoincrement())
   name       String     @unique
@@ -374,11 +375,6 @@ model Cart {
 }
 
 // 10. 매칭(파티) 모집 글 관련 테이블
-enum RecruitmentStatus {
-  ACTIVE    @map("active")
-  COMPLETED @map("completed")
-}
-
 model PartyPost {
   id                BigInt   @id @default(autoincrement()) @map("post_id")
   userId            BigInt   @map("user_id")
@@ -437,9 +433,9 @@ model PostComment {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  user    User          @relation(fields: [userId], references: [id])
-  post    PartyPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parent  PostComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id])
+  post    PartyPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent  PostComment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies PostComment[] @relation("CommentReplies")
 
   @@map("post_comments")
@@ -485,16 +481,16 @@ enum ChatRoomType {
 }
 
 model Azit {
-  id         BigInt         @id @default(autoincrement())
-  azitName   String         @map("azit_name")
-  imageUrl   String?        @map("image_url")
-  createdAt  DateTime       @default(now()) @map("created_at")
-  updatedAt  DateTime       @default(now()) @updatedAt @map("updated_at")
-  members    AzitUser[]
-  schedules  AzitSchedule[]
-  chatRooms  ChatRoom[]
-  partyPosts PartyPost[]
-  highlights Highlight[]
+  id          BigInt       @id @default(autoincrement())
+  azitName    String       @map("azit_name")
+  imageUrl    String?      @map("image_url")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at")
+  members     AzitUser[]
+  schedules   AzitSchedule[]
+  chatRooms   ChatRoom[]
+  partyPosts  PartyPost[]
+  highlights  Highlight[]
 
   @@map("azits")
 }
@@ -572,11 +568,6 @@ model ChatRoomParticipation {
 
   @@id([memberId, roomId])
   @@map("chat_room_member")
-}
-
-enum ChatRoomRole {
-  CREATOR     @map("creator")
-  PARTICIPANT @map("participant")
 }
 
 model Chat {
@@ -723,4 +714,32 @@ model FeedbackNegativeCategory {
 
   @@id([feedbackId, negativeId])
   @@map("feedback_negative_category")
+}
+
+// 14. 기타 Enums
+enum AzitUserRole {
+  HOST   @map("host")
+  MEMBER @map("member")
+}
+
+enum AzitScheduleRole {
+  CREATOR     @map("creator")
+  PARTICIPANT @map("participant")
+}
+
+enum AzitScheduleParticipationStatus {
+  PENDING   @map("pending")
+  DECLINE   @map("decline")
+  CANCELLED @map("cancelled")
+  JOIN      @map("join")
+}
+
+enum ChatRoomType {
+  TEXT  @map("text")
+  VOICE @map("voice")
+}
+
+enum ChatRoomRole {
+  CREATOR     @map("creator")
+  PARTICIPANT @map("participant")
 }
