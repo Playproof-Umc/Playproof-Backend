@@ -44,6 +44,14 @@ const GAMES = [
   '배틀 그라운드',
 ];
 
+// 1. 상점 아이템 카테고리 데이터 추가
+const ITEM_CATEGORIES = [
+  { id: 1, name: 'BADGE', displayName: '뱃지' },
+  { id: 2, name: 'NAMEPLATE', displayName: '네임플레이트' },
+  { id: 3, name: 'BORDER', displayName: '외곽플레이트' },
+  { id: 4, name: 'ICON', displayName: '아이콘' },
+];
+
 enum POSITIONS {
   탑 = 101,
   미드 = 102,
@@ -60,7 +68,6 @@ enum POSITIONS {
 }
 
 const TERMS = [
-  // 이름, 내용, 필수여부
   {
     name: '서비스 이용약관',
     content: readFileSync(
@@ -88,7 +95,6 @@ const TERMS = [
 ];
 
 const TIERS = [
-  // 칼럼 아이디, 티어이름
   { id: 101, name: '아이언' },
   { id: 102, name: '브론즈' },
   { id: 103, name: '실버' },
@@ -131,84 +137,77 @@ const TIERS = [
 // ============================================================================
 
 async function seedMasterDataByName(params: {
-  model: any; // Prisma 모델 (예: prisma.positiveCategory)
-  names: string[]; // 시드할 이름 배열
-  logName: string; // 로그에 표시할 이름
+  model: any;
+  names: string[];
+  logName: string;
 }): Promise<void> {
   const { model, names, logName } = params;
-
   for (const name of names) {
     await model.upsert({
-      where: { name }, // name으로 찾기 (unique 필드)
-      update: {}, // 있으면 업데이트 (변경 없음)
-      create: { name }, // 없으면 생성
+      where: { name },
+      update: {},
+      create: { name },
     });
   }
-
   console.log(`✅ ${logName} 시드 완료 (${names.length}개)`);
 }
 
 async function seedMasterDataByEnum(params: {
-  model: any; // Prisma 모델 (예: prisma.position)
-  enumObject: Record<string, string | number>; // 시드할 enum 객체
-  logName: string; // 로그에 표시할 이름
+  model: any;
+  enumObject: Record<string, string | number>;
+  logName: string;
 }): Promise<void> {
   const { model, enumObject, logName } = params;
   const entries = Object.entries(enumObject).filter(
     ([key, value]) => Number.isNaN(Number(key)) && typeof value === 'number',
   );
-
   for (const [name, id] of entries) {
     await model.upsert({
-      where: { name }, // name으로 찾기 (unique 필드)
-      update: {}, // 있으면 업데이트 (변경 없음)
-      create: { id: BigInt(id), name }, // 없으면 생성 (enum 번호를 id로 사용)
+      where: { name },
+      update: {},
+      create: { id: BigInt(id), name },
     });
   }
-
   console.log(`✅ ${logName} 시드 완료 (${entries.length}개)`);
 }
 
 async function seedMasterDataByIdAndName(params: {
-  model: any; // Prisma 모델 (예: prisma.tier)
-  rows: { id: number; name: string }[]; // 시드할 데이터 배열
-  logName: string; // 로그에 표시할 이름
+  model: any;
+  rows: { id: number; name: string; displayName?: string }[];
+  logName: string;
 }): Promise<void> {
   const { model, rows, logName } = params;
-
   for (const row of rows) {
     await model.upsert({
-      where: { id: BigInt(row.id) }, // id로 찾기
-      update: { name: row.name }, // 이름 변경 반영
-      create: { id: BigInt(row.id), name: row.name }, // 없으면 생성
+      where: { id: BigInt(row.id) },
+      update: { 
+        name: row.name,
+        // 2. 상점 카테고리용 displayName 필드가 있을 경우 업데이트
+        ...(row.displayName && { displayName: row.displayName })
+      },
+      create: { 
+        id: BigInt(row.id), 
+        name: row.name,
+        ...(row.displayName && { displayName: row.displayName })
+      },
     });
   }
-
   console.log(`✅ ${logName} 시드 완료 (${rows.length}개)`);
 }
 
 async function seedTerms(params: {
-  model: any; // Prisma 모델 (예: prisma.term)
+  model: any;
   terms: { name: string; content: string; isRequired: boolean }[];
-  logName: string; // 로그에 표시할 이름
+  logName: string;
 }): Promise<void> {
   const { model, terms, logName } = params;
-
   for (const term of terms) {
     await model.upsert({
       where: { name: term.name },
-      update: {
-        content: term.content,
-        isRequired: term.isRequired,
-      },
-      create: {
-        name: term.name,
-        content: term.content,
-        isRequired: term.isRequired,
-      },
+      update: { content: term.content, isRequired: term.isRequired },
+      create: { name: term.name, content: term.content, isRequired: term.isRequired },
     });
   }
-
   console.log(`✅ ${logName} 시드 완료 (${terms.length}개)`);
 }
 
@@ -217,60 +216,53 @@ async function seedTerms(params: {
 async function main() {
   console.log('마스터 데이터 시드 시작...\n');
 
-  // 긍정 피드백 카테고리
   await seedMasterDataByName({
     model: prisma.positiveCategory,
     names: POSITIVE_CATEGORIES,
     logName: '긍정 피드백 카테고리',
   });
 
-  // 부정 피드백 카테고리
   await seedMasterDataByName({
     model: prisma.negativeCategory,
     names: NEGATIVE_CATEGORIES,
     logName: '부정 피드백 카테고리',
   });
 
-  // 카테고리
   await seedMasterDataByName({
     model: prisma.category,
     names: CATEGORIES,
     logName: '카테고리',
   });
 
-  // 게임
   await seedMasterDataByName({
     model: prisma.game,
     names: GAMES,
     logName: '게임',
   });
 
-  // 포지션
   await seedMasterDataByEnum({
     model: prisma.position,
     enumObject: POSITIONS,
     logName: '포지션',
   });
 
-  // 새로운 마스터 테이블 추가 예시:
-  // await seedMasterDataByName({
-  //   model: prisma.game,
-  //   names: POSITIVE_CATEGORIES,
-  //   logName: '게임',
-  // });
-
-  // 약관
   await seedTerms({
     model: prisma.term,
     terms: TERMS,
     logName: '약관',
   });
 
-  // 티어
   await seedMasterDataByIdAndName({
     model: prisma.tier,
     rows: TIERS,
     logName: '티어',
+  });
+
+  // 3. 아이템 카테고리 시드 실행 추가
+  await seedMasterDataByIdAndName({
+    model: prisma.itemCategory,
+    rows: ITEM_CATEGORIES,
+    logName: '아이템 카테고리',
   });
 
   console.log('\n✅ 모든 마스터 데이터 시드 완료');

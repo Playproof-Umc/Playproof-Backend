@@ -140,13 +140,13 @@ export interface BaseError<StatusCode extends number> extends Failed{
 export interface BadRequestError extends BaseError<400> {
   /**
    * @example 
-   * {
-   *    "code": "COMMON_INVALID_PARAMETER",
-   *    "message": "요청 파라미터가 잘못되었습니다.",
-   *    "errors": [
-   *      { "field": "email", "value": "invalid-email", "reason": "이메일 형식이 올바르지 않습니다." }
-   *    ]
-   * }
+  * {
+  *    "code": "COMMON_INVALID_PARAMETER",
+  *    "message": "요청 파라미터가 잘못되었습니다.",
+  *    "errors": [
+  *      { "field": "categoryId", "value": 999, "reason": "존재하지 않는 카테고리입니다." }
+  *    ]
+  * }
    */
   error: {
     code: string;

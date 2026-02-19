@@ -25,7 +25,7 @@ enum PlayStyle {
 }
 
 model User {
-  id              BigInt    @id @default(autoincrement())
+  id              BigInt    @id @default(autoincrement()) @map("user_id")
   phone           String?   @unique
   isPhoneVerified Boolean   @default(false) @map("is_phone_verified")
   phoneVerifiedAt DateTime? @map("phone_verified_at")
@@ -42,6 +42,7 @@ model User {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
 
+  // 1. 관계 설정 업데이트
   userTerms         UserTerm[]
   userAvatars       UserAvatar[]
   userGameInfos     UserGameInfo[]
@@ -50,8 +51,7 @@ model User {
   friendsTo         Friend[]           @relation("FriendToUser")
   bansUser          Ban[]              @relation("BanUser")
   reportsUser       Report[]           @relation("ReportUser")
-  shoppingCarts     ShoppingCart[]
-  buyItems          BuyItem[]
+  shoppingCarts     Cart[]
   partyPosts        PartyPost[]
   postComments      PostComment[]
   postLikes         UserPostLike[]
@@ -63,19 +63,21 @@ model User {
   communityLikes    CommunityLike[]
   feedbacksUser     Feedback[]         @relation("FeedbackUser")
   feedbacksTarget   Feedback[]         @relation("FeedbackTarget")
+  
+  // 2. 상점/인벤토리 관계 (에러 해결 핵심)
+  userInventory     UserInventory[]
+  userEquippedItems UserEquippedItem[]
+  carts             Cart[]
 
-  bansTarget    Ban[]    @relation("BanTarget")
-  reportsTarget Report[] @relation("ReportTarget")
+  bansTarget        Ban[]              @relation("BanTarget")
+  reportsTarget     Report[]           @relation("ReportTarget")
+  userInventories   UserInventory[]
+  userEquippedItems UserEquippedItem[]
 
   @@map("users")
 }
 
 // 2. 마스터 테이블들
-enum ShopItemCategory {
-  ITEM   @map("item")
-  AVATAR @map("avatar")
-}
-
 model Term {
   id         BigInt     @id @default(autoincrement())
   name       String     @unique
@@ -96,13 +98,12 @@ model Avatar {
 }
 
 model ShopItem {
-  id            BigInt           @id @default(autoincrement())
-  category      ShopItemCategory @default(ITEM)
-  name          String           @unique
-  price         Int
-  imageUrl      String           @map("image_url")
-  shoppingCarts ShoppingCart[]
-  buyItems      BuyItem[]
+  id       BigInt           @id @default(autoincrement())
+  category ShopItemCategory @default(ITEM)
+  name     String           @unique
+  price    Int
+  imageUrl String           @map("image_url")
+  carts    Cart[]
 
   @@map("shop_items")
 }
@@ -301,35 +302,79 @@ model ReportMedia {
 }
 
 // 9. 상점 관련 테이블
-model ShoppingCart {
-  userId BigInt   @map("user_id")
-  itemId BigInt   @map("item_id")
-  putAt  DateTime @default(now()) @map("put_at")
-  user   User     @relation(fields: [userId], references: [id])
-  item   ShopItem @relation(fields: [itemId], references: [id])
+model ItemCategory {
+  categoryId   BigInt    @id @map("category_id")
+  categoryName String?   @map("category_name")
+  displayName  String?   @map("display_name")
+  createdAt    DateTime? @map("created_at")
 
-  @@id([userId, itemId])
-  @@map("shopping_cart")
+  items             Item[]
+  userEquippedItems UserEquippedItem[]
+
+  @@map("item_categories")
 }
 
-model BuyItem {
-  userId      BigInt   @map("user_id")
-  itemId      BigInt   @map("item_id")
-  boughtPrice Int      @map("bought_price")
-  buyAt       DateTime @default(now()) @map("buy_at")
-  user        User     @relation(fields: [userId], references: [id])
-  item        ShopItem @relation(fields: [itemId], references: [id])
+model Item {
+  itemId      BigInt    @id @map("item_id")
+  categoryId  BigInt    @map("category_id")
+  itemName    String    @map("item_name")
+  description String?   @db.Text
+  price       Int?
+  imageUrl    String?   @map("image_url")
+  isActive    Boolean?  @map("is_active")
+  createdAt   DateTime? @map("created_at")
 
-  @@id([userId, itemId])
-  @@map("buy_items")
+  category    ItemCategory       @relation(fields: [categoryId], references: [categoryId])
+  inventories UserInventory[]
+  equipped    UserEquippedItem[]
+  carts       Cart[]
+
+  @@map("items")
+}
+
+model UserInventory {
+  inventoryId BigInt    @id @map("inventory_id")
+  userId      BigInt    @map("user_id")
+  itemId      BigInt    @map("item_id")
+  isEquipped  Boolean?  @map("is_equipped")
+  acquiredAt  DateTime? @map("acquired_at")
+
+  user User @relation(fields: [userId], references: [id])
+  item Item @relation(fields: [itemId], references: [itemId])
+
+  @@map("user_inventory")
+}
+
+model UserEquippedItem {
+  userId     BigInt    @map("user_id")
+  categoryId BigInt    @map("category_id")
+  itemId     BigInt    @map("item_id")
+  updatedAt  DateTime? @map("updated_at")
+
+  user     User         @relation(fields: [userId], references: [id])
+  category ItemCategory @relation(fields: [categoryId], references: [categoryId])
+  item     Item         @relation(fields: [itemId], references: [itemId])
+
+  @@id([userId, categoryId])
+  @@map("user_equipped_items")
+}
+
+model Cart {
+  cartId    BigInt    @id @map("cart_id")
+  userId    BigInt    @map("user_id")
+  itemId    BigInt    @map("item_id")
+  quantity  Int?
+  createdAt DateTime? @map("created_at")
+
+  user       User      @relation(fields: [userId], references: [id])
+  item       Item      @relation(fields: [itemId], references: [itemId])
+  shopItem   ShopItem? @relation(fields: [shopItemId], references: [id])
+  shopItemId BigInt?
+
+  @@map("cart")
 }
 
 // 10. 매칭(파티) 모집 글 관련 테이블
-enum RecruitmentStatus {
-  ACTIVE    @map("active")
-  COMPLETED @map("completed")
-}
-
 model PartyPost {
   id                BigInt   @id @default(autoincrement()) @map("post_id")
   userId            BigInt   @map("user_id")
@@ -388,9 +433,9 @@ model PostComment {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  user    User          @relation(fields: [userId], references: [id])
-  post    PartyPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parent  PostComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id])
+  post    PartyPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent  PostComment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies PostComment[] @relation("CommentReplies")
 
   @@map("post_comments")
@@ -430,29 +475,22 @@ enum AzitScheduleRole {
   PARTICIPANT @map("participant")
 }
 
-enum AzitScheduleParticipationStatus {
-  PENDING   @map("pending")
-  DECLINE   @map("decline")
-  CANCELLED @map("cancelled")
-  JOIN      @map("join")
-}
-
 enum ChatRoomType {
   TEXT  @map("text")
   VOICE @map("voice")
 }
 
 model Azit {
-  id         BigInt         @id @default(autoincrement())
-  azitName   String         @map("azit_name")
-  imageUrl   String?        @map("image_url")
-  createdAt  DateTime       @default(now()) @map("created_at")
-  updatedAt  DateTime       @default(now()) @updatedAt @map("updated_at")
-  members    AzitUser[]
-  schedules  AzitSchedule[]
-  chatRooms  ChatRoom[]
-  partyPosts PartyPost[]
-  highlights Highlight[]
+  id          BigInt       @id @default(autoincrement())
+  azitName    String       @map("azit_name")
+  imageUrl    String?      @map("image_url")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at")
+  members     AzitUser[]
+  schedules   AzitSchedule[]
+  chatRooms   ChatRoom[]
+  partyPosts  PartyPost[]
+  highlights  Highlight[]
 
   @@map("azits")
 }
@@ -491,11 +529,10 @@ model AzitSchedule {
 }
 
 model AzitScheduleParticipation {
-  memberId        BigInt                          @map("member_id")
-  scheduleId      BigInt                          @map("schedule_id")
-  role            AzitScheduleRole                @default(PARTICIPANT)
-  isParticipation AzitScheduleParticipationStatus @default(PENDING) @map("is_participation")
-  participationAt DateTime                        @default(now()) @map("participation_at")
+  memberId        BigInt           @map("member_id")
+  scheduleId      BigInt           @map("schedule_id")
+  role            AzitScheduleRole @default(PARTICIPANT)
+  participationAt DateTime         @default(now()) @map("participation_at")
 
   member   AzitUser     @relation(fields: [memberId], references: [id], onDelete: Cascade)
   schedule AzitSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
@@ -531,11 +568,6 @@ model ChatRoomParticipation {
 
   @@id([memberId, roomId])
   @@map("chat_room_member")
-}
-
-enum ChatRoomRole {
-  CREATOR     @map("creator")
-  PARTICIPANT @map("participant")
 }
 
 model Chat {
@@ -646,18 +678,17 @@ model CommunityMedia {
 
 // 13. 피드백 관련 테이블
 model Feedback {
-  id            BigInt       @id @default(autoincrement())
-  userId        BigInt       @map("user_id")
-  targetId      BigInt       @map("target_id")
-  scheduleId    BigInt       @map("schedule_id")
-  content       String?      @db.Text
-  isBan         Boolean      @default(false) @map("is_ban")
-  tsScoreChange Int          @default(0) @map("ts_score_change")
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @default(now()) @updatedAt @map("updated_at")
-  user          User         @relation("FeedbackUser", fields: [userId], references: [id])
-  target        User         @relation("FeedbackTarget", fields: [targetId], references: [id])
-  schedule      AzitSchedule @relation(fields: [scheduleId], references: [id])
+  id         BigInt       @id @default(autoincrement())
+  userId     BigInt       @map("user_id")
+  targetId   BigInt       @map("target_id")
+  scheduleId BigInt       @map("schedule_id")
+  content    String?      @db.Text
+  isBan      Boolean      @default(false) @map("is_ban")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @default(now()) @updatedAt @map("updated_at")
+  user       User         @relation("FeedbackUser", fields: [userId], references: [id])
+  target     User         @relation("FeedbackTarget", fields: [targetId], references: [id])
+  schedule   AzitSchedule @relation(fields: [scheduleId], references: [id])
 
   positiveCategories FeedbackPositiveCategory[]
   negativeCategories FeedbackNegativeCategory[]
@@ -683,4 +714,32 @@ model FeedbackNegativeCategory {
 
   @@id([feedbackId, negativeId])
   @@map("feedback_negative_category")
+}
+
+// 14. 기타 Enums
+enum AzitUserRole {
+  HOST   @map("host")
+  MEMBER @map("member")
+}
+
+enum AzitScheduleRole {
+  CREATOR     @map("creator")
+  PARTICIPANT @map("participant")
+}
+
+enum AzitScheduleParticipationStatus {
+  PENDING   @map("pending")
+  DECLINE   @map("decline")
+  CANCELLED @map("cancelled")
+  JOIN      @map("join")
+}
+
+enum ChatRoomType {
+  TEXT  @map("text")
+  VOICE @map("voice")
+}
+
+enum ChatRoomRole {
+  CREATOR     @map("creator")
+  PARTICIPANT @map("participant")
 }
