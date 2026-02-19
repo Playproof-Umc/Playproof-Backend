@@ -31,7 +31,10 @@ import {
 import {
   Result,
   BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
   NotFoundError,
+  ConflictError,
   InternalServerError,
 } from '../../../common/types/result.type';
 
@@ -45,7 +48,9 @@ export class AdminItemController extends Controller {
 
   @SuccessResponse('200', 'OK')
   @Response<BadRequestError>(400, 'Bad Request')
-  @Response<NotFoundError>(404, 'Not Found')
+  @Response<UnauthorizedError>(401, 'Unauthorized')
+  @Response<ForbiddenError>(403, 'Forbidden')
+  @Response<ConflictError>(409, 'Conflict')
   @Response<InternalServerError>(500, 'Internal Server Error')
   @Security('jwt')
   @Post('/')
@@ -60,6 +65,8 @@ export class AdminItemController extends Controller {
 
   @SuccessResponse('200', 'OK')
   @Response<BadRequestError>(400, 'Bad Request')
+  @Response<UnauthorizedError>(401, 'Unauthorized')
+  @Response<ForbiddenError>(403, 'Forbidden')
   @Response<NotFoundError>(404, 'Not Found')
   @Response<InternalServerError>(500, 'Internal Server Error')
   @Security('jwt')
@@ -75,7 +82,8 @@ export class AdminItemController extends Controller {
   }
 
   @SuccessResponse('200', 'OK')
-  @Response<BadRequestError>(400, 'Bad Request')
+  @Response<UnauthorizedError>(401, 'Unauthorized')
+  @Response<ForbiddenError>(403, 'Forbidden')
   @Response<NotFoundError>(404, 'Not Found')
   @Response<InternalServerError>(500, 'Internal Server Error')
   @Security('jwt')
