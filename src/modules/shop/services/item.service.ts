@@ -15,22 +15,30 @@ import {
 } from '../dtos/item.res.dto';
 import { ResultChain } from '../../../common/types/result.chain';
 import { ok, created, notFound, ok as okResp } from '../../../common/types/result.type';
+import { uploadFileToS3 } from '../../../common/utils/file-util';
 import { checkCategoryExists, checkItemExists } from '../utills/item.validator';
 
 @injectable()
 export class ItemService {
   constructor(@inject(ItemRepository) private itemRepository: ItemRepository) {}
 
-  async createItem(dto: CreateItemReqDto): Promise<any> {
+  async createItem(dto: CreateItemReqDto, file?: Express.Multer.File): Promise<any> {
     return await ResultChain.of(dto)
       .flatThenAsync(checkCategoryExists(this.itemRepository))
       .flatThenAsync(async (data) => {
+        let imageUrl = data.image_url ?? null;
+        if (file) {
+          const uploadResult = await uploadFileToS3(file, 'shop-items');
+          if (uploadResult.error) return uploadResult;
+          imageUrl = uploadResult.data;
+        }
+
         const createdItem = await this.itemRepository.createItem({
           categoryId: BigInt(data.category_id),
           name: data.item_name,
           description: data.description ?? null,
           price: data.price ?? null,
-          imageUrl: data.image_url ?? null,
+          imageUrl: imageUrl ?? null,
           isActive: data.is_active ?? true,
         });
         return created({ item_id: Number(createdItem.id), message: '아이템이 성공적으로 등록되었습니다.' } as CreateItemResDto);

@@ -11,6 +11,8 @@ import {
   Path,
   Body,
   Get,
+  FormField,
+  UploadedFile,
   Query,
   Security,
 } from 'tsoa';
@@ -57,9 +59,20 @@ export class AdminItemController extends Controller {
   @Post('/')
   public async createItem(
     @Request() req: any,
-    @Body() dto: CreateItemReqDto,
+    @FormField() category_id?: number,
+    @FormField() item_name?: string,
+    @FormField() description?: string,
+    @FormField() price?: number,
+    @UploadedFile() image?: Express.Multer.File,
   ): Promise<Result<CreateItemResDto>> {
-    const result = await this.itemService.createItem(dto);
+    const dto: CreateItemReqDto = {
+      category_id: Number(category_id),
+      item_name: item_name ?? '',
+      description: description ?? null,
+      price: Number(price),
+    } as CreateItemReqDto;
+
+    const result = await this.itemService.createItem(dto, image);
     this.setStatus(result.statusCode);
     return result;
   }
